@@ -8,7 +8,7 @@
             </trans-unit>
             <trans-unit id="label.default.body">
                 <source>label.default.body</source>
-                <target>Welcome to this brand new project!</target>
+                <target>Overview of current status:</target>
             </trans-unit>
         </body>
     </file>

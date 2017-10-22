@@ -29,6 +29,11 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
+    AppBundle\Utils\Connectors\:
+        resource: '../../src/AppBundle/Utils/Connectors'
+        public: true
+        arguments: ["@buzz", "%connectors%"]
+
     # add more services, or override services that need manual wiring
     # AppBundle\Service\ExampleService:
     #     arguments:
