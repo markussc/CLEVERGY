@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}OSHANS{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/foundation/6.2.4/foundation.min.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/base.css') }}">
         {% block stylesheets %}{% endblock %}
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/foundation/6.2.4/foundation.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js>"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
+        <div class="row">
+            <div class="small-12 columns">
+                <ul class="menu menu-hover-lines">
+                    <li><a href="#"><img src="{{ asset('oshans_icon.svg') }}"></a></li>
+                    <li class="active"><a href="#">OSHANS Center</a></li>
+                </ul>
+            </div>
+        </div>
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
+        <script>
+            $(function() {
+                $(document).foundation();
+            });
+        </script>
     </body>
 </html>

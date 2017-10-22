@@ -4,7 +4,7 @@
         <body>
             <trans-unit id="label.default.header">
                 <source>label.default.header</source>
-                <target>OSHANS - The Open Smart Home Automation, Notification and Statistics Center</target>
+                <target>Open Smart Home Automation, Notification and Statistics Center</target>
             </trans-unit>
             <trans-unit id="label.default.body">
                 <source>label.default.body</source>
