@@ -12,6 +12,7 @@ class SmartFoxConnector
 {
     protected $browser;
     protected $basePath;
+
     public function __construct(\Buzz\Browser $browser, Array $connectors)
     {
         $this->browser = $browser;

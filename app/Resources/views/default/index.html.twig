@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    {{ dump(currentStat) }}
     <div class="row">
         <div class="small-12 columns">
              <h2 class="text-center">{% trans %}label.default.header{% endtrans %}</h2>
@@ -9,6 +10,7 @@
             <p>{% trans %}label.default.body{% endtrans %}</p>
             <ul>
                 <li>SmartFox Power: {{ currentStat['smartFox']['power']['power_io'] }} W</li>
+                <li>Outside Temperature: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
             </ul>
         </div>
     </div>

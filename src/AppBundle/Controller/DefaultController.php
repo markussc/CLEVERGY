@@ -17,6 +17,9 @@ class DefaultController extends Controller
             'smartFox' => [
                 'power' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getPower(),
             ],
+            'pcoWeb' => [
+                'outsideTemp' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getOutsideTemp(),
+            ]
         ];
 
         // render the template
