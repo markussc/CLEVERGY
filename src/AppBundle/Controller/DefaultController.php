@@ -19,6 +19,9 @@ class DefaultController extends Controller
             ],
             'pcoWeb' => [
                 'outsideTemp' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getOutsideTemp(),
+            ],
+            'mobileAlerts' => [
+                'all' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
             ]
         ];
 
