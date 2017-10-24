@@ -1,28 +1,42 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {{ dump(currentStat) }}
     <div class="row">
-        <div class="small-12 columns">
-             <h2 class="text-center">{% trans %}label.default.header{% endtrans %}</h2>
-        </div>
-        <div class="small-12 columns">
-            <p>{% trans %}label.default.body{% endtrans %}</p>
+        <div class="small-12 large-4 columns">
+            <h3>{% trans %}label.energy{% endtrans %}</h3>
             <ul>
                 <li>SmartFox Power: {{ currentStat['smartFox']['power']['power_io'] }} W</li>
+            </ul>
+        </div>
+        <div class="small-12 large-4 columns">
+            <h3>{% trans %}label.heating{% endtrans %}</h3>
+            <ul>
                 <li>Outside Temperature: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
                 <li>Water Temperature: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
             </ul>
         </div>
+        <div class="small-12 large-4 columns">
+            <h3>{% trans %}label.climate{% endtrans %}</h3>
+            <ul>
+            {% for maSensor in currentStat['mobileAlerts'] %}
+                {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
+                    <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+        </div>
     </div>
+    {#
     <div class="row">
         <div class="small-12 columns">
             <canvas id="myChart" width="100%;" height="50%;"></canvas>
         </div>
     </div>
+    #}
 {% endblock %}
 
 {% block javascripts %}
+    {#
     <script>
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {
@@ -62,4 +76,5 @@
             }
         });
     </script>
+    #}
 {% endblock %}

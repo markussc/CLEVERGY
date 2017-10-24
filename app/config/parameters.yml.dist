@@ -26,6 +26,9 @@ parameters:
         pcoweb:
             ip: 192.168.178.20
         mobilealerts:
+            phoneid: XXXXXXXXXXXX # the phone id is available in the settings of the Android / iOS app. Used for web-retrieval (currently used)
             sensors:
                 -   XXXXXXXXXXXX
+                        -   measurement_label: unit
+                        -   measurement_label2: unit2
 

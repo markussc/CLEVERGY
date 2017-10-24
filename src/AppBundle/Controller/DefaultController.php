@@ -18,9 +18,7 @@ class DefaultController extends Controller
                 'power' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getPower(),
             ],
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
-            'mobileAlerts' => [
-                'all' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
-            ]
+            'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
         ];
 
         // render the template

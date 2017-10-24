@@ -39,4 +39,9 @@
 
 # Backup entities generated with doctrine:generate:entities command
 **/Entity/*~
+
+# NetBeans private configuration
 /nbproject/private/
+
+# Dependencies loaded by composer
+/vendor/

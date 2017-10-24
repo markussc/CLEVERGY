@@ -4,11 +4,19 @@
         <body>
             <trans-unit id="label.default.header">
                 <source>label.default.header</source>
-                <target>Open Smart Home Automation, Notification and Statistics Center</target>
+                <target>Dashboard</target>
             </trans-unit>
-            <trans-unit id="label.default.body">
-                <source>label.default.body</source>
-                <target>Overview of current status:</target>
+            <trans-unit id="label.energy">
+                <source>label.energy</source>
+                <target>Energy</target>
+            </trans-unit>
+            <trans-unit id="label.heating">
+                <source>label.heating</source>
+                <target>Heating</target>
+            </trans-unit>
+            <trans-unit id="label.climate">
+                <source>label.climate</source>
+                <target>Climate</target>
             </trans-unit>
         </body>
     </file>
