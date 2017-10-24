@@ -28,7 +28,16 @@ parameters:
         mobilealerts:
             phoneid: XXXXXXXXXXXX # the phone id is available in the settings of the Android / iOS app. Used for web-retrieval (currently used)
             sensors:
-                -   XXXXXXXXXXXX
-                        -   measurement_label: unit
-                        -   measurement_label2: unit2
-
+                XXXXXXXXXXXX:
+                    -
+                        - Inside temperature
+                        - °C
+                    -
+                        - 'Relative humidity inside'
+                        - '%'
+                    -
+                        - Outside temperature
+                        - °C
+                    -
+                        - 'Relative humidity outside'
+                        - '%'
