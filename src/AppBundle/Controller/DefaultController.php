@@ -50,4 +50,22 @@ class DefaultController extends Controller
         // no known device
         return false;
     }
+
+    /**
+     * Get data which needs regular refresh
+     * @Route("/refresh", name="refresh")
+     */
+    public function refreshAction(Request $request)
+    {
+        $currentStat = [
+            'smartFox' => [
+                'power' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getPower(),
+            ],
+        ];
+
+        // render the template
+        return $this->render('default/content.html.twig', [
+            'currentStat' => $currentStat,
+        ]);
+    }
 }

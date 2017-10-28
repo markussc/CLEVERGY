@@ -1,0 +1,41 @@
+{% if currentStat['smartFox'] is defined %}
+<div class="small-12 large-3 columns" id="smartfox">
+    <h3>{% trans %}label.energy{% endtrans %}</h3>
+    <ul>
+        <li>SmartFox Power: {{ currentStat['smartFox']['power']['power_io'] }} W</li>
+    </ul>
+</div>
+{% endif %}
+{% if currentStat['pcoWeb'] is defined %}
+<div class="small-12 large-3 columns" id="pcoWeb">
+    <h3>{% trans %}label.heating{% endtrans %}</h3>
+    <ul>
+        <li>Outside Temperature: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
+        <li>Water Temperature: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
+    </ul>
+</div>
+{% endif %}
+{% if currentStat['mobileAlerts'] is defined %}
+<div class="small-12 large-3 columns" id="mobileAlerts">
+    <h3>{% trans %}label.climate{% endtrans %}</h3>
+    <ul>
+    {% for maSensor in currentStat['mobileAlerts'] %}
+        {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
+            <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% if currentStat['edimax'] is defined %}
+<div class="small-12 large-3 columns" id="edimax">
+    <h3>{% trans %}label.devices{% endtrans %}</h3>
+    <ul>
+    {% for key, device in currentStat['edimax'] %}
+        <li>
+            {{ device['name']}}: <a href="javascript:void(0);" onclick="sendCommandToDevice(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])">{{ device['status']['label']|trans }}</a>
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
