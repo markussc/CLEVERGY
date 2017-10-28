@@ -1,27 +1,38 @@
 {% extends 'base.html.twig' %}
-
+{% block meta %}<meta http-equiv="refresh" content="10" />{% endblock %}
+    
 {% block body %}
     <div class="row">
-        <div class="small-12 large-4 columns">
+        <div class="small-12 large-3 columns">
             <h3>{% trans %}label.energy{% endtrans %}</h3>
             <ul>
                 <li>SmartFox Power: {{ currentStat['smartFox']['power']['power_io'] }} W</li>
             </ul>
         </div>
-        <div class="small-12 large-4 columns">
+        <div class="small-12 large-3 columns">
             <h3>{% trans %}label.heating{% endtrans %}</h3>
             <ul>
                 <li>Outside Temperature: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
                 <li>Water Temperature: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
             </ul>
         </div>
-        <div class="small-12 large-4 columns">
+        <div class="small-12 large-3 columns">
             <h3>{% trans %}label.climate{% endtrans %}</h3>
             <ul>
             {% for maSensor in currentStat['mobileAlerts'] %}
                 {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
                     <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
                 {% endfor %}
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="small-12 large-3 columns">
+            <h3>{% trans %}label.devices{% endtrans %}</h3>
+            <ul>
+            {% for key, device in currentStat['edimax'] %}
+                <li>
+                    {{ device['name']}}: <a href="javascript:void(0);" onclick="sendCommandToDevice(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])">{{ device['status']['label']|trans }}</a>
+                </li>
             {% endfor %}
             </ul>
         </div>
@@ -36,6 +47,14 @@
 {% endblock %}
 
 {% block javascripts %}
+    <script>
+        function sendCommandToDevice(command)
+        {
+            var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
+            url = url.replace('command_val', JSON.stringify(command));
+            window.location = url;
+        }
+    </script>
     {#
     <script>
         var ctx = document.getElementById("myChart").getContext('2d');

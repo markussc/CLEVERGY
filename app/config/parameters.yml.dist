@@ -41,3 +41,9 @@ parameters:
                     -
                         - 'Relative humidity outside'
                         - '%'
+        edimax:
+            '192.168.55.2':
+                name: 'Plug 1'
+                username: admin
+                password: 1234
+                

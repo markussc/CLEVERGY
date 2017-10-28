@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" datatype="plaintext" original="file.ext">
+    <file source-language="de" datatype="plaintext" original="file.ext">
         <body>
             <trans-unit id="label.default.header">
                 <source>label.default.header</source>
-                <target>Dashboard</target>
+                <target>Übersicht</target>
             </trans-unit>
             <trans-unit id="label.energy">
                 <source>label.energy</source>
-                <target>Energy</target>
+                <target>Energie</target>
             </trans-unit>
             <trans-unit id="label.heating">
                 <source>label.heating</source>
-                <target>Heating</target>
+                <target>Heizung</target>
             </trans-unit>
             <trans-unit id="label.climate">
                 <source>label.climate</source>
-                <target>Climate</target>
+                <target>Klima</target>
             </trans-unit>
             <trans-unit id="label.devices">
                 <source>label.devices</source>
-                <target>Devices</target>
+                <target>Geräte</target>
             </trans-unit>
             <trans-unit id="label.device.status.on">
                 <source>label.device.status.on</source>
-                <target>On</target>
+                <target>Ein</target>
             </trans-unit>
             <trans-unit id="label.device.status.off">
                 <source>label.device.status.off</source>
-                <target>Off</target>
+                <target>Aus</target>
             </trans-unit>
         </body>
     </file>

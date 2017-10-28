@@ -30,6 +30,10 @@
 /web/bundles/
 /web/uploads/
 
+# generated assets
+/web/js
+/web/css
+
 # PHPUnit
 /app/phpunit.xml
 /phpunit.xml

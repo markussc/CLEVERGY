@@ -19,11 +19,35 @@ class DefaultController extends Controller
             ],
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
+            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllStati(),
         ];
 
         // render the template
         return $this->render('default/index.html.twig', [
             'currentStat' => $currentStat,
         ]);
+    }
+
+    /**
+     * Execute command
+     * @Route("/cmd/{command}", name="command_exec")
+     */
+    public function commandExecuteAction(Request $request, $command)
+    {
+        // execute the command
+        $this->executeCommand($command);
+        // redirect to homepage
+        return $this->redirectToRoute('homepage');
+    }
+
+    private function executeCommand($command)
+    {
+        $command = json_decode($command);
+        switch ($command[0]) {
+            case 'edimax':
+                return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
+        }
+        // no known device
+        return false;
     }
 }
