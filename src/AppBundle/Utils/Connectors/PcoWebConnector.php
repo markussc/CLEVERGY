@@ -12,11 +12,13 @@ class PcoWebConnector
 {
     protected $browser;
     protected $basePath;
+    protected $ip;
 
     public function __construct(\Buzz\Browser $browser, Array $connectors)
     {
         $this->browser = $browser;
-        $this->basePath = 'http://' . $connectors['pcoweb']['ip'];
+        $this->ip = $connectors['pcoweb']['ip'];
+        $this->basePath = 'http://' . $this->ip;
     }
 
     public function getAll()
@@ -54,5 +56,10 @@ class PcoWebConnector
             'preTemp' => $responseArrAnalog['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArrAnalog['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
         ];
+    }
+
+    public function getIp()
+    {
+        return $this->ip;
     }
 }

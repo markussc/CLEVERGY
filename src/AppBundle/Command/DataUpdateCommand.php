@@ -3,7 +3,9 @@
 namespace AppBundle\Command;
 
 use AppBundle\Entity\EdiMaxDataStore;
+use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
+use AppBundle\Entity\MobileAlertsDataStore;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,6 +36,7 @@ class DataUpdateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+
         // edimax
         foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll() as $edimax) {
             $edimaxEntity = new EdiMaxDataStore();
@@ -42,6 +45,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             $edimaxEntity->setData($edimax['status']['val']);
             $em->persist($edimaxEntity);
         }
+
         // smartfox
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
         $smartfoxEntity = new SmartFoxDataStore();
@@ -49,6 +53,23 @@ class DataUpdateCommand extends ContainerAwareCommand
         $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
         $smartfoxEntity->setData($smartfox);
         $em->persist($smartfoxEntity);
+
+        // pcoweb
+        $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
+        $pcowebEntity = new PcoWebDataStore();
+        $pcowebEntity->setTimestamp(new \DateTime('now'));
+        $pcowebEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
+        $pcowebEntity->setData($pcoweb);
+        $em->persist($pcowebEntity);
+
+        // mobilealerts
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll() as $sensorId => $sensorData) {
+            $mobilealertsEntity = new MobileAlertsDataStore();
+            $mobilealertsEntity->setTimestamp(new \DateTime('now'));
+            $mobilealertsEntity->setConnectorId($sensorId);
+            $mobilealertsEntity->setData($sensorData);
+            $em->persist($mobilealertsEntity);
+        }
 
         // write to database
         $em->flush();
