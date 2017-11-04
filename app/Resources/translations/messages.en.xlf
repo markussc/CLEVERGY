@@ -30,6 +30,42 @@
                 <source>label.device.status.off</source>
                 <target>Off</target>
             </trans-unit>
+            <trans-unit id="label.pco.outside_temp">
+                <source>label.pco.outside_temp</source>
+                <target>Outside Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.water_temp">
+                <source>label.pco.water_temp</source>
+                <target>Water Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pre_temp">
+                <source>label.pco.pre_temp</source>
+                <target>Pre Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.back_temp">
+                <source>label.pco.back_temp</source>
+                <target>Back Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.net_power">
+                <source>label.smartfox.net_power</source>
+                <target>Net Power</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.pv_power">
+                <source>label.smartfox.pv_power</source>
+                <target>PV Power</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.int_power">
+                <source>label.smartfox.int_power</source>
+                <target>Power Consumption</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_out_day">
+                <source>label.smartfox.energy_out_day</source>
+                <target>Energy out Today</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_in_day">
+                <source>label.smartfox.energy_in_day</source>
+                <target>Energy in Today</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

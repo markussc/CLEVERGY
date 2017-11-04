@@ -14,9 +14,8 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         $currentStat = [
-            'smartFox' => [
-                'power' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getPower(),
-            ],
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
+            'smartFoxChart' => true,
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllStati(),
@@ -40,9 +39,9 @@ class DefaultController extends Controller
         return $this->redirectToRoute('homepage');
     }
 
-    private function executeCommand($command)
+    private function executeCommand($jsonCommand)
     {
-        $command = json_decode($command);
+        $command = json_decode($jsonCommand);
         switch ($command[0]) {
             case 'edimax':
                 return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
@@ -58,14 +57,14 @@ class DefaultController extends Controller
     public function refreshAction(Request $request)
     {
         $currentStat = [
-            'smartFox' => [
-                'power' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getPower(),
-            ],
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
+            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
         ];
 
         // render the template
         return $this->render('default/content.html.twig', [
             'currentStat' => $currentStat,
+            'refresh' => true,
         ]);
     }
 }

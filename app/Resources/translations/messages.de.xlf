@@ -30,6 +30,58 @@
                 <source>label.device.status.off</source>
                 <target>Aus</target>
             </trans-unit>
+            <trans-unit id="label.pco.outside_temp">
+                <source>label.pco.outside_temp</source>
+                <target>Aussentemperatur</target>
+            </trans-unit>
+            <trans-unit id="label.pco.water_temp">
+                <source>label.pco.water_temp</source>
+                <target>Wassertemperatur</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pre_temp">
+                <source>label.pco.pre_temp</source>
+                <target>Vorlauftemperatur WP</target>
+            </trans-unit>
+            <trans-unit id="label.pco.back_temp">
+                <source>label.pco.back_temp</source>
+                <target>Rücklauftemperatur WP</target>
+            </trans-unit>
+            <trans-unit id="label.pco.set_distr_temp">
+                <source>label.pco.set_distr_temp</source>
+                <target>Solltemp. Verteilung</target>
+            </trans-unit>
+            <trans-unit id="label.pco.eff_distr_temp">
+                <source>label.pco.eff_distr_temp</source>
+                <target>Effektivtemp. Verteilung</target>
+            </trans-unit>
+            <trans-unit id="label.pco.cp_status">
+                <source>label.pco.cp_status</source>
+                <target>Umwälzpumpe</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pp_status">
+                <source>label.pco.pp_status</source>
+                <target>Erdsondenpumpe</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.net_power">
+                <source>label.smartfox.net_power</source>
+                <target>Leistung Netz</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.pv_power">
+                <source>label.smartfox.pv_power</source>
+                <target>PV Leistung</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.int_power">
+                <source>label.smartfox.int_power</source>
+                <target>Leistungsbedarf</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_out_day">
+                <source>label.smartfox.energy_out_day</source>
+                <target>Energieliefung heute</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_in_day">
+                <source>label.smartfox.energy_in_day</source>
+                <target>Energiebezug heute</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

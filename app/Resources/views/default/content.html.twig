@@ -1,22 +1,42 @@
+<div class="row">
 {% if currentStat['smartFox'] is defined %}
-<div class="small-12 large-3 columns" id="smartfox">
+<div class="small-12 medium-3 columns" id="smartfoxOuter">
+    <div id="smartfox">
     <h3>{% trans %}label.energy{% endtrans %}</h3>
     <ul>
-        <li>SmartFox Power: {{ currentStat['smartFox']['power']['power_io'] }} W</li>
+        <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }} W</li> {# TODO: sum up all PV powers #}
+        <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(', ') }} W</li>
+        <li>{% trans %}label.smartfox.net_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] }} W</li>
     </ul>
+    </div>
+    <div class="chart" style="display:none;">
+        <span class="chartId">currentPower</span>
+        <span class="chartData">[{{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }}, {{ currentStat['smartFox']['PvPower'][0] }}, {{ currentStat['smartFox']['power_io'] }}]</span>
+        <span class="chartColor">{"0":["grey", "grey"], "1":["yellow", "yellow"], "2":["green", "red"]}</span>
+    </div>
+    <div class="chart" style="display:none;">
+        <span class="chartId">energyDay</span>
+        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}]</span>
+    </div>
 </div>
 {% endif %}
 {% if currentStat['pcoWeb'] is defined %}
-<div class="small-12 large-3 columns" id="pcoWeb">
+<div class="small-12 medium-3 columns" id="pcoWeb">
     <h3>{% trans %}label.heating{% endtrans %}</h3>
     <ul>
-        <li>Outside Temperature: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
-        <li>Water Temperature: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
+        <li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
+        <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
+        <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }} °C</li>
+        <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }} °C</li>
+        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
+        <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }} °C</li>
+        <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }} °C</li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}</li>
     </ul>
 </div>
 {% endif %}
 {% if currentStat['mobileAlerts'] is defined %}
-<div class="small-12 large-3 columns" id="mobileAlerts">
+<div class="small-12 medium-3 columns" id="mobileAlerts">
     <h3>{% trans %}label.climate{% endtrans %}</h3>
     <ul>
     {% for maSensor in currentStat['mobileAlerts'] %}
@@ -28,7 +48,7 @@
 </div>
 {% endif %}
 {% if currentStat['edimax'] is defined %}
-<div class="small-12 large-3 columns" id="edimax">
+<div class="small-12 medium-3 columns" id="edimax">
     <h3>{% trans %}label.devices{% endtrans %}</h3>
     <ul>
     {% for key, device in currentStat['edimax'] %}
@@ -39,3 +59,117 @@
     </ul>
 </div>
 {% endif %}
+</div>
+{% if (refresh is not defined or not refresh) and currentStat['smartFoxChart'] is defined %} {# find correct way to keep the chart on smartfox data reload #}
+<div class="row">
+    <div class="small-12 medium-6 columns">
+        <canvas id="currentPowerCanvas" ></canvas>
+    </div>
+    <div class="small-12 medium-6 columns">
+        <canvas id="energyDayCanvas" ></canvas>
+    </div>
+    <script>
+        function updateChartCallback(chart, data, color)
+        {
+            if (data) {
+                dataArr = JSON.parse(data);
+            } else {
+                dataArr = [];
+            }
+            if (color) {
+                colorArr = JSON.parse(color);
+            } else {
+                colorArr = [];
+            }
+            
+            updateChart(charts[chart], dataArr, colorArr);
+        }
+        function updateChart(chart, dataArr, colorArr)
+        {
+            for (var i = 0; i < dataArr.length; i++) {
+                chart.data.datasets[i].data = [dataArr[i]];
+                if (typeof(colorArr[i]) !== 'undefined') {
+                    if (dataArr[i] < 0) {
+                        colorIndex = 0;
+                    } else {
+                        colorIndex = 1;
+                    }
+                    chart.data.datasets[i].borderColor = [colorArr[i][colorIndex]];
+                    chart.data.datasets[i].backgroundColor = [colorArr[i][colorIndex]];
+                }
+            }
+            chart.update();
+        }
+
+        var charts = new Object();
+
+        // currentPower
+        charts.currentPower = new Chart(document.getElementById("currentPowerCanvas").getContext('2d'), {
+            type: 'bar',
+            data: { 
+                datasets: [
+                {
+                    label: '{% trans %}label.smartfox.int_power{% endtrans %}'
+                },
+                {
+                    label: '{% trans %}label.smartfox.pv_power{% endtrans %}'
+                },
+                {
+                    label: '{% trans %}label.smartfox.net_power{% endtrans %}'
+                }
+                ]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: 'W',
+                            fontColor: "#546372"
+                        }
+                    }]
+                },
+                animation: false
+            }
+        });
+
+        // energyDay
+        charts.energyDay = new Chart(document.getElementById("energyDayCanvas").getContext('2d'), {
+            type: 'bar',
+            data: {
+                datasets: [
+                {
+                    label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
+                    backgroundColor: ['blue'],
+                    borderColor: ['blue']
+                },
+                {
+                    label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
+                    backgroundColor: ['red'],
+                    borderColor: ['red']
+                }
+                ]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: 'kWh',
+                            fontColor: "#546372"
+                        }
+                    }]
+                },
+                animation: false
+            }
+        });
+    </script>
+</div>
+{% endif %}
+
