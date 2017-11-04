@@ -21,12 +21,13 @@ class EdiMaxConnector
         $this->connectors = $connectors;
     }
 
-    public function getAllStati()
+    public function getAll()
     {
         $results = [];
         foreach ($this->connectors['edimax'] as $device) {
             $status = $this->getStatus($device);
             $results[] = [
+                'ip' => $device['ip'],
                 'name' => $device['name'],
                 'status' => $status,
             ];
@@ -40,11 +41,9 @@ class EdiMaxConnector
             case 1:
                 // turn it on
                 return $this->setOn($this->connectors['edimax'][$deviceId]);
-                break;
             case 0:
                 // turn it off
                 return $this->setOff($this->connectors['edimax'][$deviceId]);
-                break;
         }
         // no known command
         return false;

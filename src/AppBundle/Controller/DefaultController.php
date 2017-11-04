@@ -18,7 +18,7 @@ class DefaultController extends Controller
             'smartFoxChart' => true,
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll(),
-            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllStati(),
+            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
         ];
 
         // render the template
@@ -59,6 +59,7 @@ class DefaultController extends Controller
         $currentStat = [
             'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
+            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
         ];
 
         // render the template
