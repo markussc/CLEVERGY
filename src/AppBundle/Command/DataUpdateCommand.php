@@ -3,6 +3,7 @@
 namespace AppBundle\Command;
 
 use AppBundle\Entity\EdiMaxDataStore;
+use AppBundle\Entity\SmartFoxDataStore;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -41,6 +42,15 @@ class DataUpdateCommand extends ContainerAwareCommand
             $edimaxEntity->setData($edimax['status']['val']);
             $em->persist($edimaxEntity);
         }
+        // smartfox
+        $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
+        $smartfoxEntity = new SmartFoxDataStore();
+        $smartfoxEntity->setTimestamp(new \DateTime('now'));
+        $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
+        $smartfoxEntity->setData($smartfox);
+        $em->persist($smartfoxEntity);
+
+        // write to database
         $em->flush();
     }
 }

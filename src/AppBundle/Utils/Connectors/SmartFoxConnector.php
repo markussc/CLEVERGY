@@ -12,11 +12,13 @@ class SmartFoxConnector
 {
     protected $browser;
     protected $basePath;
+    protected $ip;
 
     public function __construct(\Buzz\Browser $browser, Array $connectors)
     {
         $this->browser = $browser;
-        $this->basePath = 'http://' . $connectors['smartfox']['ip'];
+        $this->ip = $connectors['smartfox']['ip'];
+        $this->basePath = 'http://' . $this->ip;
     }
     public function getPower()
     {
@@ -32,5 +34,10 @@ class SmartFoxConnector
         $responseArr = json_decode($responseJson, true);
 
         return $responseArr;
+    }
+
+    public function getIp()
+    {
+        return $this->ip;
     }
 }
