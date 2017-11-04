@@ -52,7 +52,7 @@ class PcoWebConnector
             'cpStatus' => $cpStatus,
             'ppStatus' => $ppStatus,
             'preTemp' => $responseArrAnalog['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
-            'backTemp' => $responseArrAnalog['PCO']['ANALOG']['VARIABLE'][5]['VALUE'],
+            'backTemp' => $responseArrAnalog['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
         ];
     }
 }
