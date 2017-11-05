@@ -16,14 +16,21 @@ class DefaultController extends Controller
         $currentStat = [
             'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
             'smartFoxChart' => true,
-            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
+            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
+        ];
+
+        $em = $this->getDoctrine()->getManager();
+
+        $history = [
+            'smartFox' => $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()),
         ];
 
         // render the template
         return $this->render('default/index.html.twig', [
             'currentStat' => $currentStat,
+            'history' => $history,
         ]);
     }
 

@@ -174,4 +174,14 @@ class EdiMaxConnector
         $json  = json_encode($ob);
         return json_decode($json, true);
     }
+
+    public function getConfig($ip)
+    {
+        foreach ($this->connectors['edimax'] as $device) {
+            if ($device['ip'] == $ip) {
+                return $device;
+            }
+        }
+        return null;
+    }
 }

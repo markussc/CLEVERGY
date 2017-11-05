@@ -29,6 +29,10 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
+    AppBundle\Utils\:
+        resource: '../../src/AppBundle/Utils'
+        public: true
+
     AppBundle\Utils\Connectors\:
         resource: '../../src/AppBundle/Utils/Connectors'
         public: true

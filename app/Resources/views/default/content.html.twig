@@ -68,6 +68,11 @@
     <div class="small-12 medium-6 columns">
         <canvas id="energyDayCanvas" ></canvas>
     </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <canvas id="twentyFourPowerCanvas" ></canvas>
+    </div>
     <script>
         function updateChartCallback(chart, data, color)
         {
@@ -84,6 +89,7 @@
             
             updateChart(charts[chart], dataArr, colorArr);
         }
+
         function updateChart(chart, dataArr, colorArr)
         {
             for (var i = 0; i < dataArr.length; i++) {
@@ -143,13 +149,11 @@
                 datasets: [
                 {
                     label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
-                    backgroundColor: ['blue'],
-                    borderColor: ['blue']
+                    backgroundColor: ['blue']
                 },
                 {
                     label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
-                    backgroundColor: ['red'],
-                    borderColor: ['red']
+                    backgroundColor: ['red']
                 }
                 ]
             },
@@ -169,7 +173,55 @@
                 animation: false
             }
         });
+
+        // 24hPower
+        charts.twentyFourPower = new Chart(document.getElementById("twentyFourPowerCanvas").getContext('2d'), {
+            type: 'line',
+            data: { 
+                datasets: [
+                {
+                    label: '{% trans %}label.smartfox.net_power{% endtrans %}',
+                    backgroundColor: ['#660066'],
+                    data: [
+                    {% for sfData in history['smartFox'] %}
+                        {
+                            x: new Date("{{ sfData.timestamp|date("c") }}"),
+                            y: {{ sfData.getData()['power_io'] }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                }
+                ]
+            },
+            options: {
+                elements: {
+                    point: {
+                        radius: 0 
+                    } 
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: 'W',
+                            fontColor: "#546372"
+                        }
+                    }],
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                minute: 'H:m'
+                            }
+                        }
+                    }]
+                },
+                animation: false
+            }
+        });
     </script>
 </div>
 {% endif %}
-
