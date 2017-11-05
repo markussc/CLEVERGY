@@ -2,6 +2,8 @@
 
 namespace AppBundle\Utils\Connectors;
 
+use Doctrine\ORM\EntityManager;
+
 /**
  * Connector to retrieve data from the SmartFox device
  * For information regarding SmartFox refer to www.smartfox.at
@@ -10,22 +12,22 @@ namespace AppBundle\Utils\Connectors;
  */
 class SmartFoxConnector
 {
+    protected $em;
     protected $browser;
     protected $basePath;
     protected $ip;
 
-    public function __construct(\Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
     {
+        $this->em = $em;
         $this->browser = $browser;
         $this->ip = $connectors['smartfox']['ip'];
         $this->basePath = 'http://' . $this->ip;
     }
-    public function getPower()
-    {
-        $responseJson = $this->browser->get($this->basePath . '/power')->getContent();
-        $responseArr = json_decode($responseJson, true);
 
-        return $responseArr;
+    public function getAllLatest()
+    {
+        return $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
     }
 
     public function getAll()

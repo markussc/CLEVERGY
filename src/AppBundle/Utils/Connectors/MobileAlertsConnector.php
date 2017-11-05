@@ -2,6 +2,7 @@
 
 namespace AppBundle\Utils\Connectors;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -12,14 +13,29 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class MobileAlertsConnector
 {
+    protected $em;
     protected $browser;
     protected $basePath;
     protected $connectors;
 
-    public function __construct(\Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
     {
+        $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
+    }
+
+    /**
+     * Reads the latest available data from the database
+     * @return array
+     */
+    public function getAllLatest()
+    {
+        $data = [];
+        foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+            $data[$sensorId] = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+        }
+        return $data;
     }
 
     /**

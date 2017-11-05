@@ -73,5 +73,42 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // write to database
         $em->flush();
+
+        // execute auto actions
+        $this->autoActions();
+    }
+
+    /**
+     * Based on the available values in the DB, decide whether any commands should be sent to attached devices
+     */
+    private function autoActions()
+    {
+        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
+        // get current net_power
+        $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+        $netPower = $smartfox['power_io'];
+
+        if ($netPower) {
+            if ($avgPower > 0) {
+                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
+                    // check if the device is on and allowed to be turned off
+                    if ($edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 0);
+                        break;
+                    }
+                }
+            }
+        } else {
+            // if curren net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+            foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
+                // check if the device is off, compare the required power with the current and average power over the last 10 minutes and check if the device is allowed to be turned on
+                if (!$edimax['status']['val'] && $edimax['nominalPower'] < -1*$netPower && $edimax['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
+                    break;
+                }
+            }
+        }
     }
 }

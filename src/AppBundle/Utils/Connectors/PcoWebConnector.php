@@ -2,6 +2,8 @@
 
 namespace AppBundle\Utils\Connectors;
 
+use Doctrine\ORM\EntityManager;
+
 /**
  * Connector to retrieve data from the PCO Web device
  * For information refer to www.careluk.com
@@ -10,15 +12,22 @@ namespace AppBundle\Utils\Connectors;
  */
 class PcoWebConnector
 {
+    protected $em;
     protected $browser;
     protected $basePath;
     protected $ip;
 
-    public function __construct(\Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
     {
+        $this->em = $em;
         $this->browser = $browser;
         $this->ip = $connectors['pcoweb']['ip'];
         $this->basePath = 'http://' . $this->ip;
+    }
+
+    public function getAllLatest()
+    {
+        return $this->em->getRepository('AppBundle:PcoWebDataStore')->getLatest($this->ip);
     }
 
     public function getAll()

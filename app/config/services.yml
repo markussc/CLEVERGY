@@ -32,7 +32,7 @@ services:
     AppBundle\Utils\Connectors\:
         resource: '../../src/AppBundle/Utils/Connectors'
         public: true
-        arguments: ["@buzz", "%connectors%"]
+        arguments: ["@doctrine.orm.entity_manager", "@buzz", "%connectors%"]
 
     # add more services, or override services that need manual wiring
     # AppBundle\Service\ExampleService:

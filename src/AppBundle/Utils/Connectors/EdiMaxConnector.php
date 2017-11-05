@@ -2,7 +2,7 @@
 
 namespace AppBundle\Utils\Connectors;
 
-use RobStiles\EdiPlug\EdiPlug;
+use Doctrine\ORM\EntityManager;
 
 /**
  * Connector to retrieve data from EdiMax devices
@@ -12,13 +12,33 @@ use RobStiles\EdiPlug\EdiPlug;
  */
 class EdiMaxConnector
 {
+    protected $em;
     protected $browser;
     protected $connectors;
 
-    public function __construct(\Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
     {
+        $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
+    }
+
+    /**
+     * Reads the latest available data from the database
+     * @return array
+     */
+    public function getAllLatest()
+    {
+        $results = [];
+        foreach ($this->connectors['edimax'] as $device) {
+            $results[] = [
+                'ip' => $device['ip'],
+                'name' => $device['name'],
+                'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
+                'nominalPower' => $device['nominalPower'],
+            ];
+        }
+        return $results;
     }
 
     public function getAll()
@@ -49,10 +69,40 @@ class EdiMaxConnector
         return false;
     }
 
+    public function switchOK($deviceId)
+    {
+        // get current status
+        $currentStatus = $this->getStatus($this->connectors['edimax'][$deviceId])['val'];
+
+        // get latest timestamp with opposite status
+        $oldStatus = $this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($this->connectors['edimax'][$deviceId]['ip'], ($currentStatus + 1)%2);
+        if (count($oldStatus) == 1) {
+            $oldTimestamp = $oldStatus[0]->getTimestamp();
+
+            // calculate time diff
+            $now = new \DateTime('now');
+            $diff = $oldTimestamp->diff($now)->format('%i');
+            if ($diff > 10) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function getStatus($device)
     {
         $r = $this->queryEdiMax($device, 'status');
         if (!empty($r) && array_key_exists('CMD', $r) && array_key_exists('Device.System.Power.State', $r['CMD']) && $r['CMD']['Device.System.Power.State'] == 'ON') {
+            return $this->createStatus(1);
+        } else {
+            return $this->createStatus(0);
+        }
+    }
+
+    private function createStatus($status)
+    {
+        if ($status) {
             return [
                 'label' => 'label.device.status.on',
                 'val' => 1,
