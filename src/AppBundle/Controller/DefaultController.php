@@ -25,6 +25,8 @@ class DefaultController extends Controller
 
         $history = [
             'smartFox' => $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()),
+            'pcoWeb' => $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp()),
+            'mobileAlerts' => $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)),
         ];
 
         // render the template

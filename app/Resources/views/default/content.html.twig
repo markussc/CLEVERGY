@@ -73,6 +73,11 @@
     <div class="small-12 columns">
         <canvas id="twentyFourPowerCanvas" ></canvas>
     </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <canvas id="twentyFourTemperaturesCanvas" ></canvas>
+    </div>
     <script>
         function updateChartCallback(chart, data, color)
         {
@@ -207,6 +212,82 @@
                         scaleLabel:{
                             display: true,
                             labelString: 'W',
+                            fontColor: "#546372"
+                        }
+                    }],
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                minute: 'H:m'
+                            }
+                        }
+                    }]
+                },
+                animation: false
+            }
+        });
+
+        // 24hTemperatures
+        charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
+            type: 'line',
+            data: { 
+                datasets: [
+                {
+                    label: '{% trans %}label.pco.water_temp{% endtrans %}',
+                    borderColor: ['blue'],
+                    fill: false,
+                    data: [
+                    {% for pwData in history['pcoWeb'] %}
+                        {
+                            x: new Date("{{ pwData.timestamp|date("c") }}"),
+                            y: {{ pwData.getData()['waterTemp'] }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                },
+                {
+                    label: '{% trans %}label.pco.outside_temp{% endtrans %}',
+                    borderColor: ['orange'],
+                    fill: false,
+                    data: [
+                    {% for pwData in history['pcoWeb'] %}
+                        {
+                            x: new Date("{{ pwData.timestamp|date("c") }}"),
+                            y: {{ pwData.getData()['outsideTemp'] }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                },
+                {
+                    label: '{{ history['mobileAlerts'][0].getData()[1]['label'] }}',
+                    borderColor: ['red'],
+                    fill: false,
+                    data: [
+                    {% for maData in history['mobileAlerts'] %}
+                        {
+                            x: new Date("{{ maData.timestamp|date("c") }}"),
+                            y: {{ maData.getData()[1]['value'] }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                }
+                ]
+            },
+            options: {
+                elements: {
+                    point: {
+                        radius: 0 
+                    } 
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: '°C',
                             fontColor: "#546372"
                         }
                     }],

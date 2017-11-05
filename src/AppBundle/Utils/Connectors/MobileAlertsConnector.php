@@ -191,4 +191,16 @@ class MobileAlertsConnector
 
         return $responseArr;
     }
+
+    public function getId($index)
+    {
+        $i = 0;
+        foreach ($this->connectors['mobilealerts']['sensors'] as $id => $conf) {
+            if ($index == $i) {
+                return $id;
+            }
+        }
+
+        return null;
+    }
 }
