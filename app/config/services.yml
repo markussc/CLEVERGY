@@ -32,6 +32,8 @@ services:
     AppBundle\Utils\:
         resource: '../../src/AppBundle/Utils'
         public: true
+        arguments:
+            $energyLowRate: "%energy_low_rate%"
 
     AppBundle\Utils\Connectors\:
         resource: '../../src/AppBundle/Utils/Connectors'

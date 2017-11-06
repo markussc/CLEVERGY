@@ -46,5 +46,13 @@ parameters:
                 name: 'Plug 1'
                 username: admin
                 password: 1234
+                nominalPower: 500 # max. expected power in Watt consumed by the device
+                lowRateOn:
+                    'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                forceOn:
+                    'mobilealerts:XXXXXXXXXXXX:4': '>72'
         openweathermap:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
+    energy_low_rate:
+        start: 21  # hour (24h-format) when the lower energy tariff starts
+        end: 7      # hour (24h format) when the lower energy tariff ends

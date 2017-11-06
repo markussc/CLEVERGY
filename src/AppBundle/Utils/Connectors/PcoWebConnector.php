@@ -104,4 +104,21 @@ class PcoWebConnector
             return 'label.device.status.off';
         }
     }
+
+    public function ppModeToInt($mode)
+    {
+        switch ($mode) {
+            case 'label.pco.ppmode.summer':
+                return self::MODE_SUMMER;
+            case 'label.pco.ppmode.auto':
+                return self::MODE_AUTO;
+            case 'label.pco.ppmode.holiday':
+                return self::MODE_HOLIDAY;
+            case 'label.pco.ppmode.party':
+                return self::MODE_PARTY;
+            case 'label.pco.ppmode.2nd':
+                return self::MODE_2ND;
+        }
+        return -1;
+    }
 }

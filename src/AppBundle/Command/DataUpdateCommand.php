@@ -6,6 +6,7 @@ use AppBundle\Entity\EdiMaxDataStore;
 use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
 use AppBundle\Entity\MobileAlertsDataStore;
+use AppBundle\Utils\Connectors\PcoWebConnector;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -74,14 +75,17 @@ class DataUpdateCommand extends ContainerAwareCommand
         // write to database
         $em->flush();
 
-        // execute auto actions
-        $this->autoActions();
+        // execute auto actions for edimax devices
+        $this->autoActionsEdimax();
+
+        // execute auto actions for PcoWeb heating
+        $this->autoActionsPcoWeb();
     }
 
     /**
-     * Based on the available values in the DB, decide whether any commands should be sent to attached devices
+     * Based on the available values in the DB, decide whether any commands should be sent to attached edimax devices
      */
-    private function autoActions()
+    private function autoActionsEdimax()
     {
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
         $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
@@ -94,8 +98,8 @@ class DataUpdateCommand extends ContainerAwareCommand
             if ($avgPower > 0) {
                 // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
                 foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
-                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                    if ($this->forceOn($deviceId, $edimax)) {
+                    // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                    if ($this->forceOnEdimax($deviceId, $edimax)) {
                         continue;
                     }
                     // check if the device is on and allowed to be turned off
@@ -109,7 +113,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             // if curren net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
             foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
                 // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                if ($this->forceOn($deviceId, $edimax)) {
+                if ($this->forceOnEdimax($deviceId, $edimax)) {
                     continue;
                 }
                 // check if the device is off, compare the required power with the current and average power over the last 10 minutes and check if the device is allowed to be turned on
@@ -121,7 +125,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
     }
 
-    private function forceOn($deviceId, $edimax)
+    private function forceOnEdimax($deviceId, $edimax)
     {
         $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax);
         if ($forceOn && !$edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
@@ -130,6 +134,49 @@ class DataUpdateCommand extends ContainerAwareCommand
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Based on the available values in the DB, decide whether any commands should be sent to attached pcoweb heating
+     */
+    private function autoActionsPcoWeb()
+    {
+        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        // depending on the energy tariff, set the threshold values
+        if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate()) {
+            // we are on low energy rate
+            $minInsideTemp = 20;
+            $maxInsideTemp = 21;
+            $minWaterTemp = 45;
+            $maxWaterTemp = 52;
+        } else {
+            // we are on high energy rate
+            $minInsideTemp = 19;
+            $maxInsideTemp = 20;
+            $minWaterTemp = 38;
+            $maxWaterTemp = 45;
+        }
+
+        // readout current temperature values
+        $mobilealerts = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+        $mobilealerts = $mobilealerts[$this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)];
+        $insideTemp = $mobilealerts[1]['value']; // this is assumed to be the first value of the first mobilealerts sensor
+        $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
+        $waterTemp = $pcoweb['waterTemp'];
+        $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
+
+        if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+            // we are below expected values (at least for one of the criteria), switch to auto mode
+            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand(PcoWebConnector::MODE_AUTO);
+            }
+        }
+        if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
+            // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
+            if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand(PcoWebConnector::MODE_SUMMER);
+            }
         }
     }
 }

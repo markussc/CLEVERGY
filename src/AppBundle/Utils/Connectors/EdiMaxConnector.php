@@ -82,7 +82,7 @@ class EdiMaxConnector
             // calculate time diff
             $now = new \DateTime('now');
             $diff = $oldTimestamp->diff($now)->format('%i');
-            if ($diff > 10) {
+            if ($diff > 15) {
                 return true;
             }
         }
