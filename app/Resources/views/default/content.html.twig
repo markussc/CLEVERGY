@@ -46,7 +46,7 @@
         <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }} °C</li>
         <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }} °C</li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="contentModal">{{ currentStat['pcoWeb']['ppMode']|trans }}</a></li>
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|trans != currentStat['pcoWeb']['ppStatus']|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|trans }}){% endtrans %}</li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|trans != currentStat['pcoWeb']['ppStatus']|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|trans }}){% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }} °C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }} °C</li>
     </ul>
