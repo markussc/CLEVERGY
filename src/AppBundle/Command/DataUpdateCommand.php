@@ -142,7 +142,6 @@ class DataUpdateCommand extends ContainerAwareCommand
      */
     private function autoActionsPcoWeb()
     {
-        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
         // depending on the energy tariff, set the threshold values
         if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate()) {
             // we are on low energy rate
@@ -167,15 +166,17 @@ class DataUpdateCommand extends ContainerAwareCommand
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
         if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
-            // we are below expected values (at least for one of the criteria), switch to auto mode
+            // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
             if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand(PcoWebConnector::MODE_AUTO);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
             }
         }
         if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
             // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
             if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand(PcoWebConnector::MODE_SUMMER);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 14);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
             }
         }
     }

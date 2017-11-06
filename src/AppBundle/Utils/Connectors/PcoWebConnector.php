@@ -50,6 +50,7 @@ class PcoWebConnector
             'effDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][8]['VALUE'],
             'cpStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][50]['VALUE']),
             'ppStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][42]['VALUE']),
+            'ppStatusMsg' => $this->ppStatusMsgToString($responseArr['PCO']['ANALOG']['VARIABLE'][102]['VALUE']*10),
             'ppMode' => $this->ppModeToString($responseArr['PCO']['INTEGER']['VARIABLE'][13]['VALUE']),
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
@@ -61,9 +62,17 @@ class PcoWebConnector
         return $this->ip;
     }
 
-    public function executeCommand($command)
+    public function executeCommand($type, $command)
     {
-        $this->setMode($command);
+        switch ($type) {
+            case 'mode':
+                $this->setMode($command);
+                break;
+            case 'hwHysteresis':
+                $this->setHotWaterHysteresis($command);
+                break;
+        }
+        
     }
 
     private function setMode($mode)
@@ -77,6 +86,19 @@ class PcoWebConnector
 
         // post request
         $response = $this->browser->post($this->basePath . '/http/index/j_modus.html', $headers, http_build_query($data))->getContent();
+    }
+
+    private function setHotWaterHysteresis($value)
+    {
+        // set mode
+        $data['?script:var(0,3,44,2,15)'] = $value;
+ 
+        $headers = [
+            'Content-Type' => 'application/x-www-form-urlencoded;',
+        ];
+
+        // post request
+        $response = $this->browser->post($this->basePath . '/http/index/j_settings_hotwater.html', $headers, http_build_query($data))->getContent();
     }
 
     private function ppModeToString($mode)
@@ -120,5 +142,27 @@ class PcoWebConnector
                 return self::MODE_2ND;
         }
         return -1;
+    }
+
+    public function ppStatusMsgToString($ppStatusMsg)
+    {
+        switch ($ppStatusMsg) {
+            case 0:
+                return "Aus";
+            case 1:
+                return "Aus";
+            case 2:
+                return "Heizen";
+            case 3:
+                return "Schwimmbad";
+            case 4:
+                return "Warmwasser";
+            case 5:
+                return "Kühlen";
+            case 30:
+                return "Sperre";
+            default:
+                return "andere";
+        }
     }
 }
