@@ -46,4 +46,5 @@ parameters:
                 name: 'Plug 1'
                 username: admin
                 password: 1234
-                
+        openweathermap:
+            api_key: this_is_the_api_key_retrieved_from_openweathermap.org
