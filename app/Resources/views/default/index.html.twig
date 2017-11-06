@@ -6,6 +6,10 @@
 
 {% block javascripts %}
     <script>
+        $(function() {
+            $('.select2').select2();
+        });
+
         (function worker() {
             $.ajax({
               url: '{{ path('refresh') }}', 
@@ -32,6 +36,14 @@
             $body.addClass("loading");
             // send command
             var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
+            url = url.replace('command_val', JSON.stringify(command));
+            window.location = url;
+        }
+
+        function sendPPMode(mode)
+        {
+            var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
+            var command = ['pcoweb', mode];
             url = url.replace('command_val', JSON.stringify(command));
             window.location = url;
         }

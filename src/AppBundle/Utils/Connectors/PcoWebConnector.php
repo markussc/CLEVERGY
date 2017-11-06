@@ -61,7 +61,12 @@ class PcoWebConnector
         return $this->ip;
     }
 
-    public function setMode($mode)
+    public function executeCommand($command)
+    {
+        $this->setMode($command);
+    }
+
+    private function setMode($mode)
     {
         // set mode
         $data['?script:var(0,3,14,0,4)'] = $mode;
@@ -79,6 +84,8 @@ class PcoWebConnector
         switch ($mode) {
             case self::MODE_SUMMER:
                 return 'label.pco.ppmode.summer';
+            case self::MODE_AUTO:
+                return 'label.pco.ppmode.auto';
             case self::MODE_HOLIDAY:
                 return 'label.pco.ppmode.holiday';
             case self::MODE_PARTY:

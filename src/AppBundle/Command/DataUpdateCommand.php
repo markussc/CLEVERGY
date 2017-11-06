@@ -85,11 +85,12 @@ class DataUpdateCommand extends ContainerAwareCommand
     {
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
         $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
+
         // get current net_power
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
         $netPower = $smartfox['power_io'];
 
-        if ($netPower) {
+        if ($netPower > 0) {
             if ($avgPower > 0) {
                 // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
                 foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {

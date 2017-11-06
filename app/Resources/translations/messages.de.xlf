@@ -74,6 +74,14 @@
                 <source>label.pco.ppmode.auto</source>
                 <target>Auto</target>
             </trans-unit>
+            <trans-unit id="label.pco.select_pp_mode_lead">
+                <source>label.pco.select_pp_mode_lead</source>
+                <target>Betriebsmodus auswählen</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.save">
+                <source>label.pco.ppmode.save</source>
+                <target>Aktivieren</target>
+            </trans-unit>
             <trans-unit id="label.pco.ppmode.holiday">
                 <source>label.pco.ppmode.holiday</source>
                 <target>Ferien</target>

@@ -54,6 +54,8 @@ class DefaultController extends Controller
         switch ($command[0]) {
             case 'edimax':
                 return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
+            case 'pcoweb':
+                return $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand($command[1]);
         }
         // no known device
         return false;
