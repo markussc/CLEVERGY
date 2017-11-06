@@ -62,6 +62,30 @@
                 <source>label.pco.pp_status</source>
                 <target>Erdsondenpumpe</target>
             </trans-unit>
+            <trans-unit id="label.pco.pp_mode">
+                <source>label.pco.pp_mode</source>
+                <target>Modus Wärmepumpe</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.summer">
+                <source>label.pco.ppmode.summer</source>
+                <target>Sommer</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.auto">
+                <source>label.pco.ppmode.auto</source>
+                <target>Auto</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.holiday">
+                <source>label.pco.ppmode.holiday</source>
+                <target>Ferien</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.party">
+                <source>label.pco.ppmode.party</source>
+                <target>Party</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.2nd">
+                <source>label.pco.ppmode.2nd</source>
+                <target>Solar</target>
+            </trans-unit>
             <trans-unit id="label.smartfox.net_power">
                 <source>label.smartfox.net_power</source>
                 <target>Leistung Netz</target>

@@ -26,12 +26,13 @@
     <ul>
         <li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
         <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
+        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
         <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }} °C</li>
         <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }} °C</li>
-        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
+        <li>{% trans %}label.pco.pp_mode{% endtrans %}: {{ currentStat['pcoWeb']['ppMode']|trans }}</li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }} °C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }} °C</li>
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}</li>
     </ul>
 </div>
 {% endif %}
