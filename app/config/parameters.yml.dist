@@ -53,6 +53,8 @@ parameters:
                     'mobilealerts:XXXXXXXXXXXX:4': '>72'
         openweathermap:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
+            lat: 46.9
+            lon: 6.7
     energy_low_rate:
         start: 21  # hour (24h-format) when the lower energy tariff starts
         end: 7      # hour (24h format) when the lower energy tariff ends
