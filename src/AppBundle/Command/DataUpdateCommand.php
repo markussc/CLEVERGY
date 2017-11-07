@@ -75,6 +75,9 @@ class DataUpdateCommand extends ContainerAwareCommand
         // write to database
         $em->flush();
 
+        // openweathermap
+        $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->save5DayForecastToDb();
+
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
 
@@ -165,11 +168,20 @@ class DataUpdateCommand extends ContainerAwareCommand
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
+        // readout weather forecast (currently the cloudiness for the next mid-day hours period)
+        $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
+        if ($avgClouds < 50) {
+            // we expect clear sky in the next daylight period. this will give enough heat so we can skip heating and limit to warm water production.
+            $activatePpMode = PcoWebConnector::MODE_SUMMER;
+        } else {
+            $activatePpMode = PcoWebConnector::MODE_AUTO;
+        }
+
         if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
             // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
-            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+            if ($ppMode !== $activatePpMode) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $activatePpMode);
             }
         }
         if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
