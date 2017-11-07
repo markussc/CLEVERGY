@@ -180,7 +180,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
             // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
             if ($ppMode !== $activatePpMode) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 7);
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $activatePpMode);
             }
         }
