@@ -43,7 +43,7 @@
         function sendPPMode(mode)
         {
             var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
-            var command = ['pcoweb', mode];
+            var command = ['pcoweb', 'mode', mode];
             url = url.replace('command_val', JSON.stringify(command));
             window.location = url;
         }

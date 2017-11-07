@@ -174,9 +174,9 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
         if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
             // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
-            if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 14);
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+            if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
             }
         }
     }
