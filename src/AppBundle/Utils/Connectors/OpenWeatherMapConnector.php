@@ -22,6 +22,13 @@ class OpenWeatherMapConnector
         $this->config = $connectors['openweathermap'];
     }
 
+    public function getAllLatest()
+    {
+        return [
+          'cloudsNextDaylight' => $this->getRelevantCloudsNextDaylightPeriod(),  
+        ];
+    }
+
     public function save5DayForecastToDb($force = false)
     {
         $id = '5dayforecast';
@@ -78,6 +85,6 @@ class OpenWeatherMapConnector
             $cloudiness = 100;
         }
 
-        return $cloudiness;
+        return (int)$cloudiness;
     }
 }
