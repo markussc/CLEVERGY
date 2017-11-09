@@ -151,7 +151,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             $minInsideTemp = 20;
             $maxInsideTemp = 21;
             $minWaterTemp = 45;
-            $maxWaterTemp = 52;
+            $maxWaterTemp = 50;
         } else {
             // we are on high energy rate
             $minInsideTemp = 19;
