@@ -90,6 +90,10 @@
                 <source>label.smartfox.energy_in_day</source>
                 <target>Energy in Today</target>
             </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_next_daylight">
+                <source>label.openweathermap.clouds_next_daylight</source>
+                <target>Relevant Cloudiness</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -3,6 +3,7 @@
 namespace AppBundle\Command;
 
 use AppBundle\Entity\EdiMaxDataStore;
+use AppBundle\Entity\ConexioDataStore;
 use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
 use AppBundle\Entity\MobileAlertsDataStore;
@@ -54,6 +55,14 @@ class DataUpdateCommand extends ContainerAwareCommand
         $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
         $smartfoxEntity->setData($smartfox);
         $em->persist($smartfoxEntity);
+
+        // conexio
+        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(); // TODO: this currently returns an empty result, since auth does not work in command mode
+        $conexioEntity = new ConexioDataStore();
+        $conexioEntity->setTimestamp(new \DateTime('now'));
+        $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+        $conexioEntity->setData($conexio);
+        $em->persist($conexioEntity);
 
         // pcoweb
         $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
@@ -151,7 +160,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             $minInsideTemp = 20;
             $maxInsideTemp = 21;
             $minWaterTemp = 45;
-            $maxWaterTemp = 50;
+            $maxWaterTemp = 48;
         } else {
             // we are on high energy rate
             $minInsideTemp = 19;

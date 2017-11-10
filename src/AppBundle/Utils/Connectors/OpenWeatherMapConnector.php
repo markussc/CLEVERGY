@@ -64,19 +64,21 @@ class OpenWeatherMapConnector
         }
         $clouds = 0;
         $counter = 0;
-        foreach ($forecastData['list'] as $elem) {
-            $dateTime = new \DateTime();
-            $dateTime->setTimestamp($elem['dt']);
-            $now = new \DateTime('now');
-            if ($now->format('H') < 16) {
-                $relevantDay = new \DateTime('now');
-            } else {
-                $relevantDay = new \DateTime('tomorrow');
-            }
-            // we are interested in the hours between 10 and 16 only of the same and the next day
-            if ($dateTime->format('d') == $relevantDay->format('d') && $dateTime->format('H') > 9 && $dateTime->format('H') < 17) {
-                $clouds += $elem['clouds']['all'];
-                $counter++;
+        if (isset($forecastData['list'])) {
+            foreach ($forecastData['list'] as $elem) {
+                $dateTime = new \DateTime();
+                $dateTime->setTimestamp($elem['dt']);
+                $now = new \DateTime('now');
+                if ($now->format('H') < 16) {
+                    $relevantDay = new \DateTime('now');
+                } else {
+                    $relevantDay = new \DateTime('tomorrow');
+                }
+                // we are interested in the hours between 10 and 16 only of the same and the next day
+                if ($dateTime->format('d') == $relevantDay->format('d') && $dateTime->format('H') > 9 && $dateTime->format('H') < 17) {
+                    $clouds += $elem['clouds']['all'];
+                    $counter++;
+                }
             }
         }
         if ($counter) {

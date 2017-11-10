@@ -25,6 +25,10 @@ parameters:
             ip: 192.168.1.140
         pcoweb:
             ip: 192.168.178.20
+        conexio:
+            ip: 192.168.1.100
+            username: admin
+            password: 1234
         mobilealerts:
             phoneid: XXXXXXXXXXXX # the phone id is available in the settings of the Android / iOS app. Used for web-retrieval (currently used)
             sensors:

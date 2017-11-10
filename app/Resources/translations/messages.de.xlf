@@ -114,6 +114,10 @@
                 <source>label.smartfox.energy_in_day</source>
                 <target>Energiebezug heute</target>
             </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_next_daylight">
+                <source>label.openweathermap.clouds_next_daylight</source>
+                <target>Relevante Bewölkung</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

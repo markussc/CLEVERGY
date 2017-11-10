@@ -36,6 +36,16 @@
     </div>
 </div>
 {% endif %}
+{% if currentStat['conexio'] is defined %}
+<div class="small-12 medium-3 columns" id="conexio">
+    <h3>{% trans %}label.thermic{% endtrans %}</h3>
+    <ul>
+    {% for idx, val in currentStat['conexio'] %}
+        <li>{{ idx }}: {{ val}}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
 {% if currentStat['pcoWeb'] is defined %}
 <div class="small-12 medium-3 columns" id="pcoWeb">
     <h3>{% trans %}label.heating{% endtrans %}</h3>
@@ -56,6 +66,7 @@
 <div class="small-12 medium-3 columns" id="mobileAlerts">
     <h3>{% trans %}label.climate{% endtrans %}</h3>
     <ul>
+        <li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>
     {% for maSensor in currentStat['mobileAlerts'] %}
         {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
             <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>

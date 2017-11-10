@@ -159,7 +159,7 @@ class EdiMaxConnector
             'Content-Length' => strlen($data['xmlRequest'])
         ];
 
-        $this->browser->addListener(new \Buzz\Listener\DigestAuthListener($device['username'], $device['password']));
+        $this->browser->setListener(new \Buzz\Listener\DigestAuthListener($device['username'], $device['password']));
         $url = 'http://' . $device['ip'] . ':10000/smartplug.cgi';
         $response = $this->browser->post($url, $headers, 'xmlRequest='.$data['xmlRequest']);
 

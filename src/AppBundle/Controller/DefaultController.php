@@ -17,8 +17,10 @@ class DefaultController extends Controller
             'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
             'smartFoxChart' => true,
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
+            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
+            'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];
 
         $em = $this->getDoctrine()->getManager();
@@ -70,8 +72,10 @@ class DefaultController extends Controller
         $currentStat = [
             'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
+            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
+            'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];
 
         // render the template
