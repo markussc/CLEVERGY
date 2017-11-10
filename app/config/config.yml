@@ -38,6 +38,7 @@ twig:
     strict_variables: '%kernel.debug%'
     globals:
         locale: '%locale%'
+        connectors: '%connectors%'
 
 assetic:
     debug:          '%kernel.debug%'

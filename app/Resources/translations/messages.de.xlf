@@ -118,6 +118,10 @@
                 <source>label.openweathermap.clouds_next_daylight</source>
                 <target>Relevante Bewölkung</target>
             </trans-unit>
+            <trans-unit id="label.solarheat">
+                <source>label.solarheat</source>
+                <target>Solarthermie</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

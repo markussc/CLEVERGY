@@ -38,10 +38,10 @@
 {% endif %}
 {% if currentStat['conexio'] is defined %}
 <div class="small-12 medium-3 columns" id="conexio">
-    <h3>{% trans %}label.thermic{% endtrans %}</h3>
+    <h3>{% trans %}label.solarheat{% endtrans %}</h3>
     <ul>
-    {% for idx, val in currentStat['conexio'] %}
-        <li>{{ idx }}: {{ val}}</li>
+    {% for idx, sensor in connectors['conexio']['sensors'] %}
+        <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx] }} {{ sensor[1] }}</li>
     {% endfor %}
     </ul>
 </div>
