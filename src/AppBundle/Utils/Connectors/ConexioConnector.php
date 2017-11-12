@@ -95,11 +95,23 @@ class ConexioConnector
             }
             else if($i == 19)
             {
-                $data['qNow'] = $value;
+                $data['q-1'] = $value;
             }
             else if($i == 20)
             {
                 $data['q'] = $value;
+            }
+            else if($i == 21)
+            {
+                $data['solarpumphours'] = $value;
+            }
+            else if($i == 22)
+            {
+                $data['sp1_upper_ventil_hours'] = $value;
+            }
+            else
+            {
+                $data['undefined_index' . $i] = $value;
             }
         }
 

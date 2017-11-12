@@ -219,7 +219,7 @@
                     {% for sfData in history['smartFox'] %}
                         {
                             x: new Date("{{ sfData.timestamp|date("c") }}"),
-                            y: {{ sfData.getData()['power_io'] }}
+                            y: {{ sfData.getData()['power_io']|default(0) }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
@@ -300,6 +300,22 @@
                     {% endfor %}
                     ]
                 }
+                {% for idx, sensor in connectors['conexio']['sensors'] if sensor[2] is defined %}
+                ,{
+                    label: '{{ sensor[0] }}',
+                    borderColor: ['{{ sensor[2] }}'],
+                    fill: false,
+                    data: [
+                    {% for coData in history['conexio'] if coData.getData() %}
+                        {% if not loop.first %},{% endif %} 
+                        {
+                            x: new Date("{{ coData.timestamp|date('c') }}"),
+                            y: {{ coData.getData()[idx] }}
+                        }
+                    {% endfor %}
+                    ]
+                }
+                {% endfor %}
                 ]
             },
             options: {
