@@ -71,6 +71,9 @@ class PcoWebConnector
             case 'hwHysteresis':
                 $this->setHotWaterHysteresis($command);
                 break;
+            case 'hc1':
+                $this->setHeatCircle1($command);
+                break;
         }
         
     }
@@ -99,6 +102,11 @@ class PcoWebConnector
 
         // post request
         $response = $this->browser->post($this->basePath . '/http/index/j_settings_hotwater.html', $headers, http_build_query($data))->getContent();
+    }
+
+    private function setHeatCircle1($value)
+    {
+        $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
     }
 
     private function ppModeToString($mode)

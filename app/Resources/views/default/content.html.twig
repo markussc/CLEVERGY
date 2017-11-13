@@ -310,7 +310,7 @@
                         {% if not loop.first %},{% endif %} 
                         {
                             x: new Date("{{ coData.timestamp|date('c') }}"),
-                            y: {{ coData.getData()[idx] }}
+                            y: {{ coData.getData()[idx]|default(0) }}
                         }
                     {% endfor %}
                     ]

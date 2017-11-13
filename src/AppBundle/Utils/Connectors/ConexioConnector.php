@@ -109,11 +109,10 @@ class ConexioConnector
             {
                 $data['sp1_upper_ventil_hours'] = $value;
             }
-            else
-            {
-                $data['undefined_index' . $i] = $value;
-            }
         }
+        // add calculated current power (delta between S6 and S7 multiplied by a constant [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
+        $data['p'] = ($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100;
+        
 
         return $data;
     }

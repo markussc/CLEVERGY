@@ -180,17 +180,18 @@ class DataUpdateCommand extends ContainerAwareCommand
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
         if ($avgClouds < 50) {
-            // we expect clear sky in the next daylight period. this will give enough heat so we can skip heating and limit to warm water production.
-            $activatePpMode = PcoWebConnector::MODE_SUMMER;
+            // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 20);
         } else {
-            $activatePpMode = PcoWebConnector::MODE_AUTO;
+            //$activatePpMode = PcoWebConnector::MODE_AUTO;
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
         }
 
         if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
             // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
-            if ($ppMode !== $activatePpMode) {
+            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 7);
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $activatePpMode);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
             }
         }
         if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
