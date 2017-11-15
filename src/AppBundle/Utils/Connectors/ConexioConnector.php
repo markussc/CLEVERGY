@@ -111,7 +111,7 @@ class ConexioConnector
             }
         }
         // add calculated current power (delta between S6 and S7 multiplied by a constant [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
-        $data['p'] = ($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100;
+        $data['p'] = (int)(($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100/2); // unclear why the division by 2 is required
         
 
         return $data;
