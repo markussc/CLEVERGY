@@ -161,18 +161,22 @@ class EdiMaxConnector
 
         $this->browser->setListener(new \Buzz\Listener\DigestAuthListener($device['username'], $device['password']));
         $url = 'http://' . $device['ip'] . ':10000/smartplug.cgi';
-        $response = $this->browser->post($url, $headers, 'xmlRequest='.$data['xmlRequest']);
+        try {
+            $response = $this->browser->post($url, $headers, 'xmlRequest='.$data['xmlRequest']);
 
-        $statusCode = $response->getStatusCode();
-        if ($statusCode == 401) {
-            $responseXml = $this->browser->post($url, $headers, 'xmlRequest='.$data['xmlRequest'])->getContent();
-        } else {
-            $responseXml = $response->getContent();
+            $statusCode = $response->getStatusCode();
+            if ($statusCode == 401) {
+                $responseXml = $this->browser->post($url, $headers, 'xmlRequest='.$data['xmlRequest'])->getContent();
+            } else {
+                $responseXml = $response->getContent();
+            }
+
+            $ob = simplexml_load_string($responseXml);
+            $json  = json_encode($ob);
+            return json_decode($json, true);
+        } catch (\Exception $e) {
+            return false;
         }
-
-        $ob = simplexml_load_string($responseXml);
-        $json  = json_encode($ob);
-        return json_decode($json, true);
     }
 
     public function getConfig($ip)
