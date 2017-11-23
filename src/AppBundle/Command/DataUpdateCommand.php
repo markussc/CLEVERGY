@@ -179,12 +179,11 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
-        if ($avgClouds < 50) {
+        if ($avgClouds < 30) {
             // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 20);
-        } else {
-            //$activatePpMode = PcoWebConnector::MODE_AUTO;
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
+        } else {
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
         if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
