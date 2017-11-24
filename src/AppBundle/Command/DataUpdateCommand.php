@@ -57,7 +57,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $em->persist($smartfoxEntity);
 
         // conexio
-        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(); // TODO: this currently returns an empty result, since auth does not work in command mode
+        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll();
         $conexioEntity = new ConexioDataStore();
         $conexioEntity->setTimestamp(new \DateTime('now'));
         $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
@@ -154,8 +154,9 @@ class DataUpdateCommand extends ContainerAwareCommand
      */
     private function autoActionsPcoWeb()
     {
+        $energyLowRate = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate();
         // depending on the energy tariff, set the threshold values
-        if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate()) {
+        if ($energyLowRate) {
             // we are on low energy rate
             $minInsideTemp = 20;
             $maxInsideTemp = 21;
@@ -177,6 +178,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
+        // get conexio values
+        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
+        $heatStorageLowTemp = $conexio['s2'];
+
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
         if ($avgClouds < 30) {
@@ -186,18 +191,22 @@ class DataUpdateCommand extends ContainerAwareCommand
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
-        if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
-            // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
-            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 7);
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+        if ($energyLowRate && $heatStorageLowTemp < 25) {
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+        } else {
+            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+                // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
+                if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 7);
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                }
             }
-        }
-        if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
-            // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
-            if ($ppMode !== PcoWebConnector::MODE_2ND) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+            if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
+                // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
+                if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                }
             }
         }
     }
