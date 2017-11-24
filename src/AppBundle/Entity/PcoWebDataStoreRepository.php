@@ -25,6 +25,18 @@ class PcoWebDataStoreRepository extends EntityRepository
         }
     }
 
+    public function getLatestNotStatus($ip, $notStatus)
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.jsonValue NOT LIKE :status')
+            ->orderBy('e.timestamp', 'desc')
+            ->setParameter('ip', $ip)
+            ->setParameter('status', '%"ppMode":"' . $notStatus . '"%')
+            ->setMaxResults(1);
+        return $qb->getQuery()->getResult();
+    }
+
     public function getHistoryLast24h($ip)
     {
         $start = new \DateTime();

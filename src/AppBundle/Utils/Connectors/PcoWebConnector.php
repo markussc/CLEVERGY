@@ -66,7 +66,10 @@ class PcoWebConnector
     {
         switch ($type) {
             case 'mode':
-                $this->setMode($command);
+                // mode must not be switched too frequently
+                if ($this->switchOK()) {
+                    $this->setMode($command);
+                }
                 break;
             case 'hwHysteresis':
                 $this->setHotWaterHysteresis($command);
@@ -172,5 +175,27 @@ class PcoWebConnector
             default:
                 return "andere";
         }
+    }
+
+    public function switchOK()
+    {
+        // get current status
+        $currentStatus = $this->getAllLatest()['ppMode'];
+
+        // get latest timestamp with opposite status
+        $oldStatus = $this->em->getRepository('AppBundle:PcoWebDataStore')->getLatestNotStatus($this->getIp(), $currentStatus);
+
+        if (count($oldStatus) == 1) {
+            $oldTimestamp = $oldStatus[0]->getTimestamp();
+
+            // calculate time diff
+            $now = new \DateTime('now');
+            $diff = $oldTimestamp->diff($now)->format('%i');
+            if ($diff > 10) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

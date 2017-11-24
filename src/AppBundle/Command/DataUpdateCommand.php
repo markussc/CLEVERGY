@@ -155,6 +155,8 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function autoActionsPcoWeb()
     {
         $energyLowRate = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate();
+        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $avgPvPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getPvPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         // depending on the energy tariff, set the threshold values
         if ($energyLowRate) {
             // we are on low energy rate
@@ -191,8 +193,20 @@ class DataUpdateCommand extends ContainerAwareCommand
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
-        if ($energyLowRate && $heatStorageLowTemp < 25) {
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+        // heat storige is low. Warm up on high PV power or low energy rate
+        if ($heatStorageLowTemp < 25 && $ppMode !== PcoWebConnector::MODE_AUTO) {
+            $activateHeating = false;
+            if ($avgPvPower > 1900) {
+                $activateHeating = true;
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+            }
+            if ($energyLowRate) {
+                $activateHeating = true;
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 70);
+            }
+            if ($activateHeating) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+            }
         } else {
             if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
                 // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis

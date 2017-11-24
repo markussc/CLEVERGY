@@ -27,6 +27,16 @@ class SmartFoxDataStoreRepository extends EntityRepository
 
     public function getNetPowerAverage($ip, $minutes)
     {
+        return $this->getAverage($ip, $minutes, 'power_io');
+    }
+
+    public function getPvPowerAverage($ip, $minutes)
+    {
+        return $this->getAverage($ip, $minutes, 'PvPower');
+    }
+
+    private function getAverage($ip, $minutes, $idx)
+    {
         $date = new \DateTime();
         $interval = new \DateInterval("PT" . $minutes . "M");
         $interval->invert = 1;
@@ -43,7 +53,12 @@ class SmartFoxDataStoreRepository extends EntityRepository
         $avgPower = 0;
         $avgIndex = 0;
         foreach ($results as $res) {
-            $avgPower += $res->getData()['power_io'];
+            if ($idx === 'PvPower') {
+                $newValue = $res->getData()[$idx][0];
+            } else {
+                $newValue = $res->getData()[$idx];
+            }
+            $avgPower += $newValue;
             $avgIndex++;
         }
         if ($avgIndex) {
