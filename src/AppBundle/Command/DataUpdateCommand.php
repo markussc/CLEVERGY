@@ -194,7 +194,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
 
         // heat storige is low. Warm up on high PV power or low energy rate
-        if ($heatStorageLowTemp < 25 && $ppMode !== PcoWebConnector::MODE_AUTO) {
+        if ($heatStorageLowTemp < 25) {
             $activateHeating = false;
             if ($avgPvPower > 1900) {
                 $activateHeating = true;
@@ -204,7 +204,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $activateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 70);
             }
-            if ($activateHeating) {
+            if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
             }
         } else {
