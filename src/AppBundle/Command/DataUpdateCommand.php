@@ -182,7 +182,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // get conexio values
         $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
-        $heatStorageLowTemp = $conexio['s2'];
+        $heatStorageMidTemp = ($conexio['s3'] + $conexio['s2'])/2;
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
@@ -193,21 +193,26 @@ class DataUpdateCommand extends ContainerAwareCommand
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
+        $setMode = false;
         // heat storige is low. Warm up on high PV power or low energy rate
-        if ($heatStorageLowTemp < 25) {
+        if ($heatStorageMidTemp < 33) {
             $activateHeating = false;
             if ($avgPvPower > 1900) {
                 $activateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                $setMode = true;
             }
             if ($energyLowRate) {
                 $activateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 70);
+                $setMode = true;
             }
             if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
             }
-        } else {
+        }
+        // mode is not influenced by PV power or energy rate. Action should be taken based on temperature thresholds
+        if (!$setMode) {
             if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
                 // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
                 if ($ppMode !== PcoWebConnector::MODE_AUTO) {
