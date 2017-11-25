@@ -50,7 +50,6 @@
 <div class="small-12 medium-3 columns" id="pcoWeb">
     <h3>{% trans %}label.heating{% endtrans %}</h3>
     <ul>
-        <li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>
         <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
         <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
         <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }} °C</li>
@@ -67,6 +66,7 @@
     <h3>{% trans %}label.climate{% endtrans %}</h3>
     <ul>
         <li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>
+        {% if currentStat['pcoWeb'] is defined %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
     {% for maSensor in currentStat['mobileAlerts'] %}
         {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
             <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
