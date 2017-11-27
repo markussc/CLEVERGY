@@ -157,20 +157,16 @@ class DataUpdateCommand extends ContainerAwareCommand
         $energyLowRate = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate();
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
         $avgPvPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getPvPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
-        // depending on the energy tariff, set the threshold values
-        if ($energyLowRate) {
-            // we are on low energy rate
-            $minInsideTemp = 20;
-            $maxInsideTemp = 21;
-            $minWaterTemp = 45;
-            $maxWaterTemp = 48;
-        } else {
-            // we are on high energy rate
-            $minInsideTemp = 19;
-            $maxInsideTemp = 20;
-            $minWaterTemp = 38;
-            $maxWaterTemp = 45;
+        $nowDateTime = new \DateTime();
+        $diffToEndOfLowEnergyRate = $this->getContainer()->getParameter('energy_low_rate')['end'] - $nowDateTime->format('h');
+        if ($diffToEndOfLowEnergyRate < 0) {
+            $diffToEndOfLowEnergyRate += 24;
         }
+
+        // set the emergency temperature levels
+            // we are on low energy rate
+            $minWaterTemp = 38;
+            $minInsideTemp = 19.2;
 
         // readout current temperature values
         $mobilealerts = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
@@ -193,40 +189,61 @@ class DataUpdateCommand extends ContainerAwareCommand
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
-        $setMode = false;
+        $activateHeating = false;
+        $deactivateHeating = false;
         // heat storige is low. Warm up on high PV power or low energy rate
         if ($heatStorageMidTemp < 33) {
-            $activateHeating = false;
             if ($avgPvPower > 1900) {
                 $activateHeating = true;
+                // we make sure the hwHysteresis is set to the default value
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                $setMode = true;
-            }
-            if ($energyLowRate) {
-                $activateHeating = true;
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 70);
-                $setMode = true;
             }
             if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
             }
         }
-        // mode is not influenced by PV power or energy rate. Action should be taken based on temperature thresholds
-        if (!$setMode) {
-            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
-                // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
-                if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 7);
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-                }
+
+        // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
+        if ($energyLowRate) {           
+            if ($diffToEndOfLowEnergyRate <= 2 && $diffToEndOfLowEnergyRate > 1) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                $activateHeating = true;
             }
-            if ($insideTemp > $maxInsideTemp && $waterTemp > $maxWaterTemp) {
-                // the max levels for both criteria are reached, we can switch to summer mode. TODO: optimize summer / off modes
-                if ($ppMode !== PcoWebConnector::MODE_2ND) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
-                }
+            if ($activateHeating && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
             }
+        }
+
+        // end of energy low rate is near. switch to MODE_2ND as soon as possible and reset the hwHysteresis to default value
+        if ($diffToEndOfLowEnergyRate <= 1) {
+            $deactivateHeating = true;
+            if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+            }
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+        }
+
+        // apply emergency actions
+        if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+            // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
+            $activateHeating = true;
+            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+            }
+        }
+        if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 1) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
+            // the minimum requirements are fulfilled, no heating is required during high energy rate
+            $deactivateHeating = true;
+            if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+            }
+        }
+
+        // make sure heating is deactivated if no required, during low energy rate
+        if (!$activateHeating && $energyLowRate && $ppMode !== PcoWebConnector::MODE_2ND) {
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
         }
     }
 }
