@@ -203,14 +203,26 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
         }
 
-        // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
-        if ($energyLowRate) {           
+        // default cases for energy low rate
+        if ($energyLowRate) {  
+            $warmWater = false;
             if ($diffToEndOfLowEnergyRate <= 2 && $diffToEndOfLowEnergyRate > 1) {
+                // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                $warmWater = true;
                 $activateHeating = true;
             }
-            if ($activateHeating && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+            if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                // warm water generation only
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+            }
+            if (!$warmWater && $heatStorageMidTemp < 36) {
+                // combined heating
+                $activateHeating = true;
+                if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                }
             }
         }
 
