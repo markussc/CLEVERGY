@@ -32,7 +32,12 @@ class ConexioConnector
     public function getAllLatest()
     {
         $ip = $this->connectors['conexio']['ip'];
-        return $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
+        $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
+        if (count($latest)) {
+             $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+        }
+
+        return $latest;
     }
 
     /**
@@ -40,7 +45,7 @@ class ConexioConnector
      * 
      * Retrieves the available data using the webinterface
      */
-    public function getAll()
+    public function getAll($calculatedData = false)
     {
         // digest authentication
         $this->browser->setListener(new \Buzz\Listener\DigestAuthListener($this->connectors['conexio']['username'], $this->connectors['conexio']['password']));
@@ -54,6 +59,11 @@ class ConexioConnector
         }
 
         $data = $this->extractData($response);
+
+        // if requested, add calculated data
+        if ($calculatedData) {
+            $data['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+        }
 
         return $data;
     }
@@ -112,7 +122,6 @@ class ConexioConnector
         }
         // add calculated current power (delta between S6 and S7 multiplied by a constant [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
         $data['p'] = (int)(($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100/2); // unclear why the division by 2 is required
-        
 
         return $data;
     }

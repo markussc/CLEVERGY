@@ -32,7 +32,7 @@
     </div>
     <div class="chart" style="display:none;">
         <span class="chartId">energyDay</span>
-        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}]</span>
+        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['conexio']['energyToday'] }}]</span>
     </div>
 </div>
 {% endif %}
@@ -187,6 +187,10 @@
                 {
                     label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
                     backgroundColor: ['red']
+                },
+                {
+                    label: '{% trans %}label.conexio.energy_day{% endtrans %}',
+                    backgroundColor: ['orange']
                 }
                 ]
             },

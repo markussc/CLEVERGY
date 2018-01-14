@@ -122,6 +122,10 @@
                 <source>label.solarheat</source>
                 <target>Solarthermie</target>
             </trans-unit>
+            <trans-unit id="label.conexio.energy_day">
+                <source>label.conexio.energy_day</source>
+                <target>Ertrag Solarthermie heute</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
