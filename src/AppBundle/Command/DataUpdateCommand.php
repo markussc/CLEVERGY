@@ -193,7 +193,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $deactivateHeating = false;
         // heat storige is low. Warm up on high PV power or low energy rate
         if ($heatStorageMidTemp < 33) {
-            if ($avgPvPower > 1900) {
+            if ($avgPvPower > 1700) {
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to the default value
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
