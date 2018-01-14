@@ -29,6 +29,11 @@ parameters:
             ip: 192.168.1.100
             username: admin
             password: 1234
+            sensors:
+                s1:
+                    - Collector # name of the sensor
+                    - °C # unit
+                    - red # color used in charts (optional, if parameter is missing , sensor will not be visible in the chart (but values stored in the DB))
         mobilealerts:
             phoneid: XXXXXXXXXXXX # the phone id is available in the settings of the Android / iOS app. Used for web-retrieval (currently used)
             sensors:

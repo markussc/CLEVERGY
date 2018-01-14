@@ -88,7 +88,7 @@
 </div>
 {% endif %}
 </div>
-{% if (refresh is not defined or not refresh) and currentStat['smartFoxChart'] is defined %} {# find correct way to keep the chart on smartfox data reload #}
+{% if (refresh is not defined or not refresh) and currentStat['smartFoxChart'] is defined %}
 <div class="row">
     <div class="small-12 medium-6 columns">
         <canvas id="currentPowerCanvas" ></canvas>
@@ -310,10 +310,15 @@
                         {% if not loop.first %},{% endif %} 
                         {
                             x: new Date("{{ coData.timestamp|date('c') }}"),
-                            y: {{ coData.getData()[idx]|default(0) }}
+                            y: {{ coData.getData()[idx]|default(0) / sensor[3]|default(1) }}
                         }
                     {% endfor %}
-                    ]
+                    ],
+                    {% if sensor[1] == "W" %}
+                        yAxisID: "y-axis-W"
+                    {% else %}
+                        yAxisID: "y-axis-°C"
+                    {% endif %}
                 }
                 {% endfor %}
                 ]
@@ -325,16 +330,36 @@
                     } 
                 },
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
+                    yAxes: [
+                        {
+                            position: "left",
+                            id: "y-axis-°C",
+                            ticks: {
+                                beginAtZero:true
+                            },
+                            scaleLabel:{
+                                display: true,
+                                labelString: '°C',
+                                fontColor: "#546372"
+                            }
                         },
-                        scaleLabel:{
-                            display: true,
-                            labelString: '°C',
-                            fontColor: "#546372"
+                        {
+                            position: "right",
+                            id: "y-axis-W",
+                            ticks: {
+                                beginAtZero:true
+                            },
+                            scaleLabel:{
+                                display: true,
+                                labelString: 'W',
+                                fontColor: "#546372"
+                            },
+                            // grid line settings
+                            gridLines: {
+                                drawOnChartArea: false, // only want the grid lines for one axis to show up
+                            },
                         }
-                    }],
+                    ],
                     xAxes: [{
                         type: 'time',
                         time: {
