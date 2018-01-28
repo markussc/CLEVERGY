@@ -1,5 +1,18 @@
-<div id="contentModal" class="reveal" data-reveal>
-  <h2 id="modalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h2>
+<div id="pcowebModeModal" class="reveal" data-reveal>
+  <h2 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h2>
+  <p class="lead">{% trans %}label.pco.select_pcoweb_mode_lead{% endtrans %}</p>
+  <select class="select2" id="pcowebModeSelect">
+      <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
+      <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
+  </select>
+  <hr>
+  <button type="button" onclick="sendCommand(['settings', 'mode', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
+  <button class="close-button" data-close aria-label="Close modal" type="button">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div id="ppModeModal" class="reveal" data-reveal>
+  <h2 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h2>
   <p class="lead">{% trans %}label.pco.select_pp_mode_lead{% endtrans %}</p>
   <select class="select2" id="ppModeSelect">
       <option value="0">{% trans %}label.pco.ppmode.summer{% endtrans %}</option>
@@ -9,7 +22,7 @@
       <option value="4">{% trans %}label.pco.ppmode.2nd{% endtrans %}</option>
   </select>
   <hr>
-  <button type="button" onclick="sendPPMode($('#ppModeSelect').val())">{% trans %}label.pco.ppmode.save{% endtrans %}</button>
+  <button type="button" onclick="sendCommand(['pcoweb', 'mode', $('#ppModeSelect').val()])">{% trans %}label.pco.ppmode.save{% endtrans %}</button>
   <button class="close-button" data-close aria-label="Close modal" type="button">
     <span aria-hidden="true">&times;</span>
   </button>
@@ -54,7 +67,8 @@
         <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
         <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }} °C</li>
         <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }} °C</li>
-        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="contentModal">{{ currentStat['pcoWeb']['ppMode']|trans }}</a></li>
+        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|trans }}</a></li>
+        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|trans }}</a></li>
         <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|trans != currentStat['pcoWeb']['ppStatus']|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|trans }}){% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }} °C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }} °C</li>
@@ -81,7 +95,7 @@
     <ul>
     {% for key, device in currentStat['edimax'] %}
         <li>
-            {{ device['name']}}: <a href="javascript:void(0);" onclick="sendCommandToDevice(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])">{{ device['status']['label']|trans }}</a>
+            {{ device['name']}}: <a href="javascript:void(0);" onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])">{{ device['status']['label']|trans }}</a>
         </li>
     {% endfor %}
     </ul>

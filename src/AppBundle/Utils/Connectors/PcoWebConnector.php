@@ -3,6 +3,7 @@
 namespace AppBundle\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
+use AppBundle\Entity\Settings;
 
 /**
  * Connector to retrieve data from the PCO Web device
@@ -44,6 +45,7 @@ class PcoWebConnector
         $responseArr = json_decode($json, true);
 
         return [
+            'mode' => $this->pcowebModeToString($this->em->getRepository('AppBundle:Settings')->getModePcoWeb()),
             'outsideTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][0]['VALUE'],
             'waterTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][2]['VALUE'],
             'setDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][53]['VALUE'],
@@ -125,6 +127,17 @@ class PcoWebConnector
                 return 'label.pco.ppmode.party';
             case self::MODE_2ND:
                 return 'label.pco.ppmode.2nd';
+        }
+        return 'undefined';
+    }
+
+    private function pcowebModeToString($mode)
+    {
+        switch ($mode) {
+            case Settings::MODE_AUTO:
+                return 'label.pco.mode.auto';
+            case Settings::MODE_MANUAL_PCOWEB:
+                return 'label.pco.mode.manual';
         }
         return 'undefined';
     }

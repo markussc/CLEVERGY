@@ -23,27 +23,20 @@
                 });
               },
               complete: function() {
-                // Schedule the next request when the current one's complete
+               // Schedule the next request when the current one's complete
                setTimeout(worker, 1000);
               }
             });
         })();
 
-        function sendCommandToDevice(command)
+        function sendCommand(command)
         {
             // show spinner
             $body = $("body");
             $body.addClass("loading");
+
             // send command
             var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
-            url = url.replace('command_val', JSON.stringify(command));
-            window.location = url;
-        }
-
-        function sendPPMode(mode)
-        {
-            var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
-            var command = ['pcoweb', 'mode', mode];
             url = url.replace('command_val', JSON.stringify(command));
             window.location = url;
         }

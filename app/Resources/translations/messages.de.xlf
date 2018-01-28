@@ -126,6 +126,26 @@
                 <source>label.conexio.energy_day</source>
                 <target>Ertrag Solarthermie heute</target>
             </trans-unit>
+            <trans-unit id="label.pco.mode">
+                <source>label.pco.mode</source>
+                <target>Modus Heizungssteuerung</target>
+            </trans-unit>
+            <trans-unit id="label.pco.mode.auto">
+                <source>label.pco.mode.auto</source>
+                <target>Auto</target>
+            </trans-unit>
+            <trans-unit id="label.pco.mode.manual">
+                <source>label.pco.mode.manual</source>
+                <target>Manuell</target>
+            </trans-unit>
+            <trans-unit id="label.pco.mode.save">
+                <source>label.pco.mode.save</source>
+                <target>Aktivieren</target>
+            </trans-unit>
+            <trans-unit id="label.pco.select_pcoweb_mode_lead">
+                <source>label.pco.select_pcoweb_mode_lead</source>
+                <target>Steuerungsmodus wählen</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

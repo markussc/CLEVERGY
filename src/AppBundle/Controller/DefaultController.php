@@ -59,6 +59,13 @@ class DefaultController extends Controller
                 return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
             case 'pcoweb':
                 return $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
+            case 'settings':
+                if ($command[1] == 'mode') {
+                    $settings = $this->getDoctrine()->getManager()->getRepository('AppBundle:Settings')->findOneById(1);
+                    $settings->setMode($settings->getMode() | $command[2]);
+                    $this->getDoctrine()->getManager()->flush();
+                    return true;
+                }
         }
         // no known device
         return false;

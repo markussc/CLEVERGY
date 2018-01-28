@@ -2,6 +2,7 @@
 
 namespace AppBundle\Command;
 
+use AppBundle\Entity\Settings;
 use AppBundle\Entity\EdiMaxDataStore;
 use AppBundle\Entity\ConexioDataStore;
 use AppBundle\Entity\PcoWebDataStore;
@@ -90,8 +91,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
 
-        // execute auto actions for PcoWeb heating
-        $this->autoActionsPcoWeb();
+        // execute auto actions for PcoWeb heating, if we are in auto mode
+        if (Settings::MODE_MANUAL_PCOWEB != $em->getRepository('AppBundle:Settings')->getModePcoWeb()) {
+            $this->autoActionsPcoWeb();
+        }
     }
 
     /**
