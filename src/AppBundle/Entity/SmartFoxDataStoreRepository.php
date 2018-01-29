@@ -95,4 +95,32 @@ class SmartFoxDataStoreRepository extends EntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function getEnergyToday($ip)
+    {
+        $today = new \DateTime('today'); // today at midnight (00:00)
+        $qbMidnight = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp < :today')
+            ->setParameter('ip', $ip)
+            ->setParameter('today', $today)
+            ->orderBy('e.timestamp', 'desc')
+            ->setMaxResults(1);
+        $midnight = $qbMidnight->getQuery()->getResult();
+
+        $qbNow = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp >= :today')
+            ->setParameter('ip', $ip)
+            ->setParameter('today', $today)
+            ->orderBy('e.timestamp', 'desc')
+            ->setMaxResults(1);
+        $now = $qbNow->getQuery()->getResult();
+
+        if (!count($midnight)) {
+            $midnight = $now;
+        }
+
+        return $now[0]->getData()['PvEnergy'][0] - $midnight[0]->getData()['PvEnergy'][0];
+    }
 }

@@ -15,7 +15,7 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         $currentStat = [
-            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true),
             'smartFoxChart' => true,
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
             'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
@@ -87,7 +87,7 @@ class DefaultController extends Controller
     public function refreshAction(Request $request)
     {
         $currentStat = [
-            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(),
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true),
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
             'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),

@@ -36,6 +36,7 @@
         <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }} W</li> {# TODO: sum up all PV powers #}
         <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(', ') }} W</li>
         <li>{% trans %}label.smartfox.net_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] }} W</li>
+        <li>{% trans %}label.smartfox.self_usage_today{% endtrans %}: {{ ((currentStat['smartFox']['energyToday'] - currentStat['smartFox']['day_energy_out']) / currentStat['smartFox']['energyToday'] * 100) |round}} %</li>
     </ul>
     </div>
     <div class="chart" style="display:none;">
@@ -45,7 +46,7 @@
     </div>
     <div class="chart" style="display:none;">
         <span class="chartId">energyDay</span>
-        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['conexio']['energyToday'] }}]</span>
+        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}, {{ currentStat['conexio']['energyToday'] }}]</span>
     </div>
 </div>
 {% endif %}
@@ -203,6 +204,10 @@
                     backgroundColor: ['red']
                 },
                 {
+                    label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
+                    backgroundColor: ['yellow']
+                },
+                {
                     label: '{% trans %}label.conexio.energy_day{% endtrans %}',
                     backgroundColor: ['orange']
                 }
@@ -238,6 +243,19 @@
                         {
                             x: new Date("{{ sfData.timestamp|date("c") }}"),
                             y: {{ sfData.getData()['power_io']|default(0) }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                },
+                {
+                    label: '{% trans %}label.smartfox.pv_power{% endtrans %}',
+                    borderColor: ['yellow'],
+                    fill: false,
+                    data: [
+                    {% for sfData in history['smartFox'] %}
+                        {
+                            x: new Date("{{ sfData.timestamp|date("c") }}"),
+                            y: {{ sfData.getData()['PvPower'][0]|default(0) }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]

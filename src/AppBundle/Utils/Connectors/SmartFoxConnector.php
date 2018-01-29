@@ -27,13 +27,23 @@ class SmartFoxConnector
 
     public function getAllLatest()
     {
-        return $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
+        $latest = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
+        if (count($latest)) {
+            $latest['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
+        }
+
+        return $latest;
     }
 
-    public function getAll()
+    public function getAll($calculatedData = false)
     {
         $responseJson = $this->browser->get($this->basePath . '/all')->getContent();
         $responseArr = json_decode($responseJson, true);
+
+        // if requested, add calculated data
+        if ($calculatedData) {
+            $responseArr['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
+        }
 
         return $responseArr;
     }

@@ -146,6 +146,14 @@
                 <source>label.pco.select_pcoweb_mode_lead</source>
                 <target>Steuerungsmodus wählen</target>
             </trans-unit>
+            <trans-unit id="label.smartfox.energy_pv_day">
+                <source>label.smartfox.energy_pv_day</source>
+                <target>Ertrag Photovoltaik heute</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.self_usage_today">
+                <source>label.smartfox.self_usage_today</source>
+                <target>Eigenverbrauch heute</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
