@@ -24,7 +24,7 @@ abstract class DataStoreBase
      */
     private $id;
 
-        /**
+    /**
      * @var string
      *
      * @ORM\Column(type="string", nullable=false)

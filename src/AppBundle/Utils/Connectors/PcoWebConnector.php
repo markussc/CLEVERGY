@@ -45,7 +45,7 @@ class PcoWebConnector
         $responseArr = json_decode($json, true);
 
         return [
-            'mode' => $this->pcowebModeToString($this->em->getRepository('AppBundle:Settings')->getModePcoWeb()),
+            'mode' => $this->pcowebModeToString($this->em->getRepository('AppBundle:Settings')->getMode($this->getIp())),
             'outsideTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][0]['VALUE'],
             'waterTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][2]['VALUE'],
             'setDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][53]['VALUE'],
@@ -136,7 +136,7 @@ class PcoWebConnector
         switch ($mode) {
             case Settings::MODE_AUTO:
                 return 'label.pco.mode.auto';
-            case Settings::MODE_MANUAL_PCOWEB:
+            case Settings::MODE_MANUAL:
                 return 'label.pco.mode.manual';
         }
         return 'undefined';

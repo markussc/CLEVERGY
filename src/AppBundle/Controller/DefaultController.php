@@ -2,6 +2,7 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,8 +62,16 @@ class DefaultController extends Controller
                 return $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
             case 'settings':
                 if ($command[1] == 'mode') {
-                    $settings = $this->getDoctrine()->getManager()->getRepository('AppBundle:Settings')->findOneById(1);
-                    $settings->setMode($settings->getMode() | $command[2]);
+                    if ($command[2] == 'pcoweb') {
+                        $connectorId = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp();
+                        $settings = $this->getDoctrine()->getManager()->getRepository('AppBundle:Settings')->findOneByConnectorId($connectorId);
+                        if (!$settings) {
+                            $settings = new Settings();
+                            $settings->setConnectorId($connectorId);
+                            $this->getDoctrine()->getManager()->persist($settings);
+                        }
+                        $settings->setMode($command[3]);
+                    }
                     $this->getDoctrine()->getManager()->flush();
                     return true;
                 }

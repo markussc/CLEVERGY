@@ -6,7 +6,7 @@
       <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
   </select>
   <hr>
-  <button type="button" onclick="sendCommand(['settings', 'mode', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
+  <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
   <button class="close-button" data-close aria-label="Close modal" type="button">
     <span aria-hidden="true">&times;</span>
   </button>

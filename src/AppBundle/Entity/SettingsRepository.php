@@ -9,11 +9,17 @@ use Doctrine\ORM\EntityRepository;
  */
 class SettingsRepository extends EntityRepository
 {
-    public function getModePcoWeb()
+    public function getMode($connectorId)
     {
         $qb = $this->createQueryBuilder('s')
+            ->where('s.connectorId = :connectorId')
+            ->setParameter('connectorId', $connectorId)
             ->setMaxResults(1);
-        $settings = $qb->getQuery()->getSingleResult();
-        return ($settings->getMode() & Settings::MODE_MANUAL_PCOWEB);
+        $settings = $qb->getQuery()->getOneOrNullResult();
+        if ($settings) {
+            return ($settings->getMode());
+        } else {
+            return Settings::MODE_AUTO;
+        }
     }
 }

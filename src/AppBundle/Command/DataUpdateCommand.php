@@ -92,7 +92,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $this->autoActionsEdimax();
 
         // execute auto actions for PcoWeb heating, if we are in auto mode
-        if (Settings::MODE_MANUAL_PCOWEB != $em->getRepository('AppBundle:Settings')->getModePcoWeb()) {
+        if (Settings::MODE_MANUAL != $em->getRepository('AppBundle:Settings')->getMode($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp())) {
             $this->autoActionsPcoWeb();
         }
     }

@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="AppBundle\Entity\SettingsRepository")
@@ -30,6 +31,39 @@ class Settings
     }
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=false)
+     * @Assert\NotBlank()
+     */
+    private $connectorId;
+
+    /**
+     * Set the id of the connector.
+     *
+     * @param string $connectorId
+     *
+     * @return $this
+     */
+    public function setConnectorId($connectorId)
+    {
+        $this->connectorId = $connectorId;
+
+        return $this;
+    }
+
+
+    /**
+     * Get the id of the connector.
+     *
+     * @return string
+     */
+    public function getConnectorId()
+    {
+        return $this->connectorId;
+    }
+
+    /**
      * @var int
      *
      * @ORM\Column(type="integer")
@@ -37,7 +71,7 @@ class Settings
     private $mode;
 
     const MODE_AUTO = 0;
-    const MODE_MANUAL_PCOWEB = 1;
+    const MODE_MANUAL = 1;
 
     /**
      * Set mode
