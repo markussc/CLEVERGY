@@ -158,6 +158,8 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function autoActionsPcoWeb()
     {
         $energyLowRate = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate();
+        $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+        $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
         $avgPvPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getPvPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         $nowDateTime = new \DateTime();
@@ -194,9 +196,21 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         $activateHeating = false;
         $deactivateHeating = false;
+
+        if ($smartFoxHighPower) {
+            // SmartFox has force heating flag set
+            $activateHeating = true;
+            // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
+            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+            }
+        }
+
         // heat storige is low. Warm up on high PV power or low energy rate
         if ($heatStorageMidTemp < 33) {
-            if ($avgPvPower > 1700) {
+            if ($avgPvPower > 1700 && !$smartFoxHighPower) {
+                // detected high PV power (independently of current use), but SmartFox is not forcing heating
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to the default value
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
@@ -255,7 +269,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
         }
 
-        // make sure heating is deactivated if no required, during low energy rate
+        // make sure heating is deactivated if not required, during low energy rate
         if (!$activateHeating && $energyLowRate && $ppMode !== PcoWebConnector::MODE_2ND) {
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
