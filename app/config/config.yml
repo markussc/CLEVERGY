@@ -39,6 +39,7 @@ twig:
     globals:
         locale: '%locale%'
         connectors: '%connectors%'
+        instancetitle: '%instancetitle%'
 
 assetic:
     debug:          '%kernel.debug%'

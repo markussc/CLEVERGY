@@ -24,11 +24,17 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
-        <div class="row">
-            <div class="small-12 columns">
+        <div class="top-bar" id="top-bar">
+            <div class="top-bar-left">
                 <ul class="menu menu-hover-lines">
                     <li><a href="{{ path('homepage') }}"><img src="{{ asset('oshans_icon.svg') }}" style="height:50px;"></a></li>
-                    <li class="active"><a href="{{ path('homepage') }}">OSHANS Center</a></li>
+                    <li><a href="{{ path('homepage') }}"><strong>{{ instancetitle }}</strong></a></li>
+                </ul>
+            </div>
+            <div class="top-bar-right align-center" style="padding-top:15px;">
+                <ul class="menu menu-hover-lines">
+                    <li {% if activePage == 'homepage' %}class="active"{% endif %}><a href="{{ path('homepage') }}">{% trans %}label.dashboard.header{% endtrans %}</a></li>
+                    <li class="align-right{% if activePage == 'history' %} active{% endif %}"><a href="{{ path('history') }}">{% trans %}label.history.header{% endtrans %}</a></li>
                 </ul>
             </div>
         </div>
@@ -36,7 +42,7 @@
         <div class="footer row">
             <div class="small-12 columns footer-body">
                 <hr />
-                <span class='footer-text'>Open Smart Home Automation, Notification and Statistics Center</span>
+                <span class='footer-text'>OSHANS - Open Smart Home Automation, Notification and Statistics Center</span>
             </div>
         </div>
         <div class="modal"><!-- Place at bottom of page --></div>
