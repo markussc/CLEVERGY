@@ -161,6 +161,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         $avgPvPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getPvPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         $nowDateTime = new \DateTime();
         $diffToEndOfLowEnergyRate = $this->getContainer()->getParameter('energy_low_rate')['end'] - $nowDateTime->format('h');
@@ -207,8 +208,8 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
         }
 
-        // heat storige is low. Warm up on high PV power or low energy rate
-        if ($heatStorageMidTemp < 33) {
+        // heat storige is low or net power is deeply negative. Warm up on high PV power or low energy rate
+        if ($heatStorageMidTemp < 33 || $avgPower < 2000) {
             if ($avgPvPower > 1700 && !$smartFoxHighPower) {
                 // detected high PV power (independently of current use), but SmartFox is not forcing heating
                 $activateHeating = true;
