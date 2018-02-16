@@ -154,6 +154,14 @@
                 <source>label.smartfox.self_usage_today</source>
                 <target>Eigenverbrauch heute</target>
             </trans-unit>
+            <trans-unit id="label.dashboard.header">
+                <source>label.dashboard.header</source>
+                <target>Übersicht</target>
+            </trans-unit>
+            <trans-unit id="label.history.header">
+                <source>label.history.header</source>
+                <target>Historie</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

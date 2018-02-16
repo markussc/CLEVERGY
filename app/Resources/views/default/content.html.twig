@@ -1,32 +1,34 @@
-<div id="pcowebModeModal" class="reveal" data-reveal>
-  <h2 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h2>
-  <p class="lead">{% trans %}label.pco.select_pcoweb_mode_lead{% endtrans %}</p>
-  <select class="select2" id="pcowebModeSelect">
-      <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
-      <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
-  </select>
-  <hr>
-  <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
-  <button class="close-button" data-close aria-label="Close modal" type="button">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<div id="ppModeModal" class="reveal" data-reveal>
-  <h2 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h2>
-  <p class="lead">{% trans %}label.pco.select_pp_mode_lead{% endtrans %}</p>
-  <select class="select2" id="ppModeSelect">
-      <option value="0">{% trans %}label.pco.ppmode.summer{% endtrans %}</option>
-      <option value="1">{% trans %}label.pco.ppmode.auto{% endtrans %}</option>
-      <option value="2">{% trans %}label.pco.ppmode.holiday{% endtrans %}</option>
-      <option value="3">{% trans %}label.pco.ppmode.party{% endtrans %}</option>
-      <option value="4">{% trans %}label.pco.ppmode.2nd{% endtrans %}</option>
-  </select>
-  <hr>
-  <button type="button" onclick="sendCommand(['pcoweb', 'mode', $('#ppModeSelect').val()])">{% trans %}label.pco.ppmode.save{% endtrans %}</button>
-  <button class="close-button" data-close aria-label="Close modal" type="button">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
+{% if is_granted('ROLE_OWNER') %}
+    <div id="pcowebModeModal" class="reveal" data-reveal>
+      <h2 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h2>
+      <p class="lead">{% trans %}label.pco.select_pcoweb_mode_lead{% endtrans %}</p>
+      <select class="select2" id="pcowebModeSelect">
+          <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
+          <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
+      </select>
+      <hr>
+      <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
+      <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div id="ppModeModal" class="reveal" data-reveal>
+      <h2 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h2>
+      <p class="lead">{% trans %}label.pco.select_pp_mode_lead{% endtrans %}</p>
+      <select class="select2" id="ppModeSelect">
+          <option value="0">{% trans %}label.pco.ppmode.summer{% endtrans %}</option>
+          <option value="1">{% trans %}label.pco.ppmode.auto{% endtrans %}</option>
+          <option value="2">{% trans %}label.pco.ppmode.holiday{% endtrans %}</option>
+          <option value="3">{% trans %}label.pco.ppmode.party{% endtrans %}</option>
+          <option value="4">{% trans %}label.pco.ppmode.2nd{% endtrans %}</option>
+      </select>
+      <hr>
+      <button type="button" onclick="sendCommand(['pcoweb', 'mode', $('#ppModeSelect').val()])">{% trans %}label.pco.ppmode.save{% endtrans %}</button>
+      <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+{% endif %}
 <div class="row">
 {% if currentStat['smartFox'] is defined %}
 <div class="small-12 medium-3 columns" id="smartfoxOuter">
@@ -96,7 +98,7 @@
     <ul>
     {% for key, device in currentStat['edimax'] %}
         <li>
-            {{ device['name']}}: <a href="javascript:void(0);" onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])">{{ device['status']['label']|trans }}</a>
+            {{ device['name']}}: <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}>{{ device['status']['label']|trans }}</a>
         </li>
     {% endfor %}
     </ul>
