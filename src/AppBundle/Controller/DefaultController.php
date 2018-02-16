@@ -35,6 +35,7 @@ class DefaultController extends Controller
 
         // render the template
         return $this->render('default/index.html.twig', [
+            'activePage' => 'homepage',
             'currentStat' => $currentStat,
             'history' => $history,
         ]);
@@ -46,6 +47,9 @@ class DefaultController extends Controller
      */
     public function commandExecuteAction(Request $request, $command)
     {
+        // only owners are allowed to execute commands
+        $this->denyAccessUnlessGranted('ROLE_OWNER');
+
         // execute the command
         $this->executeCommand($command);
         // redirect to homepage
@@ -99,6 +103,38 @@ class DefaultController extends Controller
         return $this->render('default/content.html.twig', [
             'currentStat' => $currentStat,
             'refresh' => true,
+        ]);
+    }
+
+    /**
+     * @Route("/history", name="history")
+     */
+    public function historyAction(Request $request)
+    {
+        $currentStat = [
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true),
+            'smartFoxChart' => true,
+            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
+            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
+            'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
+            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
+            'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
+        ];
+
+        $em = $this->getDoctrine()->getManager();
+
+        $history = [
+            'smartFox' => $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()),
+            'pcoWeb' => $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp()),
+            'mobileAlerts' => $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)),
+            'conexio' => $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp()),
+        ];
+
+        // render the template
+        return $this->render('default/index.html.twig', [
+            'activePage' => 'history',
+            'currentStat' => $currentStat,
+            'history' => $history,
         ]);
     }
 }
