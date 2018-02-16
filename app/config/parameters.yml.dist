@@ -19,7 +19,7 @@ parameters:
     secret: ThisTokenIsNotSoSecretChangeIt
 
     locale: en
-
+    instancetitle: This Is My Home
     connectors:
         smartfox:
             ip: 192.168.1.140

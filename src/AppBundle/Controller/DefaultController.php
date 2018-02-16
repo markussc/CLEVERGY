@@ -47,6 +47,9 @@ class DefaultController extends Controller
      */
     public function commandExecuteAction(Request $request, $command)
     {
+        // only owners are allowed to execute commands
+        $this->denyAccessUnlessGranted('ROLE_OWNER');
+
         // execute the command
         $this->executeCommand($command);
         // redirect to homepage
