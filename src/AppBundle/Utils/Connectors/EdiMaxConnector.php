@@ -21,6 +21,8 @@ class EdiMaxConnector
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
+        // set timeout for buzz browser client
+        $this->browser->getClient()->setTimeout(3);
     }
 
     /**

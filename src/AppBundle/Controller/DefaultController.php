@@ -15,12 +15,12 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         $currentStat = [
-            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true),
+            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest(),
             'smartFoxChart' => true,
-            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll(),
-            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
+            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
+            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
-            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
+            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest(),
             'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];
 
