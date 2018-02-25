@@ -32,7 +32,8 @@ framework:
         cookie_path: "%session_cookie_path%"
     fragments: ~
     http_method_override: true
-    assets: ~
+    assets:
+        version: '201802251535'
     php_errors:
         log: true
 
