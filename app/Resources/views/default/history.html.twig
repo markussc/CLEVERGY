@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+   
+{% block body %}
+<div class="small-12 medium-6 columns">
+    <h4>{% trans %}label.energy{% endtrans %}</h4>
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>{% trans %}label.smartfox.pv{% endtrans %}</th>
+                <th>{% trans %}label.smartfox.in{% endtrans %}</th>
+                <th>{% trans %}label.smartfox.out{% endtrans %}</th>
+                <th>{% trans %}label.smartfox.usage{% endtrans %}</th>
+                <th>{% trans %}label.smartfox.self_usage{% endtrans %}</th>
+                <th>{% trans %}label.smartfox.net{% endtrans %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interval in history['intervals'] %}
+            <tr>
+                <th>{{ ('label.' ~ interval) |trans }}</th>
+                <td>{{ (history['smartfox']['pv_' ~ interval]/1000)|round(1) }} kWh</td>
+                <td>{{ (history['smartfox']['energy_in_' ~ interval]/1000)|round(1) }} kWh</td>
+                <td>{{ (history['smartfox']['energy_out_' ~ interval]/1000)|round(1) }} kWh</td>
+                <td>{{ ((history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
+                <td>{% if history['smartfox']['pv_' ~ interval] %}{{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval]) / history['smartfox']['pv_' ~ interval] * 100) |round }} % ( = {{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh){% else %}---{% endif %}</td>
+                <td>{{ ((history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="small-12 medium-6 columns">
+    <h4>{% trans %}label.solarheat{% endtrans %}</h4>
+     <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>{% trans %}label.solarheat.production{% endtrans %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interval in history['intervals'] %}
+            <tr>
+                <th>{{ ('label.' ~ interval) |trans }}</th>
+                <td>{{ history['conexio']['energy_' ~ interval] }} kWh</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+     </table>
+</div>
+{% endblock %}
