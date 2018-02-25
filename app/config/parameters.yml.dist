@@ -19,6 +19,7 @@ parameters:
     secret: ThisTokenIsNotSoSecretChangeIt
 
     locale: en
+    session_cookie_path: /myhome
     instancetitle: This Is My Home
     connectors:
         smartfox:

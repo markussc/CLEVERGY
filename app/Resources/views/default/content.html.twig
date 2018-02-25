@@ -1,6 +1,6 @@
 {% if is_granted('ROLE_OWNER') %}
     <div id="pcowebModeModal" class="reveal" data-reveal>
-      <h2 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h2>
+      <h4 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h4>
       <p class="lead">{% trans %}label.pco.select_pcoweb_mode_lead{% endtrans %}</p>
       <select class="select2" id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
@@ -13,7 +13,7 @@
       </button>
     </div>
     <div id="ppModeModal" class="reveal" data-reveal>
-      <h2 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h2>
+      <h4 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h4>
       <p class="lead">{% trans %}label.pco.select_pp_mode_lead{% endtrans %}</p>
       <select class="select2" id="ppModeSelect">
           <option value="0">{% trans %}label.pco.ppmode.summer{% endtrans %}</option>
@@ -33,7 +33,7 @@
 {% if currentStat['smartFox'] is defined %}
 <div class="small-12 medium-3 columns" id="smartfoxOuter">
     <div id="smartfox">
-    <h3>{% trans %}label.energy{% endtrans %}</h3>
+    <h4>{% trans %}label.energy{% endtrans %}</h4>
     <ul>
         <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }} W</li> {# TODO: sum up all PV powers #}
         <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(', ') }} W</li>
@@ -54,7 +54,7 @@
 {% endif %}
 {% if currentStat['conexio'] is defined %}
 <div class="small-12 medium-3 columns" id="conexio">
-    <h3>{% trans %}label.solarheat{% endtrans %}</h3>
+    <h4>{% trans %}label.solarheat{% endtrans %}</h4>
     <ul>
     {% for idx, sensor in connectors['conexio']['sensors'] %}
         <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx] }} {{ sensor[1] }}</li>
@@ -64,7 +64,7 @@
 {% endif %}
 {% if currentStat['pcoWeb'] is defined %}
 <div class="small-12 medium-3 columns" id="pcoWeb">
-    <h3>{% trans %}label.heating{% endtrans %}</h3>
+    <h4>{% trans %}label.heating{% endtrans %}</h4>
     <ul>
         <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }} °C</li>
         <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
@@ -80,7 +80,7 @@
 {% endif %}
 {% if currentStat['mobileAlerts'] is defined %}
 <div class="small-12 medium-3 columns" id="mobileAlerts">
-    <h3>{% trans %}label.climate{% endtrans %}</h3>
+    <h4>{% trans %}label.climate{% endtrans %}</h4>
     <ul>
         <li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>
         {% if currentStat['pcoWeb'] is defined %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
@@ -94,7 +94,7 @@
 {% endif %}
 {% if currentStat['edimax'] is defined %}
 <div class="small-12 medium-3 columns" id="edimax">
-    <h3>{% trans %}label.devices{% endtrans %}</h3>
+    <h4>{% trans %}label.devices{% endtrans %}</h4>
     <ul>
     {% for key, device in currentStat['edimax'] %}
         <li>
@@ -107,10 +107,10 @@
 </div>
 {% if (refresh is not defined or not refresh) and currentStat['smartFoxChart'] is defined %}
 <div class="row">
-    <div class="small-12 medium-6 columns">
+    <div class="small-12 large-6 columns">
         <canvas id="currentPowerCanvas" ></canvas>
     </div>
-    <div class="small-12 medium-6 columns">
+    <div class="small-12 large-6 columns">
         <canvas id="energyDayCanvas" ></canvas>
     </div>
 </div>
