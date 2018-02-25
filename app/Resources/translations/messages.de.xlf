@@ -162,6 +162,58 @@
                 <source>label.history.header</source>
                 <target>Historie</target>
             </trans-unit>
+            <trans-unit id="label.smartfox.pv">
+                <source>label.smartfox.pv</source>
+                <target>PV Produktion</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.in">
+                <source>label.smartfox.in</source>
+                <target>Energiebezug</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.out">
+                <source>label.smartfox.out</source>
+                <target>Energielieferung</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.usage">
+                <source>label.smartfox.usage</source>
+                <target>Verbrauch</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.self_usage">
+                <source>label.smartfox.self_usage</source>
+                <target>Eigenverbrauch</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.net">
+                <source>label.smartfox.net</source>
+                <target>Energiebilanz</target>
+            </trans-unit>
+            <trans-unit id="label.today">
+                <source>label.today</source>
+                <target>Heute</target>
+            </trans-unit>
+            <trans-unit id="label.yesterday">
+                <source>label.yesterday</source>
+                <target>Gestern</target>
+            </trans-unit>
+            <trans-unit id="label.week">
+                <source>label.week</source>
+                <target>Woche</target>
+            </trans-unit>
+            <trans-unit id="label.month">
+                <source>label.month</source>
+                <target>Monat</target>
+            </trans-unit>
+            <trans-unit id="label.year">
+                <source>label.year</source>
+                <target>Jahr</target>
+            </trans-unit>
+            <trans-unit id="label.lastYear">
+                <source>label.lastYear</source>
+                <target>Letzes Jahr</target>
+            </trans-unit>
+            <trans-unit id="label.solarheat.production">
+                <source>label.solarheat.production</source>
+                <target>Solarthermische Produktion</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

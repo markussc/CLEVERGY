@@ -98,29 +98,43 @@ class SmartFoxDataStoreRepository extends EntityRepository
 
     public function getEnergyToday($ip)
     {
-        $today = new \DateTime('today'); // today at midnight (00:00)
-        $qbMidnight = $this->createQueryBuilder('e')
+        $midnight = new \DateTime('today'); // today at midnight (00:00)
+        $now = new \DateTime('now');
+        return $this->getEnergyInterval($ip, 'PvEnergy', $midnight, $now);
+    }
+
+    public function getEnergyInterval($ip, $parameter, $start, $end)
+    {
+        $qbStart = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
-            ->andWhere('e.timestamp < :today')
+            ->andWhere('e.timestamp >= :start')
+            ->andWhere('e.timestamp < :end')
             ->setParameter('ip', $ip)
-            ->setParameter('today', $today)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('e.timestamp', 'asc')
+            ->setMaxResults(1);
+        $startEnergy = $qbStart->getQuery()->getResult();
+
+        $qbEnd = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp <= :end')
+            ->andWhere('e.timestamp > :start')
+            ->setParameter('ip', $ip)
+            ->setParameter('end', $end)
+            ->setParameter('start', $start)
             ->orderBy('e.timestamp', 'desc')
             ->setMaxResults(1);
-        $midnight = $qbMidnight->getQuery()->getResult();
+        $endEnergy = $qbEnd->getQuery()->getResult();
 
-        $qbNow = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
-            ->andWhere('e.timestamp >= :today')
-            ->setParameter('ip', $ip)
-            ->setParameter('today', $today)
-            ->orderBy('e.timestamp', 'desc')
-            ->setMaxResults(1);
-        $now = $qbNow->getQuery()->getResult();
-
-        if (!count($midnight)) {
-            $midnight = $now;
+        if (!count($startEnergy) || !count($endEnergy)) {
+            return 0;
         }
 
-        return $now[0]->getData()['PvEnergy'][0] - $midnight[0]->getData()['PvEnergy'][0];
+        if ($parameter === 'PvEnergy') {
+            return $endEnergy[0]->getData()[$parameter][0] - $startEnergy[0]->getData()[$parameter][0];
+        } else {
+            return $endEnergy[0]->getData()[$parameter] - $startEnergy[0]->getData()[$parameter];
+        }
     }
 }
