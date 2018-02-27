@@ -25,7 +25,7 @@
                 <td>{{ (history['smartfox']['energy_out_' ~ interval]/1000)|round(1) }} kWh</td>
                 <td>{{ ((history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
                 <td>{% if history['smartfox']['pv_' ~ interval] %}{{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval]) / history['smartfox']['pv_' ~ interval] * 100) |round }} % ( = {{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh){% else %}---{% endif %}</td>
-                <td>{{ (100/(history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])*(history['smartfox']['pv_' ~ interval]-history['smartfox']['energy_out_' ~ interval]))|round }} %</td>
+                <td>{% if history['smartfox']['pv_' ~ interval] %}{{ (100/(history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])*(history['smartfox']['pv_' ~ interval]-history['smartfox']['energy_out_' ~ interval]))|round }} %{% else %}---{% endif %}</td>
                 <td>{{ ((history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
             </tr>
             {% endfor %}
