@@ -214,6 +214,10 @@
                 <source>label.solarheat.production</source>
                 <target>Solarthermische Produktion</target>
             </trans-unit>
+            <trans-unit id="label.smartfox.self_suff_degree">
+                <source>label.smartfox.self_suff_degree</source>
+                <target>Selbstversorgungsgrad</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
