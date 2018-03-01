@@ -115,10 +115,11 @@ class DefaultController extends Controller
         $yesterday = new \DateTime('yesterday');
         $now = new \DateTime('now');
         $today = new \DateTime('today');
-        $thisWeek = new \DateTime('monday this week');
-        $thisMonth = new \DateTime('first day of this month');
-        $thisYear = new \DateTime('first day of january this year');
-        $lastYear = new \DateTime('first day of january last year');
+        $thisWeek = new \DateTime('monday this week midnight');
+        $thisMonth = new \DateTime('first day of this month midnight');
+        dump($thisMonth);
+        $thisYear = new \DateTime('first day of january this year midnight');
+        $lastYear = new \DateTime('first day of january last year midnight');
 
         $history = [
             'intervals' => [
