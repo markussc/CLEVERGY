@@ -117,7 +117,6 @@ class DefaultController extends Controller
         $today = new \DateTime('today');
         $thisWeek = new \DateTime('monday this week midnight');
         $thisMonth = new \DateTime('first day of this month midnight');
-        dump($thisMonth);
         $thisYear = new \DateTime('first day of january this year midnight');
         $lastYear = new \DateTime('first day of january last year midnight');
 
