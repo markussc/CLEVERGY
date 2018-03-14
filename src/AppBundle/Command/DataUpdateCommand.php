@@ -195,6 +195,9 @@ class DataUpdateCommand extends ContainerAwareCommand
             $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
         }
 
+        // decide whether it's summer half year
+        $isSummer = (\date('z') > 70 && \date('z') < 273); // 10th of march - 30th september
+
         $activateHeating = false;
         $deactivateHeating = false;
 
@@ -210,8 +213,11 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // heat storige is low or net power is deeply negative. Warm up on high PV power or low energy rate
         if ($heatStorageMidTemp < 33 || $avgPower < 2000) {
-            if ($avgPvPower > 1700 && !$smartFoxHighPower) {
+            if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1700) || ($isSummer && $avgPvPower > 3000) )) {
                 // detected high PV power (independently of current use), but SmartFox is not forcing heating
+                // and either
+                // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
+                // - summer and avgPvPower > 3000 W
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to the default value
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
