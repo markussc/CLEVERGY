@@ -325,7 +325,7 @@
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
-                },
+                }{% if history['mobileAlerts']|length > 0 %},
                 {
                     label: '{{ history['mobileAlerts'][0].getData()[1]['label'] }}',
                     borderColor: ['red'],
@@ -338,7 +338,7 @@
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
-                }
+                }{% endif %}
                 {% for idx, sensor in connectors['conexio']['sensors'] if sensor[2] is defined %}
                 ,{
                     label: '{{ sensor[0] }}',
