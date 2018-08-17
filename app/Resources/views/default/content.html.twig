@@ -45,7 +45,7 @@
     <div class="chart" style="display:none;">
         <span class="chartId">currentPower</span>
         <span class="chartData">[{{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }}, {{ currentStat['smartFox']['PvPower'][0] }}, {{ currentStat['smartFox']['power_io'] }}]</span>
-        <span class="chartColor">{"0":["grey", "grey"], "1":["yellow", "yellow"], "2":["green", "red"]}</span>
+        <span class="chartColor">{"0":["grey", "grey"], "1":["yellow", "yellow"], "2":["chartreuse", "red"]}</span>
     </div>
     <div class="chart" style="display:none;">
         <span class="chartId">energyDay</span>
@@ -200,11 +200,11 @@
                 datasets: [
                 {
                     label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
-                    backgroundColor: ['blue']
+                    backgroundColor: ['red']
                 },
                 {
                     label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
-                    backgroundColor: ['red']
+                    backgroundColor: ['chartreuse']
                 },
                 {
                     label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
@@ -240,7 +240,7 @@
                 datasets: [
                 {
                     label: '{% trans %}label.smartfox.net_power{% endtrans %}',
-                    backgroundColor: ['#660066'],
+                    backgroundColor: ['darkblue'],
                     data: [
                     {% for sfData in history['smartFox'] %}
                         {
