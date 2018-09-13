@@ -26,12 +26,17 @@ class DefaultController extends Controller
 
         $em = $this->getDoctrine()->getManager();
 
+        $mobileAlertsHistory = [];
+        foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
+            $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+        }
+
         $history = [
             'smartFox' => $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()),
             'pcoWeb' => $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp()),
-            'mobileAlerts' => $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)),
             'conexio' => $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp()),
         ];
+        $history['mobileAlerts'] = $mobileAlertsHistory;
 
         // render the template
         return $this->render('default/index.html.twig', [

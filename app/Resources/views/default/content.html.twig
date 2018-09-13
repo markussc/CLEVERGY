@@ -325,20 +325,21 @@
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
-                }{% if history['mobileAlerts']|length > 0 %},
-                {
-                    label: '{{ history['mobileAlerts'][0].getData()[1]['label'] }}',
-                    borderColor: ['red'],
+                }
+                {% for idx, sensor in connectors['mobilealerts']['sensors'] %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
+                ,{
+                    label: '{{ history['mobileAlerts'][idx][history['mobileAlerts'][idx]|length-1].getData()[dataSetKey+1]['label']|default('unknown') }}',
+                    borderColor: '{{ dataSet[2] }}',
                     fill: false,
                     data: [
-                    {% for maData in history['mobileAlerts'] %}
+                    {% for maData in history['mobileAlerts'][idx] %}
                         {
                             x: new Date("{{ maData.timestamp|date("c") }}"),
-                            y: {{ maData.getData()[1]['value'] }}
+                            y: {{ maData.getData()[dataSetKey+1]['value']|default(0) }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
-                }{% endif %}
+                }{% endfor %}{% endfor %}
                 {% for idx, sensor in connectors['conexio']['sensors'] if sensor[2] is defined %}
                 ,{
                     label: '{{ sensor[0] }}',

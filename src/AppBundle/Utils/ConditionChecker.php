@@ -69,13 +69,13 @@ class ConditionChecker
                 if (strpos($condition, '>') !== false) {
                     // we have larger than condition
                     $condition = str_replace('>', '', $condition);
-                    if ($sensorData['value'] > $condition) {
+                    if (floatval($sensorData['value']) > floatval($condition)) {
                         return true;
                     }
                 } else {
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
-                    if ($sensorData['value'] < $condition) {
+                    if (floatval($sensorData['value']) < floatval($condition)) {
                         return true;
                     }
                 }

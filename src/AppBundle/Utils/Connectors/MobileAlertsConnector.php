@@ -75,7 +75,8 @@ class MobileAlertsConnector
             if ($label == 'ID') {
                 // next sensor
                 $currentSensor = $value;
-            } else {
+                $measurementCounter = 0;
+            } elseif (array_key_exists($currentSensor, $this->connectors['mobilealerts']['sensors'])) {
                 if ($this->validateDate($value)) {
                     // this is the timestamp
                     $data[$currentSensor][] = [
@@ -87,7 +88,7 @@ class MobileAlertsConnector
                     // next measurement
                     $data[$currentSensor][] = [
                         'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
-                        'value' => preg_replace("/[^0-9,.]/", "", str_replace(',', '.', $value)),
+                        'value' => preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value)),
                         'unit' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1]
                     ];
                     $measurementCounter++;
