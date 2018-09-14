@@ -335,7 +335,7 @@
                     {% for maData in history['mobileAlerts'][idx] %}
                         {
                             x: new Date("{{ maData.timestamp|date("c") }}"),
-                            y: {{ maData.getData()[dataSetKey+1]['value']|default(0) }}
+                            y: {{ maData.getData()[dataSetKey+1]['value']|default(0)|replace({'---': dataSet[3]|default(0)}) }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ]
