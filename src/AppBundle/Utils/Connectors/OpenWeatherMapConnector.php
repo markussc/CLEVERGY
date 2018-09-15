@@ -36,7 +36,7 @@ class OpenWeatherMapConnector
         // calculate time diff
         $now = new \DateTime('now');
         if ($latest) {
-            $diff = $latest->getTimestamp()->diff($now)->format('%i');
+            $diff = ($now->getTimestamp() - $latest->getTimestamp()->getTimestamp())/60; // diff in minutes
         } else {
             $diff = 20;
         }

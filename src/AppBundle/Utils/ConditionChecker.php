@@ -29,7 +29,6 @@ class ConditionChecker
     public function checkCondition($device)
     {
         $conf = $this->edimax->getConfig($device['ip']);
-
         // check for force conditions for all energy rates
         if (isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {

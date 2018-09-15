@@ -83,7 +83,7 @@ class EdiMaxConnector
 
             // calculate time diff
             $now = new \DateTime('now');
-            $diff = floatval($oldTimestamp->diff($now)->format('%i'));
+            $diff = ($now->getTimestamp() - $oldTimestamp->getTimestamp())/60; // diff in minutes
             if ($currentStatus) {
                 // currently on, we want to switch off
                 $minOnTime = array_key_exists('minOnTime', $this->connectors['edimax'][$deviceId])?$this->connectors['edimax'][$deviceId]['minOnTime']:15;
