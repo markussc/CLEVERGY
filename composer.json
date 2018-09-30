@@ -43,6 +43,10 @@
         "sensio/generator-bundle": "^3.0",
         "symfony/phpunit-bridge": "^3.0"
     },
+    "conflict": {
+        "knplabs/knp-components": "^1.3.5",
+        "kriswallsmith/buzz": ">=0.17"
+    },
     "scripts": {
         "symfony-scripts": [
             "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
