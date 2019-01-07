@@ -3,6 +3,7 @@
 namespace AppBundle\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
+use AppBundle\Entity\Settings;
 
 /**
  * Connector to retrieve data from EdiMax devices
@@ -33,11 +34,13 @@ class EdiMaxConnector
     {
         $results = [];
         foreach ($this->connectors['edimax'] as $device) {
+            $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
             $results[] = [
                 'ip' => $device['ip'],
                 'name' => $device['name'],
                 'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
                 'nominalPower' => $device['nominalPower'],
+                'mode' => $mode,
             ];
         }
         return $results;
@@ -48,10 +51,12 @@ class EdiMaxConnector
         $results = [];
         foreach ($this->connectors['edimax'] as $device) {
             $status = $this->getStatus($device);
+            $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
             $results[] = [
                 'ip' => $device['ip'],
                 'name' => $device['name'],
                 'status' => $status,
+                'mode' => $mode,
             ];
         }
         return $results;
@@ -73,6 +78,11 @@ class EdiMaxConnector
 
     public function switchOK($deviceId)
     {
+        // check if manual mode is set
+        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->connectors['edimax'][$deviceId]['ip']) == Settings::MODE_MANUAL) {
+            return false;
+        }
+
         // get current status
         $currentStatus = $this->getStatus($this->connectors['edimax'][$deviceId])['val'];
 

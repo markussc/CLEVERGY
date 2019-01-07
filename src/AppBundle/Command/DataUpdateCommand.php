@@ -125,7 +125,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 }
             }
         } else {
-            // if curren net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
             foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
                 // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
                 if ($this->forceOnEdimax($deviceId, $edimax)) {
