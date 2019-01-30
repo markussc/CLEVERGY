@@ -1,0 +1,49 @@
+<div class="row">
+{% if currentStat['smartFox'] is defined %}
+<div class="small-6 medium-4 columns" style="margin-top:1em;" id="smartfoxOuter">
+    <div id="smartfox">
+        <h4><i class="fas fa-bolt" style="font-size:2em; color:orange;"></i></h4>
+        {% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(', ') }} W<br/>
+        {% trans %}label.smartfox.net_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] }} W
+    </div>
+</div>
+{% endif %}
+{% if currentStat['conexio'] is defined %}
+<div class="small-6 medium-4 columns" style="margin-top:1em;" id="conexio">
+    <h4><i class="fas fa-sun" style="font-size:2em; color:yellow;"></i></h4>
+    {% for idx, sensor in connectors['conexio']['sensors'] if idx == 'p' or idx == 's1' %}
+        {{ sensor[0] }}: {{ currentStat['conexio'][idx] }} {{ sensor[1] }}<br/>
+    {% endfor %}
+</div>
+{% endif %}
+{% if currentStat['pcoWeb'] is defined %}
+<div class="small-6 medium-4 columns" style="margin-top:1em;" id="pcoWeb">
+    <h4><i class="fas fa-fire" style="font-size:2em; color:red;"></i></h4>
+    {% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}<br/>
+    {% for maSensor in currentStat['mobileAlerts'] %}
+        {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['dashboard'] == true %}
+            {{ measurement['label']}}: {{ measurement['value'] }}{{ measurement['unit'] }}<br/>
+        {% endfor %}
+    {% endfor %}
+    {% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }}°C
+</div>
+{% endif %}
+{% if currentStat['mobileAlerts'] is defined %}
+<div class="small-6 medium-4 columns" style="margin-top:1em;" id="mobileAlerts">
+    <h4><i class="fas fa-cloud-sun-rain" style="font-size:2em; color:blue;"></i></h4>
+    {% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%<br/>
+    {% if currentStat['pcoWeb'] is defined %}{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }}°C{% endif %}
+</div>
+{% endif %}
+{% if currentStat['edimax'] is defined %}
+<div class="small-6 medium-4 columns" style="margin-top:1em;" id="edimax">
+    <h4><i class="fas fa-plug" style="font-size:2em; color:green;"></i></h4>
+    {% for key, device in currentStat['edimax'] %}
+        <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
+        <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+        {{ device['name']}}
+        {% if not loop.last %}<br/>{% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+</div>

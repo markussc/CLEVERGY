@@ -14,6 +14,10 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
+        $activePage = "homepage";
+        if ($request->query->get("details")) {
+            $activePage = "details";
+        }
         $currentStat = [
             'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest(),
             'smartFoxChart' => true,
@@ -40,7 +44,7 @@ class DefaultController extends Controller
 
         // render the template
         return $this->render('default/index.html.twig', [
-            'activePage' => 'homepage',
+            'activePage' => $activePage,
             'currentStat' => $currentStat,
             'history' => $history,
         ]);
@@ -107,8 +111,13 @@ class DefaultController extends Controller
             'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];
 
+        $template = "default/contentHomepage.html.twig";
+        if ($request->query->get("details")) {
+            $template = "default/contentDetails.html.twig";
+        }
+        
         // render the template
-        return $this->render('default/content.html.twig', [
+        return $this->render($template, [
             'currentStat' => $currentStat,
             'refresh' => true,
         ]);

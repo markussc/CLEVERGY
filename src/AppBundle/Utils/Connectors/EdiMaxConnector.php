@@ -33,6 +33,8 @@ class EdiMaxConnector
     public function getAllLatest()
     {
         $results = [];
+        $today = new \DateTime('today');
+        $now = new \DateTime();
         foreach ($this->connectors['edimax'] as $device) {
             $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
             $results[] = [
@@ -41,6 +43,7 @@ class EdiMaxConnector
                 'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
                 'nominalPower' => $device['nominalPower'],
                 'mode' => $mode,
+                'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
             ];
         }
         return $results;
@@ -49,6 +52,8 @@ class EdiMaxConnector
     public function getAll()
     {
         $results = [];
+        $today = new \DateTime('today');
+        $now = new \DateTime();
         foreach ($this->connectors['edimax'] as $device) {
             $status = $this->getStatus($device);
             $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
@@ -57,6 +62,7 @@ class EdiMaxConnector
                 'name' => $device['name'],
                 'status' => $status,
                 'mode' => $mode,
+                'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
             ];
         }
         return $results;

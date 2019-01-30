@@ -32,11 +32,11 @@
             </trans-unit>
             <trans-unit id="label.pco.outside_temp">
                 <source>label.pco.outside_temp</source>
-                <target>Aussentemperatur</target>
+                <target>Aussen</target>
             </trans-unit>
             <trans-unit id="label.pco.water_temp">
                 <source>label.pco.water_temp</source>
-                <target>Wassertemperatur</target>
+                <target>Warmwasser</target>
             </trans-unit>
             <trans-unit id="label.pco.pre_temp">
                 <source>label.pco.pre_temp</source>
@@ -60,7 +60,7 @@
             </trans-unit>
             <trans-unit id="label.pco.pp_status">
                 <source>label.pco.pp_status</source>
-                <target>Erdsondenpumpe</target>
+                <target>Erdsonde</target>
             </trans-unit>
             <trans-unit id="label.pco.pp_mode">
                 <source>label.pco.pp_mode</source>
@@ -96,11 +96,11 @@
             </trans-unit>
             <trans-unit id="label.smartfox.net_power">
                 <source>label.smartfox.net_power</source>
-                <target>Leistung Netz</target>
+                <target>Netz</target>
             </trans-unit>
             <trans-unit id="label.smartfox.pv_power">
                 <source>label.smartfox.pv_power</source>
-                <target>PV Leistung</target>
+                <target>PV</target>
             </trans-unit>
             <trans-unit id="label.smartfox.int_power">
                 <source>label.smartfox.int_power</source>
@@ -116,7 +116,7 @@
             </trans-unit>
             <trans-unit id="label.openweathermap.clouds_next_daylight">
                 <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Relevante Bewölkung</target>
+                <target>Bewölkung</target>
             </trans-unit>
             <trans-unit id="label.solarheat">
                 <source>label.solarheat</source>
@@ -221,6 +221,14 @@
             <trans-unit id="label.smartfox.self_suff_degree_today">
                 <source>label.smartfox.self_suff_degree_today</source>
                 <target>Selbstversorgung heute</target>
+            </trans-unit>
+            <trans-unit id="label.edimax.activation_interval_today">
+                <source>label.edimax.activation_interval_today</source>
+                <target>Aktivierungszeitraum heute</target>
+            </trans-unit>
+            <trans-unit id="label.details.header">
+                <source>label.details.header</source>
+                <target>Details</target>
             </trans-unit>
         </body>
     </file>

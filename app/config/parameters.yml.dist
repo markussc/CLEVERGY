@@ -42,6 +42,8 @@ parameters:
                     -
                         - Inside temperature
                         - °C
+                        - red # color used in charts
+                        - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
                     -
                         - 'Relative humidity inside'
                         - '%'

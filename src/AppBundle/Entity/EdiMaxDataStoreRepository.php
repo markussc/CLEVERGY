@@ -28,4 +28,21 @@ class EdiMaxDataStoreRepository extends EntityRepository
             return $latest[0]->getData();
         }
     }
+
+    public function getActiveDuration($ip, $start, $end)
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('count(e.id)')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp >= :start')
+            ->andWhere('e.timestamp <= :end')
+            ->andWhere('e.boolValue = 1')
+            ->setParameters([
+                'ip' => $ip,
+                'start' => $start,
+                'end' => $end
+            ]);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
 }

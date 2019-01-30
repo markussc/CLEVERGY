@@ -32,11 +32,11 @@
             </trans-unit>
             <trans-unit id="label.pco.outside_temp">
                 <source>label.pco.outside_temp</source>
-                <target>Outside Temperature</target>
+                <target>Outside</target>
             </trans-unit>
             <trans-unit id="label.pco.water_temp">
                 <source>label.pco.water_temp</source>
-                <target>Water Temperature</target>
+                <target>Warm Water</target>
             </trans-unit>
             <trans-unit id="label.pco.pre_temp">
                 <source>label.pco.pre_temp</source>
@@ -92,7 +92,7 @@
             </trans-unit>
             <trans-unit id="label.openweathermap.clouds_next_daylight">
                 <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Relevant Cloudiness</target>
+                <target>Cloudiness</target>
             </trans-unit>
             <trans-unit id="label.dashboard.header">
                 <source>label.dashboard.header</source>
@@ -101,6 +101,14 @@
             <trans-unit id="label.history.header">
                 <source>label.history.header</source>
                 <target>History</target>
+            </trans-unit>
+            <trans-unit id="label.edimax.activation_interval_today">
+                <source>label.edimax.activation_interval_today</source>
+                <target>Activation interval today</target>
+            </trans-unit>
+            <trans-unit id="label.details.header">
+                <source>label.details.header</source>
+                <target>Details</target>
             </trans-unit>
         </body>
     </file>

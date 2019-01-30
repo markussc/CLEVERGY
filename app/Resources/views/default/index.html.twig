@@ -1,7 +1,16 @@
 {% extends 'base.html.twig' %}
+{% if activePage == "homepage" %}
+    {% set details = false %}
+{% else %}
+    {% set details = true %}
+{% endif %}
    
 {% block body %}
-    {% include 'default/content.html.twig' %}
+    {% if details == false %}
+        {% include 'default/contentHomepage.html.twig' %}
+    {% else %}
+        {% include 'default/contentDetails.html.twig' %}
+    {% endif %}
 {% endblock %}
 
 {% block javascripts %}
@@ -12,7 +21,7 @@
 
         (function worker() {
             $.ajax({
-              url: '{{ path('refresh') }}', 
+              url: '{{ path('refresh', {'details': details}) }}', 
               success: function(data) {
                 $(data).find('.columns').each(function(){
                     var divId = $(this).attr('id');
