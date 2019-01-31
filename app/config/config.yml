@@ -45,6 +45,7 @@ twig:
         locale: '%locale%'
         connectors: '%connectors%'
         instancetitle: '%instancetitle%'
+        chromecastConnector: '@AppBundle\Utils\Connectors\ChromecastConnector'
 
 assetic:
     debug:          '%kernel.debug%'
