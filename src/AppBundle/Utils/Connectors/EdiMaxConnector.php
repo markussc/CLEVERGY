@@ -37,11 +37,16 @@ class EdiMaxConnector
         $now = new \DateTime();
         foreach ($this->connectors['edimax'] as $device) {
             $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
+            if (isset($device['nominalPower'])) {
+                $nominalPower = $device['nominalPower'];
+            } else {
+                $nominalPower = 0;
+            }
             $results[] = [
                 'ip' => $device['ip'],
                 'name' => $device['name'],
                 'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
-                'nominalPower' => $device['nominalPower'],
+                'nominalPower' => $nominalPower,
                 'mode' => $mode,
                 'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
             ];
@@ -57,10 +62,16 @@ class EdiMaxConnector
         foreach ($this->connectors['edimax'] as $device) {
             $status = $this->getStatus($device);
             $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
+            if (isset($device['nominalPower'])) {
+                $nominalPower = $device['nominalPower'];
+            } else {
+                $nominalPower = 0;
+            }
             $results[] = [
                 'ip' => $device['ip'],
                 'name' => $device['name'],
                 'status' => $status,
+                'nominalPower' => $nominalPower,
                 'mode' => $mode,
                 'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
             ];
@@ -86,6 +97,11 @@ class EdiMaxConnector
     {
         // check if manual mode is set
         if ($this->em->getRepository('AppBundle:Settings')->getMode($this->connectors['edimax'][$deviceId]['ip']) == Settings::MODE_MANUAL) {
+            return false;
+        }
+
+        // check if nominal power is set (if not, this is not a device to be managed based on available power)
+        if (!isset($this->connectors['edimax'][$deviceId]['minOnTime'])) {
             return false;
         }
 

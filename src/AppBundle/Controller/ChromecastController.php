@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Utils\Connectors\ChromecastConnector;
+use AppBundle\Utils\Connectors\EdiMaxConnector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,41 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class ChromecastController extends Controller
 {
+    /**
+     * @Route("/power/{ccId}/{power}", name="chromecast_power")
+     */
+    public function powerAction(EdiMaxConnector $edimax, $ccId, $power)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
+        $ip = $chromecast['ip'];
+        $settings = $em->getRepository('AppBundle:Settings')->findOneByConnectorId($ip);
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setConnectorId($ip);
+        }
+        if ($power) {
+            // turn on
+            $settings->setMode(1);
+            foreach ($chromecast['edimax'] as $edimaxId) {
+                $edimax->executeCommand($edimaxId, 1);
+            }
+        } else {
+            // turn off
+            $settings->setMode(0);
+            foreach ($chromecast['edimax'] as $edimaxId) {
+                $edimax->executeCommand($edimaxId, 0);
+            }
+        }
+        $em->persist($settings);
+        $em->flush();
+
+        // TODO: loop until chromecast device is ready
+        $success = true;
+
+        return new JsonResponse(['success' => $success]);
+    }
+
     /**
      * @Route("/play/{ccId}/{streamId}", name="chromecast_play")
      */

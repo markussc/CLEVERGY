@@ -41,6 +41,21 @@ class ChromecastConnector
     }
 
     /**
+     * Reads the current power state for a chromecast device from the database
+     * @return array
+     */
+    public function getPower($ip)
+    {
+        $settings = $this->em->getRepository('AppBundle:Settings')->findOneByConnectorId($ip);
+        $power = 0;
+        if ($settings) {
+            $power = $settings->getMode();
+        }
+
+        return $power;
+    }
+
+    /**
      * Reads the current state for a chromecast device from the database
      * @return array
      */

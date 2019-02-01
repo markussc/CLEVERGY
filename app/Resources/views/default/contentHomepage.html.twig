@@ -39,24 +39,31 @@
 <div class="small-6 medium-4 columns" style="margin-top:1em;" id="chromecast">
     <h4><i class="fas fa-headphones-alt" style="font-size:2em; color:pink;"></i></h4>
     {% for ccId, chromecast in connectors['chromecast'] %}
-        <h6>{{ chromecast['name']}}</h6>
+        <h6>
+            {% if chromecast['edimax']|length > 0 %}
+                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{{ path('chromecast_power', {'ccId':ccId, 'power':(chromecastConnector.getPower(chromecast['ip'])+1)%2}) }}'})"{% endif %}><i class="fas fa-power-off" style="color:{% if chromecastConnector.getPower(chromecast['ip']) %}green{% else %}red{% endif %}"></i></a>
+            {% endif %}
+            {{ chromecast['name']}}
+        </h6>
         {% if is_granted('ROLE_OWNER') and chromecastConnector.getState(chromecast['ip']) == 'playing' %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="$.ajax({url: '{{ path('chromecast_volume_down', {'ccId':ccId}) }}'})"><i class="fas fa-volume-down"></i></a>
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="$.ajax({url: '{{ path('chromecast_volume_up', {'ccId':ccId}) }}'})"><i class="fas fa-volume-up"></i></a>
             <br/>
         {% endif %}
-        {% for streamId, stream in chromecast['streams'] %}
-            {% set currentState = false %}
-            {% if chromecastConnector.getUrl(chromecast['ip']) == stream['url'] %}
-                {% set currentStream = true %}
-                {% set currentState = chromecastConnector.getState(chromecast['ip']) %}
-            {% else %}
-                {% set currentStream = false %}
-            {% endif %}
-            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{% if currentStream %}{{ path('chromecast_stop', {'ccId':ccId}) }}{% else %}{{ path('chromecast_play', {'ccId':ccId, 'streamId':streamId}) }}{% endif %}'});"{% endif %}>{% if currentStream %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-stop{% endif %}" style="color:green"></i>{% else %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-play{% endif %}" style="color:red"></i>{% endif %}</a>
-            {{ stream['name'] }}
-            {% if not loop.last %}<br/>{% endif %}
-        {% endfor %}
+        {% if chromecastConnector.getPower(chromecast['ip']) %}
+            {% for streamId, stream in chromecast['streams'] %}
+                {% set currentState = false %}
+                {% if chromecastConnector.getUrl(chromecast['ip']) == stream['url'] %}
+                    {% set currentStream = true %}
+                    {% set currentState = chromecastConnector.getState(chromecast['ip']) %}
+                {% else %}
+                    {% set currentStream = false %}
+                {% endif %}
+                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{% if currentStream %}{{ path('chromecast_stop', {'ccId':ccId}) }}{% else %}{{ path('chromecast_play', {'ccId':ccId, 'streamId':streamId}) }}{% endif %}'});"{% endif %}>{% if currentStream %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-stop{% endif %}" style="color:green"></i>{% else %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-play{% endif %}" style="color:red"></i>{% endif %}</a>
+                {{ stream['name'] }}
+                {% if not loop.last %}<br/>{% endif %}
+            {% endfor %}
+        {% endif %}
     {% endfor %}
 </div>
 {% endif %}
@@ -65,7 +72,7 @@
     <h4><i class="fas fa-plug" style="font-size:2em; color:green;"></i></h4>
     {% for key, device in currentStat['edimax'] %}
         <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
-        <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+        <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not device['nominalPower'] %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
         {{ device['name']}}
         {% if not loop.last %}<br/>{% endif %}
     {% endfor %}
