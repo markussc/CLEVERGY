@@ -80,7 +80,7 @@ class Settings
      *
      * @return Settings $this
      */
-    public function setMode()
+    public function setMode($mode)
     {
         $this->mode = $mode;
 
