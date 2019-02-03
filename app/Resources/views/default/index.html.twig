@@ -23,6 +23,11 @@
             $.ajax({
               url: '{{ path('refresh', {'details': details}) }}', 
               success: function(data) {
+                if ($(data).find('#loginForm').length > 0) {
+                    // logged out, we should redirect to the login page now
+                    showSpinner();
+                    window.location = "{{ path('homepage') }}";
+                }
                 $(data).find('.columns').each(function(){
                     var divId = $(this).attr('id');
                     $("#" + divId).replaceWith($(this));
