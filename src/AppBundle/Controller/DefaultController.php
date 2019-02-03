@@ -91,6 +91,10 @@ class DefaultController extends Controller
                     $this->getDoctrine()->getManager()->flush();
                     return true;
                 }
+            case 'command':
+                $connectors = $this->getParameter('connectors');
+                exec($connectors['command'][$command[1]]['cmd']);
+                return true;
         }
         // no known device
         return false;

@@ -78,4 +78,14 @@
     {% endfor %}
 </div>
 {% endif %}
+{% if connectors['command'] is defined %}
+    <div class="small-6 medium-4 columns" style="margin-top:1em;" id="command">
+    <h4><i class="fas fa-terminal" style="font-size:2em; color:silver;"></i></h4>
+    {% for key, command in connectors['command'] %}
+        <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}])"{% endif %}><i class="{{ command['icon']}}" style="color:silver"></i></a>
+        {{ command['name']}}
+        {% if not loop.last %}<br/>{% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 </div>
