@@ -67,6 +67,25 @@ parameters:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
             lat: 46.9
             lon: 6.7
+        chromecast:
+            -
+                name: Wohnzimmer
+                ip: 192.168.2.102
+                edimax:
+                    - 0
+                    - 1
+                streams:
+                    -
+                        name: 'My news channel'
+                        url: 'http://mystream.com/news/mp3_128'
+                    -
+                        name: 'My music channel'
+                        url: 'http://mystream.com/music/mp3_128'
+        command
+            - 
+                name: Reboot my PC
+                icon: fas fa-desktop
+                cmd: "reboot" # If you want to execute with sudo, use visudo
     energy_low_rate:
         start: 21  # hour (24h-format) when the lower energy tariff starts
         end: 7      # hour (24h format) when the lower energy tariff ends
