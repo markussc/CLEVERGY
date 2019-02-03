@@ -34,9 +34,15 @@ class ChromecastController extends Controller
             foreach ($chromecast['edimax'] as $edimaxId) {
                 $edimax->executeCommand($edimaxId, 1);
             }
+            // wait a few seconds until chromecast might be ready
+            sleep(20);
         } else {
             // turn off
             $settings->setMode(0);
+            $settings->setConfig([
+                'url' => false,
+                'state' => 'stopped',
+            ]);
             foreach ($chromecast['edimax'] as $edimaxId) {
                 $edimax->executeCommand($edimaxId, 0);
             }
@@ -44,10 +50,7 @@ class ChromecastController extends Controller
         $em->persist($settings);
         $em->flush();
 
-        // TODO: loop until chromecast device is ready
-        $success = true;
-
-        return new JsonResponse(['success' => $success]);
+        return new JsonResponse(['success' => true]);
     }
 
     /**
