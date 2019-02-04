@@ -60,7 +60,11 @@ class ChromecastController extends Controller
     {
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
         $stream = $chromecast['streams'][$streamId];
-        $success = $ccConnector->startStream($chromecast['ip'], $stream['url']);
+        $metadata = [];
+        if (isset($stream['metadata'])) {
+            $metadata = $stream['metadata'];
+        }
+        $success = $ccConnector->startStream($chromecast['ip'], $stream['url'], $metadata);
 
         return new JsonResponse(['success' => $success]);
     }

@@ -78,6 +78,10 @@ parameters:
                     -
                         name: 'My news channel'
                         url: 'http://mystream.com/news/mp3_128'
+                        metadata:
+                            title: 'My Favourite News Channel
+                            subtitle: 'All you need to know'
+                            image: 'http://mystream.com/news/logo.png'
                     -
                         name: 'My music channel'
                         url: 'http://mystream.com/music/mp3_128'

@@ -7,11 +7,20 @@ class CCDefaultMediaPlayer extends CCBaseSender
 {
 	public $appid="CC1AD845";
 	
-	public function play($url,$streamType,$contentType,$autoPlay,$currentTime) {
+	public function play($url,$streamType,$contentType,$autoPlay,$currentTime,$metadata = []) {
 		// Start a playing
+                if (!isset($metadata['title'])) {
+                    $metadata['title'] = '';
+                }
+                if (!isset($metadata['subtitle'])) {
+                    $metadata['subtitle'] = 'Powered by OSHANS.ch';
+                }
+                if (!isset($metadata['image'])) {
+                    $metadata['image'] = '';
+                }
 		// First ensure there's an instance of the DMP running
 		$this->launch();
-		$json = '{"type":"LOAD","media":{"contentId":"' . $url . '","streamType":"' . $streamType . '","contentType":"' . $contentType . '"},"autoplay":' . $autoPlay . ',"currentTime":' . $currentTime . ',"requestId":921489134}';
+		$json = '{"type":"LOAD","media":{"metadata":{"metadataType":0,"title":"'.$metadata['title'].'","subtitle":"'.$metadata['subtitle'].'","images":{"0":{"url":"'.$metadata['image'].'"}}},"contentId":"' . $url . '","streamType":"' . $streamType . '","contentType":"' . $contentType . '"},"autoplay":' . $autoPlay . ',"currentTime":' . $currentTime . ',"requestId":921489134}';
 		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media", $json);
 		$r = "";
 		while (!preg_match("/\"playerState\":\"PLAYING\"/",$r)) {

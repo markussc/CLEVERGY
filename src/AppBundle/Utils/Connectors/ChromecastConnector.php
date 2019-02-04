@@ -73,7 +73,7 @@ class ChromecastConnector
         return $state;
     }
 
-    public function startStream($ip, $url, $type = "audio/mp4")
+    public function startStream($ip, $url, $metadata = [], $type = "audio/mp4")
     {
         $settings = $this->em->getRepository('AppBundle:Settings')->findOneByConnectorId($ip);
         if (!$settings) {
@@ -90,7 +90,7 @@ class ChromecastConnector
 
         try {
             $cc = new Chromecast($ip, "8009");
-            $cc->DMP->play($url, "LIVE", $type, true, 0);
+            $cc->DMP->play($url, "LIVE", $type, true, 0, $metadata);
             $cc->DMP->UnMute();
             $cc->DMP->SetVolume(0.5);
         } catch (\Exception $e) {
