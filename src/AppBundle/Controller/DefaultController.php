@@ -62,7 +62,7 @@ class DefaultController extends Controller
         // execute the command
         $this->executeCommand($command);
         // redirect to homepage
-        return $this->redirectToRoute('homepage');
+        return $this->redirect($request->headers->get('referer'));
     }
 
     private function executeCommand($jsonCommand)
