@@ -6,6 +6,7 @@ use AppBundle\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class DefaultController extends Controller
 {
@@ -60,9 +61,9 @@ class DefaultController extends Controller
         $this->denyAccessUnlessGranted('ROLE_OWNER');
 
         // execute the command
-        $this->executeCommand($command);
-        // redirect to homepage
-        return $this->redirect($request->headers->get('referer'));
+        $success = $this->executeCommand($command);
+
+        return new JsonResponse(['success' => $success]);
     }
 
     private function executeCommand($jsonCommand)

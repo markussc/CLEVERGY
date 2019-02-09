@@ -51,7 +51,12 @@
             // send command
             var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
             url = url.replace('command_val', JSON.stringify(command));
-            window.location = url;
+            $.ajax({
+                url: url,
+                complete: function() {
+                    hideSpinner();
+                }
+            });
         }
         {% endif %}
     </script>
