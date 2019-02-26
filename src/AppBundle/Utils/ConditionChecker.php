@@ -4,6 +4,7 @@ namespace AppBundle\Utils;
 
 use AppBundle\Utils\Connectors\EdiMaxConnector;
 use AppBundle\Utils\Connectors\MobileAlertsConnector;
+use AppBundle\Utils\Connectors\MyStromConnector;
 use AppBundle\Utils\Connectors\PcoWebConnector;
 use Doctrine\ORM\EntityManager;
 
@@ -17,11 +18,12 @@ class ConditionChecker
     protected $edimax;
     protected $mobilealerts;
 
-    public function __construct(EntityManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(EntityManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, MyStromConnector $mystrom, PcoWebConnector $pcoweb, $energyLowRate)
     {
         $this->em = $em;
         $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
+        $this->mystrom = $mystrom;
         $this->pcoweb = $pcoweb;
         $this->energyLowRate = $energyLowRate;
     }
@@ -29,6 +31,10 @@ class ConditionChecker
     public function checkCondition($device)
     {
         $conf = $this->edimax->getConfig($device['ip']);
+        if (null === $conf) {
+            // there is no edimax device with this IP. We check if there is a mystrom device instead
+            $conf = $this->mystrom->getConfig($device['ip']);
+        }
         // check for force conditions for all energy rates
         if (isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {

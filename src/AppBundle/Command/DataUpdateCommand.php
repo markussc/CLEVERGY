@@ -4,6 +4,7 @@ namespace AppBundle\Command;
 
 use AppBundle\Entity\Settings;
 use AppBundle\Entity\EdiMaxDataStore;
+use AppBundle\Entity\MyStromDataStore;
 use AppBundle\Entity\ConexioDataStore;
 use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
@@ -49,6 +50,15 @@ class DataUpdateCommand extends ContainerAwareCommand
             $em->persist($edimaxEntity);
         }
 
+        // mystrom
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll() as $mystrom) {
+            $mystromEntity = new MyStromDataStore();
+            $mystromEntity->setTimestamp(new \DateTime('now'));
+            $mystromEntity->setConnectorId($mystrom['ip']);
+            $mystromEntity->setData($mystrom['status']['val']);
+            $em->persist($mystromEntity);
+        }
+
         // smartfox
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
         $smartfoxEntity = new SmartFoxDataStore();
@@ -90,6 +100,9 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
+
+        // execute auto actions for mystrom devices
+        $this->autoActionsMystrom();
 
         // execute auto actions for PcoWeb heating, if we are in auto mode
         if (Settings::MODE_MANUAL != $em->getRepository('AppBundle:Settings')->getMode($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp())) {
@@ -146,6 +159,61 @@ class DataUpdateCommand extends ContainerAwareCommand
         if ($forceOn && !$edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Based on the available values in the DB, decide whether any commands should be sent to attached mystrom devices
+     */
+    private function autoActionsMystrom()
+    {
+        $em = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
+
+        // get current net_power
+        $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+        $netPower = $smartfox['power_io'];
+
+        if ($netPower > 0) {
+            if ($avgPower > 0) {
+                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest() as $deviceId => $mystrom) {
+                    // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                        continue;
+                    }
+                    // check if the device is on and allowed to be turned off
+                    if ($mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 0);
+                        break;
+                    }
+                }
+            }
+        } else {
+            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+            foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest() as $deviceId => $mystrom) {
+                // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
+                if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                    continue;
+                }
+                // check if the device is off, compare the required power with the current and average power over the last 10 minutes and check if the device is allowed to be turned on
+                if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    private function forceOnMystrom($deviceId, $mystrom)
+    {
+        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom);
+        if ($forceOn && !$mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+            // force turn it on if we are allowed to
+            $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
             return true;
         } else {
             return false;

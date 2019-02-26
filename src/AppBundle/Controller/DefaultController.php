@@ -26,6 +26,7 @@ class DefaultController extends Controller
             'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest(),
+            'mystrom' => $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest(),
             'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];
 
@@ -72,6 +73,8 @@ class DefaultController extends Controller
         switch ($command[0]) {
             case 'edimax':
                 return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
+            case 'mystrom':
+                return $this->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($command[1], $command[2]);
             case 'pcoweb':
                 return $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
             case 'settings':
@@ -97,6 +100,7 @@ class DefaultController extends Controller
                 exec($connectors['command'][$command[1]]['cmd']);
                 return true;
         }
+
         // no known device
         return false;
     }
@@ -112,6 +116,7 @@ class DefaultController extends Controller
             'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
             'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
             'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
+            'mystrom' => $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll(),
             'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
             'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
         ];

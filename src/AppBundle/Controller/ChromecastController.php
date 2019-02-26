@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Utils\Connectors\ChromecastConnector;
 use AppBundle\Utils\Connectors\EdiMaxConnector;
+use AppBundle\Utils\Connectors\MyStromConnector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,7 @@ class ChromecastController extends Controller
     /**
      * @Route("/power/{ccId}/{power}", name="chromecast_power")
      */
-    public function powerAction(EdiMaxConnector $edimax, $ccId, $power)
+    public function powerAction(EdiMaxConnector $edimax, MyStromConnector $mystrom, $ccId, $power)
     {
         $em = $this->getDoctrine()->getManager();
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
@@ -34,6 +35,9 @@ class ChromecastController extends Controller
             foreach ($chromecast['edimax'] as $edimaxId) {
                 $edimax->executeCommand($edimaxId, 1);
             }
+            foreach ($chromecast['mystrom'] as $mystromId) {
+                $mystrom->executeCommand($mystromId, 1);
+            }
             // wait a few seconds until chromecast might be ready
             sleep(20);
         } else {
@@ -45,6 +49,9 @@ class ChromecastController extends Controller
             ]);
             foreach ($chromecast['edimax'] as $edimaxId) {
                 $edimax->executeCommand($edimaxId, 0);
+            }
+            foreach ($chromecast['mystrom'] as $mystromId) {
+                $mystrom->executeCommand($mystromId, 0);
             }
         }
         $em->persist($settings);

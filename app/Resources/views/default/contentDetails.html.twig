@@ -93,13 +93,20 @@
     </ul>
 </div>
 {% endif %}
-{% if currentStat['edimax'] is defined %}
+{% if currentStat['edimax'] is defined or currentStat['mystrom'] is defined%}
 <div class="small-12 medium-3 columns" id="edimax">
     <h4>{% trans %}label.devices{% endtrans %}</h4>
     <ul>
-    {% for key, device in currentStat['edimax'] %}
+    {% for key, device in currentStat['edimax']|default([]) %}
         <li>
             {{ device['name']}}: <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}>{{ device['status']['label']|trans }}</a> |
+            <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fa {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a> |
+            <a title="{% trans %}label.edimax.activation_interval_today{% endtrans %}"><i class="fa fa-clock-o"></i> {{ (device['activeMinutes']/60)|round(0, 'floor') }}h {{ device['activeMinutes']%60 }}m</a>
+        </li>
+    {% endfor %}
+    {% for key, device in currentStat['mystrom']|default([]) %}
+        <li>
+            {{ device['name']}}: <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}>{{ device['status']['label']|trans }}</a> |
             <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fa {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a> |
             <a title="{% trans %}label.edimax.activation_interval_today{% endtrans %}"><i class="fa fa-clock-o"></i> {{ (device['activeMinutes']/60)|round(0, 'floor') }}h {{ device['activeMinutes']%60 }}m</a>
         </li>
