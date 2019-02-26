@@ -163,7 +163,7 @@ class EdiMaxConnector
     private function setOn($device)
     {
         $r = $this->queryEdiMax($device, 'on');
-        if (!empty($r) AND array_key_exists('CMD', $r) AND $r['CMD'] == 'OK') {
+        if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
             return true;
         } else {
             return false;
@@ -173,7 +173,7 @@ class EdiMaxConnector
     private function setOff($device)
     {
         $r = $this->queryEdiMax($device, 'off');
-        if (!empty($r) AND array_key_exists('CMD', $r) AND $r['CMD'] == 'OK') {
+        if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
             return true;
         } else {
             return false;
