@@ -40,7 +40,7 @@
     <h4><i class="fas fa-headphones-alt" style="font-size:2em; color:pink;"></i></h4>
     {% for ccId, chromecast in connectors['chromecast'] %}
         <h6>
-            {% if chromecast['edimax']|length > 0 or chromecast['mystrom']|length > 0 %}
+            {% if chromecast['edimax']|default([])|length > 0 or chromecast['mystrom']|default([])|length > 0 %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{{ path('chromecast_power', {'ccId':ccId, 'power':(chromecastConnector.getPower(chromecast['ip'])+1)%2}) }}'})"{% endif %}><i class="fas fa-power-off" style="color:{% if chromecastConnector.getPower(chromecast['ip']) %}green{% else %}red{% endif %}"></i></a>
             {% endif %}
             {{ chromecast['name']}}
