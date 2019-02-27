@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Utils\Connectors\ChromecastConnector;
 use AppBundle\Utils\Connectors\EdiMaxConnector;
 use AppBundle\Utils\Connectors\MyStromConnector;
+use AppBundle\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,11 +33,15 @@ class ChromecastController extends Controller
         if ($power) {
             // turn on
             $settings->setMode(1);
-            foreach ($chromecast['edimax'] as $edimaxId) {
-                $edimax->executeCommand($edimaxId, 1);
+            if (array_key_exists('edimax', $chromecast)) {
+                foreach ($chromecast['edimax'] as $edimaxId) {
+                    $edimax->executeCommand($edimaxId, 1);
+                }
             }
-            foreach ($chromecast['mystrom'] as $mystromId) {
-                $mystrom->executeCommand($mystromId, 1);
+            if (array_key_exists('mystrom', $chromecast)) {
+                foreach ($chromecast['mystrom'] as $mystromId) {
+                    $mystrom->executeCommand($mystromId, 1);
+                }
             }
             // wait a few seconds until chromecast might be ready
             sleep(20);
