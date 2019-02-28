@@ -19,24 +19,30 @@ class CCDefaultMediaPlayer extends CCBaseSender
                     $metadata['image'] = '';
                 }
 		// First ensure there's an instance of the DMP running
-		$this->launch();
-		$json = '{"type":"LOAD","media":{"metadata":{"metadataType":0,"title":"'.$metadata['title'].'","subtitle":"'.$metadata['subtitle'].'","images":{"0":{"url":"'.$metadata['image'].'"}}},"contentId":"' . $url . '","streamType":"' . $streamType . '","contentType":"' . $contentType . '"},"autoplay":' . $autoPlay . ',"currentTime":' . $currentTime . ',"requestId":921489134}';
-		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media", $json);
-		$r = "";
-		while (!preg_match("/\"playerState\":\"PLAYING\"/",$r)) {
-			$r = $this->chromecast->getCastMessage();
-			sleep(1);
-		}
-		// Grab the mediaSessionId
-		preg_match("/\"mediaSessionId\":([^\,]*)/",$r,$m);
-		$this->mediaid = $m[1];
+		if ($success = $this->launch()) {
+                    $json = '{"type":"LOAD","media":{"metadata":{"metadataType":0,"title":"'.$metadata['title'].'","subtitle":"'.$metadata['subtitle'].'","images":{"0":{"url":"'.$metadata['image'].'"}}},"contentId":"' . $url . '","streamType":"' . $streamType . '","contentType":"' . $contentType . '"},"autoplay":' . $autoPlay . ',"currentTime":' . $currentTime . ',"requestId":921489134}';
+                    $this->chromecast->sendMessage("urn:x-cast:com.google.cast.media", $json);
+                    $r = "";
+                    while (!preg_match("/\"playerState\":\"PLAYING\"/",$r)) {
+                            $r = $this->chromecast->getCastMessage();
+                            sleep(1);
+                    }
+                    // Grab the mediaSessionId
+                    preg_match("/\"mediaSessionId\":([^\,]*)/",$r,$m);
+                    $this->mediaid = $m[1];
+                }
+
+                return $success;
 	}
 	
 	public function pause() {
 		// Pause
-		$this->launch(); // Auto-reconnects
-		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"PAUSE", "mediaSessionId":' . $this->mediaid . ', "requestId":1}');
-		$this->chromecast->getCastMessage();
+		if ($success = $this->launch()) { // Auto-reconnects
+                    $this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"PAUSE", "mediaSessionId":' . $this->mediaid . ', "requestId":1}');
+                    $this->chromecast->getCastMessage();
+                }
+
+                return $success;
 	}
 
 	public function restart() {
@@ -55,9 +61,12 @@ class CCDefaultMediaPlayer extends CCBaseSender
 	
 	public function stop() {
 		// Stop
-		$this->launch(); // Auto-reconnects
-		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"STOP", "mediaSessionId":' . $this->mediaid . ', "requestId":1}');
-		$this->chromecast->getCastMessage();
+		if ($success = $this->launch()) { // Auto-reconnects
+                    $this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"STOP", "mediaSessionId":' . $this->mediaid . ', "requestId":1}');
+                    $this->chromecast->getCastMessage();
+                }
+
+                return $success;
 	}
 	
 	public function getStatus() {
@@ -85,8 +94,11 @@ class CCDefaultMediaPlayer extends CCBaseSender
 	
 	public function SetVolume($volume) {
 		// Mute a video
-		$this->launch(); // Auto-reconnects
-		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.receiver", '{"type":"SET_VOLUME", "volume": { "level": ' . $volume . ' }, "requestId":1 }');
-		$this->chromecast->getCastMessage();
+		if ($success = $this->launch()) { // Auto-reconnects
+                    $this->chromecast->sendMessage("urn:x-cast:com.google.cast.receiver", '{"type":"SET_VOLUME", "volume": { "level": ' . $volume . ' }, "requestId":1 }');
+                    $this->chromecast->getCastMessage();
+                }
+
+                return $success;
 	}
 }

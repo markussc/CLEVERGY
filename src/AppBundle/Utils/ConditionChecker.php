@@ -6,7 +6,7 @@ use AppBundle\Utils\Connectors\EdiMaxConnector;
 use AppBundle\Utils\Connectors\MobileAlertsConnector;
 use AppBundle\Utils\Connectors\MyStromConnector;
 use AppBundle\Utils\Connectors\PcoWebConnector;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ObjectManager;
 
 /**
  *
@@ -18,7 +18,7 @@ class ConditionChecker
     protected $edimax;
     protected $mobilealerts;
 
-    public function __construct(EntityManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, MyStromConnector $mystrom, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, MyStromConnector $mystrom, PcoWebConnector $pcoweb, $energyLowRate)
     {
         $this->em = $em;
         $this->edimax = $edimax;

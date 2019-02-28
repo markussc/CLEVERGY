@@ -59,7 +59,7 @@
                 {% else %}
                     {% set currentStream = false %}
                 {% endif %}
-                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{% if currentStream %}{{ path('chromecast_stop', {'ccId':ccId}) }}{% else %}{{ path('chromecast_play', {'ccId':ccId, 'streamId':streamId}) }}{% endif %}'});"{% endif %}>{% if currentStream %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-stop{% endif %}" style="color:green"></i>{% else %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-play{% endif %}" style="color:red"></i>{% endif %}</a>
+                <span style="margin-left:20px;"></span><a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="$.ajax({url: '{% if currentStream %}{{ path('chromecast_stop', {'ccId':ccId}) }}{% else %}{{ path('chromecast_play', {'ccId':ccId, 'streamId':streamId}) }}{% endif %}'});"{% endif %}>{% if currentStream %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-stop{% endif %}" style="color:green"></i>{% else %}<i class="{% if currentState|default(false) == 'working' %}fas fa-spinner fa-spin{% else %}fas fa-play{% endif %}" style="color:red"></i>{% endif %}</a>
                 {{ stream['name'] }}
                 {% if not loop.last %}<br/>{% endif %}
             {% endfor %}

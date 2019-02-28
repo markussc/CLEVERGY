@@ -52,11 +52,15 @@ class ChromecastController extends Controller
                 'url' => false,
                 'state' => 'stopped',
             ]);
-            foreach ($chromecast['edimax'] as $edimaxId) {
-                $edimax->executeCommand($edimaxId, 0);
+            if (array_key_exists('edimax', $chromecast)) {
+                foreach ($chromecast['edimax'] as $edimaxId) {
+                    $edimax->executeCommand($edimaxId, 0);
+                }
             }
-            foreach ($chromecast['mystrom'] as $mystromId) {
-                $mystrom->executeCommand($mystromId, 0);
+            if (array_key_exists('mystrom', $chromecast)) {
+                foreach ($chromecast['mystrom'] as $mystromId) {
+                    $mystrom->executeCommand($mystromId, 0);
+                }
             }
         }
         $em->persist($settings);

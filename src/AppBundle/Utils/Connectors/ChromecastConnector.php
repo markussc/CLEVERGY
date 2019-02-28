@@ -90,9 +90,18 @@ class ChromecastConnector
 
         try {
             $cc = new Chromecast($ip, "8009");
-            $cc->DMP->play($url, "LIVE", $type, true, 0, $metadata);
-            $cc->DMP->UnMute();
-            $cc->DMP->SetVolume(0.5);
+            if($cc->DMP->play($url, "LIVE", $type, true, 0, $metadata)) {
+                $cc->DMP->UnMute();
+                $cc->DMP->SetVolume(0.5);
+            } else {
+                // reset state to stopped
+                $settings->setConfig([
+                    'url' => false,
+                    'state' => 'stopped',
+                ]);
+                $this->em->flush();
+                return false;
+            }
         } catch (\Exception $e) {
             // reset state to stopped
             $settings->setConfig([

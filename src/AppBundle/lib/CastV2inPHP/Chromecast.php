@@ -294,7 +294,7 @@ class Chromecast
 			// Reconnect
 			$contextOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, ]];
 			$context = stream_context_create($contextOptions);
-			if ($this->socket = stream_socket_client('ssl://' . $this->lastip . ":" . $this->lastport, $errno, $errstr, 30, STREAM_CLIENT_CONNECT, $context)) {
+			if ($this->socket = stream_socket_client('ssl://' . $this->lastip . ":" . $this->lastport, $errno, $errstr, 5, STREAM_CLIENT_CONNECT, $context)) {
 			}
 			else {
 				throw new Exception("Failed to connect to remote Chromecast");
@@ -365,10 +365,13 @@ class Chromecast
 		$this->lastactivetime = time();
 		$this->requestId++;
 		$r = "";
-		while ($this->transportid == "") {
-			$r = $this->getCastMessage();
+                $counter = 0;
+		while ($counter < 3 && $this->transportid == "") {
+                    $counter++;
+                    $r = $this->getCastMessage();
 		}
-		return $r;
+
+                return $r;
 	}
 	
 	function connect($tl = 0)
@@ -398,13 +401,18 @@ class Chromecast
 		// in the packet and we can read that directly.
 		$this->testLive();
 		$response = fread($this->socket, 2000);
-		while (preg_match("/urn:x-cast:com.google.cast.tp.heartbeat/", $response) && preg_match("/\"PING\"/", $response)) {
-			$this->pong();
-			sleep(3);
-			$response = fread($this->socket, 2000);
-			// Wait infinitely for a packet.
-			set_time_limit(30);
+                $counter = 0;
+		while ($counter < 5 && preg_match("/urn:x-cast:com.google.cast.tp.heartbeat/", $response) && preg_match("/\"PING\"/", $response)) {
+                    $counter++;
+                    $this->pong();
+                    sleep(3);
+                    $response = fread($this->socket, 2000);
+                    // Wait infinitely for a packet.
+                    //set_time_limit(30);
 		}
+                if ($counter >= 5) {
+                    return false;
+                }
 		if (preg_match("/transportId/s", $response)) {
 			preg_match("/transportId\"\:\"([^\"]*)/", $response, $matches);
 			$matches = $matches[1];
