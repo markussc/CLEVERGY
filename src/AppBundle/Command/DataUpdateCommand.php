@@ -69,11 +69,14 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // conexio
         $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll();
-        $conexioEntity = new ConexioDataStore();
-        $conexioEntity->setTimestamp(new \DateTime('now'));
-        $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
-        $conexioEntity->setData($conexio);
-        $em->persist($conexioEntity);
+        if ($conexio) {
+            // we only want to store valid and complete data
+            $conexioEntity = new ConexioDataStore();
+            $conexioEntity->setTimestamp(new \DateTime('now'));
+            $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+            $conexioEntity->setData($conexio);
+            $em->persist($conexioEntity);
+        }
 
         // pcoweb
         $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();

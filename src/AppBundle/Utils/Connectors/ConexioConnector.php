@@ -132,6 +132,10 @@ class ConexioConnector
         }
         $data['p'] = (int)(($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100/2); // unclear why the division by 2 is required
 
+        if(!array_key_exists('q', $data)) {
+            // the retrieved data is incomplete or invalid, we do not want to use it
+            $data = false;
+        }
         return $data;
     }
 

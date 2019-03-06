@@ -84,7 +84,7 @@ class ConexioDataStoreRepository extends EntityRepository
             ->setMaxResults(1);
         $endEnergy = $qbEnd->getQuery()->getResult();
 
-        if (!count($startEnergy) || !count($endEnergy)) {
+        if (!count($startEnergy) || !count($endEnergy) || !array_key_exists('q', $startEnergy[0]->getData()) || !array_key_exists('q', $endEnergy[0]->getData())) {
             return 0;
         }
 
