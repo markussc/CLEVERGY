@@ -28,7 +28,7 @@ class SmartFoxConnector
     public function getAllLatest()
     {
         $latest = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
-        if (count($latest)) {
+        if ($latest && count($latest)) {
             $latest['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
         }
 
