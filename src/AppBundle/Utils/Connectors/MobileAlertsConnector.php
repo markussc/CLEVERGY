@@ -32,8 +32,10 @@ class MobileAlertsConnector
     public function getAllLatest()
     {
         $data = [];
-        foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
-            $data[$sensorId] = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+        if (is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                $data[$sensorId] = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+            }
         }
         return $data;
     }
