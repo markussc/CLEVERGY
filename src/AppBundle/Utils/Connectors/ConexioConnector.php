@@ -22,7 +22,11 @@ class ConexioConnector
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
-        $this->basePath = 'http://' . $connectors['conexio']['ip'];
+        if (array_key_exists('conexio', $connectors)) {
+            $this->basePath = 'http://' . $connectors['conexio']['ip'];
+        } else {
+            $this->basePath = '';
+        }
     }
 
     /**
