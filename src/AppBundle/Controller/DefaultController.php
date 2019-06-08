@@ -7,6 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class DefaultController extends Controller
 {
@@ -15,7 +16,32 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        $activePage = "homepage";
+        $clientIp = $request->getClientIp();
+        $authenticatedIps = $this->getParameter('authenticated_ips');
+        $params = $request->query->all();
+        $securityContext = $this->container->get('security.authorization_checker');
+        if (!$securityContext->isGranted('IS_AUTHENTICATED_REMEMBERED') && array_key_exists($clientIp, $authenticatedIps)) {
+            $route = $request->get('route');
+            $em = $this->getDoctrine()->getManager();
+            $user = $em->getRepository('AppBundle:User')->findOneBy(array('email' => $authenticatedIps[$clientIp]));
+            if ($user) {
+                $token = new UsernamePasswordToken($user, $user->getPassword(), "xinstance", $user->getRoles());
+                $this->get('security.token_storage')->setToken($token);
+                if ($route) {
+                    return $this->redirectToRoute($route, $params);
+                }
+            }
+        }
+
+        return $this->redirectToRoute('overview', $params);
+    }
+
+    /**
+     * @Route("/overview", name="overview")
+     */
+    public function overviewAction(Request $request)
+    {
+        $activePage = "overview";
         if ($request->query->get("details")) {
             $activePage = "details";
         }
