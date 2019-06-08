@@ -33,7 +33,7 @@ class ConexioConnector
     {
         $ip = $this->connectors['conexio']['ip'];
         $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
-        if (count($latest)) {
+        if ($latest && count($latest)) {
              $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
         }
 
