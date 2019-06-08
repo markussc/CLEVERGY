@@ -35,10 +35,13 @@ class ConexioConnector
      */
     public function getAllLatest()
     {
-        $ip = $this->connectors['conexio']['ip'];
-        $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
-        if ($latest && count($latest)) {
-             $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+        $latest = [];
+        if (array_key_exists('conexio', $this->connectors)) {
+            $ip = $this->connectors['conexio']['ip'];
+            $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
+            if ($latest && count($latest)) {
+                 $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+            }
         }
 
         return $latest;
