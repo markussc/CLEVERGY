@@ -21,7 +21,7 @@ class SmartFoxConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        if (is_array($connectors['smartfox'])) {
+        if (array_key_exists('smartfox', $connectors)) {
             $this->ip = $connectors['smartfox']['ip'];
         } else {
             $this->ip = null;
