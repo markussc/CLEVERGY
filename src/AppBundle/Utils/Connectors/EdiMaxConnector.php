@@ -35,7 +35,7 @@ class EdiMaxConnector
         $results = [];
         $today = new \DateTime('today');
         $now = new \DateTime();
-        if (is_array($this->connectors['edimax'])) {
+        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
             foreach ($this->connectors['edimax'] as $device) {
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
                 if (isset($device['nominalPower'])) {
@@ -62,7 +62,7 @@ class EdiMaxConnector
         $results = [];
         $today = new \DateTime('today');
         $now = new \DateTime();
-        if (is_array($this->connectors['edimax'])) {
+        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
             foreach ($this->connectors['edimax'] as $device) {
                 $status = $this->getStatus($device);
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);

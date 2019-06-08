@@ -35,7 +35,7 @@ class MyStromConnector
         $results = [];
         $today = new \DateTime('today');
         $now = new \DateTime();
-        if (is_array($this->connectors['mystrom'])) {
+        if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
             foreach ($this->connectors['mystrom'] as $device) {
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
                 if (isset($device['nominalPower'])) {
@@ -62,7 +62,7 @@ class MyStromConnector
         $results = [];
         $today = new \DateTime('today');
         $now = new \DateTime();
-        if (is_array($this->connectors['mystrom'])) {
+        if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
             foreach ($this->connectors['mystrom'] as $device) {
                 $status = $this->getStatus($device);
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
