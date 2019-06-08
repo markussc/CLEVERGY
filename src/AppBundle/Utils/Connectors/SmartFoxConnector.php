@@ -21,7 +21,11 @@ class SmartFoxConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        $this->ip = $connectors['smartfox']['ip'];
+        if (is_array($connectors['smartfox'])) {
+            $this->ip = $connectors['smartfox']['ip'];
+        } else {
+            $this->ip = null;
+        }
         $this->basePath = 'http://' . $this->ip;
     }
 
