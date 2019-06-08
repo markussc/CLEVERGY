@@ -59,8 +59,10 @@ class DefaultController extends Controller
         $em = $this->getDoctrine()->getManager();
 
         $mobileAlertsHistory = [];
-        foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
-            $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+        if (is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
+            foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
+                $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+            }
         }
 
         $history = [
