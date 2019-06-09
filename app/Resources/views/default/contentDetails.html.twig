@@ -115,7 +115,8 @@
 </div>
 {% endif %}
 </div>
-{% if (refresh is not defined or not refresh) and currentStat['smartFoxChart'] is defined %}
+{% if not refresh|default(false) %}
+{% if currentStat['smartFoxChart']|default(false) %}
 <div class="row">
     <div class="small-12 large-6 columns">
         <canvas id="currentPowerCanvas" ></canvas>
@@ -124,6 +125,8 @@
         <canvas id="energyDayCanvas" ></canvas>
     </div>
 </div>
+{% endif %}
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio'] %}
 <div class="row">
     <div class="small-12 columns">
         <canvas id="twentyFourPowerCanvas" ></canvas>
@@ -133,294 +136,300 @@
     <div class="small-12 columns">
         <canvas id="twentyFourTemperaturesCanvas" ></canvas>
     </div>
-    <script>
-        function updateChartCallback(chart, data, color)
-        {
-            if (data) {
-                dataArr = JSON.parse(data);
-            } else {
-                dataArr = [];
-            }
-            if (color) {
-                colorArr = JSON.parse(color);
-            } else {
-                colorArr = [];
-            }
-            
-            updateChart(charts[chart], dataArr, colorArr);
+</div>
+{% endif %}
+<script>
+    function updateChartCallback(chart, data, color)
+    {
+        if (data) {
+            dataArr = JSON.parse(data);
+        } else {
+            dataArr = [];
+        }
+        if (color) {
+            colorArr = JSON.parse(color);
+        } else {
+            colorArr = [];
         }
 
-        function updateChart(chart, dataArr, colorArr)
-        {
-            for (var i = 0; i < dataArr.length; i++) {
-                chart.data.datasets[i].data = [dataArr[i]];
-                if (typeof(colorArr[i]) !== 'undefined') {
-                    if (dataArr[i] < 0) {
-                        colorIndex = 0;
-                    } else {
-                        colorIndex = 1;
+        updateChart(charts[chart], dataArr, colorArr);
+    }
+
+    function updateChart(chart, dataArr, colorArr)
+    {
+        for (var i = 0; i < dataArr.length; i++) {
+            chart.data.datasets[i].data = [dataArr[i]];
+            if (typeof(colorArr[i]) !== 'undefined') {
+                if (dataArr[i] < 0) {
+                    colorIndex = 0;
+                } else {
+                    colorIndex = 1;
+                }
+                chart.data.datasets[i].borderColor = [colorArr[i][colorIndex]];
+                chart.data.datasets[i].backgroundColor = [colorArr[i][colorIndex]];
+            }
+        }
+        chart.update();
+    }
+
+    var charts = new Object();
+    {% if currentStat['smartFoxChart']|default(false) %}
+    // currentPower
+    charts.currentPower = new Chart(document.getElementById("currentPowerCanvas").getContext('2d'), {
+        type: 'bar',
+        data: { 
+            datasets: [
+            {
+                label: '{% trans %}label.smartfox.int_power{% endtrans %}'
+            },
+            {
+                label: '{% trans %}label.smartfox.pv_power{% endtrans %}'
+            },
+            {
+                label: '{% trans %}label.smartfox.net_power{% endtrans %}'
+            }
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    },
+                    scaleLabel:{
+                        display: true,
+                        labelString: 'W',
+                        fontColor: "#546372"
                     }
-                    chart.data.datasets[i].borderColor = [colorArr[i][colorIndex]];
-                    chart.data.datasets[i].backgroundColor = [colorArr[i][colorIndex]];
-                }
-            }
-            chart.update();
+                }]
+            },
+            animation: false
         }
+    });
 
-        var charts = new Object();
-
-        // currentPower
-        charts.currentPower = new Chart(document.getElementById("currentPowerCanvas").getContext('2d'), {
-            type: 'bar',
-            data: { 
-                datasets: [
-                {
-                    label: '{% trans %}label.smartfox.int_power{% endtrans %}'
-                },
-                {
-                    label: '{% trans %}label.smartfox.pv_power{% endtrans %}'
-                },
-                {
-                    label: '{% trans %}label.smartfox.net_power{% endtrans %}'
-                }
-                ]
+    // energyDay
+    charts.energyDay = new Chart(document.getElementById("energyDayCanvas").getContext('2d'), {
+        type: 'bar',
+        data: {
+            datasets: [
+            {
+                label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
+                backgroundColor: ['red']
             },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
-                        },
-                        scaleLabel:{
-                            display: true,
-                            labelString: 'W',
-                            fontColor: "#546372"
-                        }
-                    }]
-                },
-                animation: false
-            }
-        });
-
-        // energyDay
-        charts.energyDay = new Chart(document.getElementById("energyDayCanvas").getContext('2d'), {
-            type: 'bar',
-            data: {
-                datasets: [
-                {
-                    label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
-                    backgroundColor: ['red']
-                },
-                {
-                    label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
-                    backgroundColor: ['chartreuse']
-                },
-                {
-                    label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
-                    backgroundColor: ['yellow']
-                },
-                {
-                    label: '{% trans %}label.conexio.energy_day{% endtrans %}',
-                    backgroundColor: ['orange']
-                }
-                ]
+            {
+                label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
+                backgroundColor: ['chartreuse']
             },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
-                        },
-                        scaleLabel:{
-                            display: true,
-                            labelString: 'kWh',
-                            fontColor: "#546372"
-                        }
-                    }]
-                },
-                animation: false
-            }
-        });
-
-        // 24hPower
-        charts.twentyFourPower = new Chart(document.getElementById("twentyFourPowerCanvas").getContext('2d'), {
-            type: 'line',
-            data: { 
-                datasets: [
-                {
-                    label: '{% trans %}label.smartfox.net_power{% endtrans %}',
-                    backgroundColor: ['darkblue'],
-                    data: [
-                    {% for sfData in history['smartFox'] %}
-                        {
-                            x: new Date("{{ sfData.timestamp|date("c") }}"),
-                            y: {{ sfData.getData()['power_io']|default(0) }}
-                        }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                    ]
-                },
-                {
-                    label: '{% trans %}label.smartfox.pv_power{% endtrans %}',
-                    borderColor: ['yellow'],
-                    fill: false,
-                    data: [
-                    {% for sfData in history['smartFox'] %}
-                        {
-                            x: new Date("{{ sfData.timestamp|date("c") }}"),
-                            y: {{ sfData.getData()['PvPower'][0]|default(0) }}
-                        }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                    ]
-                }
-                ]
+            {
+                label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
+                backgroundColor: ['yellow']
             },
-            options: {
-                elements: {
-                    point: {
-                        radius: 0 
-                    } 
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
-                        },
-                        scaleLabel:{
-                            display: true,
-                            labelString: 'W',
-                            fontColor: "#546372"
-                        }
-                    }],
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            displayFormats: {
-                                minute: 'H:m'
-                            }
-                        }
-                    }]
-                },
-                animation: false
+            {
+                label: '{% trans %}label.conexio.energy_day{% endtrans %}',
+                backgroundColor: ['orange']
             }
-        });
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    },
+                    scaleLabel:{
+                        display: true,
+                        labelString: 'kWh',
+                        fontColor: "#546372"
+                    }
+                }]
+            },
+            animation: false
+        }
+    });
 
-        // 24hTemperatures
-        charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
-            type: 'line',
-            data: { 
-                datasets: [
-                {
-                    label: '{% trans %}label.pco.water_temp{% endtrans %}',
-                    borderColor: ['blue'],
-                    fill: false,
-                    data: [
-                    {% for pwData in history['pcoWeb'] %}
-                        {
-                            x: new Date("{{ pwData.timestamp|date("c") }}"),
-                            y: {{ pwData.getData()['waterTemp'] }}
-                        }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                    ]
-                },
-                {
-                    label: '{% trans %}label.pco.outside_temp{% endtrans %}',
-                    borderColor: ['orange'],
-                    fill: false,
-                    data: [
-                    {% for pwData in history['pcoWeb'] %}
-                        {
-                            x: new Date("{{ pwData.timestamp|date("c") }}"),
-                            y: {{ pwData.getData()['outsideTemp'] }}
-                        }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                    ]
-                }
-                {% for idx, sensor in connectors['mobilealerts']['sensors'] %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
-                ,{
-                    label: '{{ history['mobileAlerts'][idx][history['mobileAlerts'][idx]|length-1].getData()[dataSetKey+1]['label']|default('unknown') }}',
-                    borderColor: '{{ dataSet[2] }}',
-                    fill: false,
-                    data: [
-                    {% for maData in history['mobileAlerts'][idx] %}
-                        {
-                            x: new Date("{{ maData.timestamp|date("c") }}"),
-                            y: {{ maData.getData()[dataSetKey+1]['value']|default(0)|replace({'---': dataSet[3]|default(0)}) }}
-                        }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                    ]
-                }{% endfor %}{% endfor %}
-                {% for idx, sensor in connectors['conexio']['sensors'] if sensor[2] is defined %}
-                ,{
-                    label: '{{ sensor[0] }}',
-                    borderColor: ['{{ sensor[2] }}'],
-                    fill: false,
-                    data: [
-                    {% for coData in history['conexio'] if coData.getData() %}
-                        {% if not loop.first %},{% endif %} 
-                        {
-                            x: new Date("{{ coData.timestamp|date('c') }}"),
-                            y: {{ coData.getData()[idx]|default(0) / sensor[3]|default(1) }}
-                        }
-                    {% endfor %}
-                    ],
-                    {% if sensor[1] == "W" %}
-                        yAxisID: "y-axis-W"
-                    {% else %}
-                        yAxisID: "y-axis-°C"
-                    {% endif %}
-                }
+    // 24hPower
+    charts.twentyFourPower = new Chart(document.getElementById("twentyFourPowerCanvas").getContext('2d'), {
+        type: 'line',
+        data: { 
+            datasets: [
+            {
+                label: '{% trans %}label.smartfox.net_power{% endtrans %}',
+                backgroundColor: ['darkblue'],
+                data: [
+                {% for sfData in history['smartFox']|default([]) %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ sfData.getData()['power_io']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
             },
-            options: {
-                elements: {
-                    point: {
-                        radius: 0 
-                    } 
-                },
-                scales: {
-                    yAxes: [
-                        {
-                            position: "left",
-                            id: "y-axis-°C",
-                            ticks: {
-                                beginAtZero:true
-                            },
-                            scaleLabel:{
-                                display: true,
-                                labelString: '°C',
-                                fontColor: "#546372"
-                            }
-                        },
-                        {
-                            position: "right",
-                            id: "y-axis-W",
-                            ticks: {
-                                beginAtZero:true
-                            },
-                            scaleLabel:{
-                                display: true,
-                                labelString: 'W',
-                                fontColor: "#546372"
-                            },
-                            // grid line settings
-                            gridLines: {
-                                drawOnChartArea: false, // only want the grid lines for one axis to show up
-                            },
-                        }
-                    ],
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            displayFormats: {
-                                minute: 'H:m'
-                            }
-                        }
-                    }]
-                },
-                animation: false
+            {
+                label: '{% trans %}label.smartfox.pv_power{% endtrans %}',
+                borderColor: ['yellow'],
+                fill: false,
+                data: [
+                {% for sfData in history['smartFox']|default([]) %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ sfData.getData()['PvPower'][0]|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
             }
-        });
-    </script>
-</div>
+            ]
+        },
+        options: {
+            elements: {
+                point: {
+                    radius: 0 
+                } 
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    },
+                    scaleLabel:{
+                        display: true,
+                        labelString: 'W',
+                        fontColor: "#546372"
+                    }
+                }],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            minute: 'H:m'
+                        }
+                    }
+                }]
+            },
+            animation: false
+        }
+    });
+    {% endif %}
+    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) %}
+    // 24hTemperatures
+    charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
+        type: 'line',
+        data: { 
+            datasets: [
+            {% if currentStat['pcoWeb']|default(false) %}
+            {
+                label: '{% trans %}label.pco.water_temp{% endtrans %}',
+                borderColor: ['blue'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['waterTemp'] }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {
+                label: '{% trans %}label.pco.outside_temp{% endtrans %}',
+                borderColor: ['orange'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['outsideTemp'] }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            }
+            {% endif %}
+            {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
+            ,{
+                label: '{{ history['mobileAlerts'][idx][history['mobileAlerts'][idx]|length-1].getData()[dataSetKey+1]['label']|default('unknown') }}',
+                borderColor: '{{ dataSet[2] }}',
+                fill: false,
+                data: [
+                {% for maData in history['mobileAlerts'][idx] %}
+                    {
+                        x: new Date("{{ maData.timestamp|date("c") }}"),
+                        y: {{ maData.getData()[dataSetKey+1]['value']|default(0)|replace({'---': dataSet[3]|default(0)}) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            }{% endfor %}{% endfor %}
+            {% for idx, sensor in connectors['conexio']['sensors']|default([]) if sensor[2] is defined %}
+            ,{
+                label: '{{ sensor[0] }}',
+                borderColor: ['{{ sensor[2] }}'],
+                fill: false,
+                data: [
+                {% for coData in history['conexio'] if coData.getData() %}
+                    {% if not loop.first %},{% endif %} 
+                    {
+                        x: new Date("{{ coData.timestamp|date('c') }}"),
+                        y: {{ coData.getData()[idx]|default(0) / sensor[3]|default(1) }}
+                    }
+                {% endfor %}
+                ],
+                {% if sensor[1] == "W" %}
+                    yAxisID: "y-axis-W"
+                {% else %}
+                    yAxisID: "y-axis-°C"
+                {% endif %}
+            }
+            {% endfor %}
+            ]
+        },
+        options: {
+            elements: {
+                point: {
+                    radius: 0 
+                } 
+            },
+            scales: {
+                yAxes: [
+                    {
+                        position: "left",
+                        id: "y-axis-°C",
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: '°C',
+                            fontColor: "#546372"
+                        }
+                    },
+                    {
+                        position: "right",
+                        id: "y-axis-W",
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: 'W',
+                            fontColor: "#546372"
+                        },
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    }
+                ],
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            minute: 'H:m'
+                        }
+                    }
+                }]
+            },
+            animation: false
+        }
+    });
+    {% endif %}
+</script>
+
 {% endif %}
