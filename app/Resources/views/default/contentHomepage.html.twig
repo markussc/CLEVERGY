@@ -20,7 +20,7 @@
 <div class="small-6 medium-4 columns" style="margin-top:1em;" id="pcoWeb">
     <h4><i class="fas fa-fire" style="font-size:2em; color:red;"></i></h4>
     {% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}<br/>
-    {% for maSensor in currentStat['mobileAlerts'] %}
+    {% for maSensor in currentStat['mobileAlerts']|default([]) %}
         {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['dashboard'] == true %}
             {{ measurement['label']}}: {{ measurement['value'] }}{{ measurement['unit'] }}<br/>
         {% endfor %}
@@ -28,11 +28,11 @@
     {% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }}°C
 </div>
 {% endif %}
-{% if currentStat['mobileAlerts'] is defined %}
+{% if currentStat['pcoWeb']|default(false) or currentStat['openweathermap']|default(false) %}
 <div class="small-6 medium-4 columns" style="margin-top:1em;" id="mobileAlerts">
     <h4><i class="fas fa-cloud-sun-rain" style="font-size:2em; color:blue;"></i></h4>
-    {% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%<br/>
-    {% if currentStat['pcoWeb'] is defined %}{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }}°C{% endif %}
+    {% if currentStat['openweathermap']|default(false) %}{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%<br/>{% endif %}
+    {% if currentStat['pcoWeb']|default(false) %}{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }}°C{% endif %}
 </div>
 {% endif %}
 {% if connectors['chromecast'] is defined %}

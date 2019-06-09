@@ -45,32 +45,49 @@ class DefaultController extends Controller
         if ($request->query->get("details")) {
             $activePage = "details";
         }
-        $currentStat = [
-            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest(),
-            'smartFoxChart' => true,
-            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
-            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest(),
-            'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
-            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest(),
-            'mystrom' => $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest(),
-            'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
-        ];
+        $currentStat = [];
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+            $currentStat['smartFoxChart'] = true;
+        }
+        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+            $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
+        }
+        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
+        }
+        if (array_key_exists('mobileAlerts', $this->getParameter('connectors'))) {
+            $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+        }
+        if (array_key_exists('edimax', $this->getParameter('connectors'))) {
+            $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest();
+        }
+        if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
+            $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest();
+        }
+        if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
+            $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+        }
 
         $em = $this->getDoctrine()->getManager();
 
-        $mobileAlertsHistory = [];
-        if (is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
+        $history = [];
+        if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
+            $mobileAlertsHistory = [];
             foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
                 $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
             }
+            $history['mobileAlerts'] = $mobileAlertsHistory;
         }
-
-        $history = [
-            'smartFox' => $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()),
-            'pcoWeb' => $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp()),
-            'conexio' => $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp()),
-        ];
-        $history['mobileAlerts'] = $mobileAlertsHistory;
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $history['smartFox'] = $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
+        }
+        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+            $history['pcoWeb'] = $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
+        }
+        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $history['conexio'] = $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+        }
 
         // render the template
         return $this->render('default/index.html.twig', [
@@ -139,15 +156,28 @@ class DefaultController extends Controller
      */
     public function refreshAction(Request $request)
     {
-        $currentStat = [
-            'smartFox' => $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true),
-            'pcoWeb' => $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest(),
-            'conexio' => $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true),
-            'edimax' => $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll(),
-            'mystrom' => $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll(),
-            'mobileAlerts' => $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest(),
-            'openweathermap' => $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest(),
-        ];
+        $currentStat = [];
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true);
+        }
+        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+            $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
+        }
+        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true);
+        }
+        if (array_key_exists('edimax', $this->getParameter('connectors'))) {
+            $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll();
+        }
+        if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
+            $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll();
+        }
+        if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
+            $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+        }
+        if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
+            $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+        }
 
         $template = "default/contentHomepage.html.twig";
         if ($request->query->get("details")) {
@@ -175,16 +205,16 @@ class DefaultController extends Controller
         $thisYear = new \DateTime('first day of january this year midnight');
         $lastYear = new \DateTime('first day of january last year midnight');
 
-        $history = [
-            'intervals' => [
-                'today',
-                'yesterday',
-                'week',
-                'month',
-                'year',
-                'lastYear',
-            ],
-            'smartfox' => [
+        $history['intervals'] = [
+            'today',
+            'yesterday',
+            'week',
+            'month',
+            'year',
+            'lastYear',
+        ];
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $history['smartfox'] = [
                 'pv_today' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $today, $now),
                 'pv_yesterday' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $yesterday, $today),
                 'pv_week' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisWeek, $now),
@@ -203,16 +233,18 @@ class DefaultController extends Controller
                 'energy_out_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisYear, $now),
                 'energy_in_lastYear' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYear, $thisYear),
                 'energy_out_lastYear' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYear, $thisYear),
-            ],
-            'conexio' => [
+            ];
+        }
+        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $history['conexio'] = [
                 'energy_today' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $today, $now),
                 'energy_yesterday' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $yesterday, $today),
                 'energy_week' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisWeek, $now),
                 'energy_month' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisMonth, $now),
                 'energy_year' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisYear, $now),
                 'energy_lastYear' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $thisYear),
-            ],
-        ];
+            ];
+        }
 
         // render the template
         return $this->render('default/history.html.twig', [

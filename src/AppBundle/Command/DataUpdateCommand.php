@@ -60,39 +60,47 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
 
         // smartfox
-        $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
-        $smartfoxEntity = new SmartFoxDataStore();
-        $smartfoxEntity->setTimestamp(new \DateTime('now'));
-        $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
-        $smartfoxEntity->setData($smartfox);
-        $em->persist($smartfoxEntity);
+        if (array_key_exists('smartfox', $this->getContainer()->getParameter('connectors'))) {
+            $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
+            $smartfoxEntity = new SmartFoxDataStore();
+            $smartfoxEntity->setTimestamp(new \DateTime('now'));
+            $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
+            $smartfoxEntity->setData($smartfox);
+            $em->persist($smartfoxEntity);
+        }
 
         // conexio
-        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll();
-        if ($conexio) {
-            // we only want to store valid and complete data
-            $conexioEntity = new ConexioDataStore();
-            $conexioEntity->setTimestamp(new \DateTime('now'));
-            $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
-            $conexioEntity->setData($conexio);
-            $em->persist($conexioEntity);
+        if (array_key_exists('smartfox', $this->getContainer()->getParameter('connectors'))) {
+            $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll();
+            if ($conexio) {
+                // we only want to store valid and complete data
+                $conexioEntity = new ConexioDataStore();
+                $conexioEntity->setTimestamp(new \DateTime('now'));
+                $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+                $conexioEntity->setData($conexio);
+                $em->persist($conexioEntity);
+            }
         }
 
         // pcoweb
-        $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
-        $pcowebEntity = new PcoWebDataStore();
-        $pcowebEntity->setTimestamp(new \DateTime('now'));
-        $pcowebEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
-        $pcowebEntity->setData($pcoweb);
-        $em->persist($pcowebEntity);
+        if (array_key_exists('pcoweb', $this->getContainer()->getParameter('connectors'))) {
+            $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
+            $pcowebEntity = new PcoWebDataStore();
+            $pcowebEntity->setTimestamp(new \DateTime('now'));
+            $pcowebEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
+            $pcowebEntity->setData($pcoweb);
+            $em->persist($pcowebEntity);
+        }
 
         // mobilealerts
-        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll() as $sensorId => $sensorData) {
-            $mobilealertsEntity = new MobileAlertsDataStore();
-            $mobilealertsEntity->setTimestamp(new \DateTime('now'));
-            $mobilealertsEntity->setConnectorId($sensorId);
-            $mobilealertsEntity->setData($sensorData);
-            $em->persist($mobilealertsEntity);
+        if (array_key_exists('mobilealerts', $this->getContainer()->getParameter('connectors'))) {
+            foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAll() as $sensorId => $sensorData) {
+                $mobilealertsEntity = new MobileAlertsDataStore();
+                $mobilealertsEntity->setTimestamp(new \DateTime('now'));
+                $mobilealertsEntity->setConnectorId($sensorId);
+                $mobilealertsEntity->setData($sensorData);
+                $em->persist($mobilealertsEntity);
+            }
         }
 
         // write to database
@@ -246,111 +254,123 @@ class DataUpdateCommand extends ContainerAwareCommand
             $minInsideTemp = 19.2;
 
         // readout current temperature values
-        $mobilealerts = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
-        $mobilealerts = $mobilealerts[$this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)];
-        $insideTemp = $mobilealerts[1]['value']; // this is assumed to be the first value of the first mobilealerts sensor
+        if (array_key_exists('mobilealerts', $this->getContainer()->getParameter('connectors'))) {
+            $mobilealerts = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+            $mobilealerts = $mobilealerts[$this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getId(0)];
+            $insideTemp = $mobilealerts[1]['value']; // this is assumed to be the first value of the first mobilealerts sensor
+        } else {
+            // if no inside sensor is available, we assume 20°C
+            $insideTemp = 20;
+        }
         $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
         // get conexio values
-        $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
-        $heatStorageMidTemp = ($conexio['s3'] + $conexio['s2'])/2;
+        if (array_key_exists('smartfox', $this->getContainer()->getParameter('connectors'))) {
+            $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
+            $heatStorageMidTemp = ($conexio['s3'] + $conexio['s2'])/2;
+        } else {
+            // if no heatStorage sensor is available, we assume 35°C
+            $heatStorageMidTemp = 35;
+        }
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
-        if ($avgClouds < 30) {
-            // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
-        } else {
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
-        }
-
-        // decide whether it's summer half year
-        $isSummer = (\date('z') > 70 && \date('z') < 273); // 10th of march - 30th september
-
-        $activateHeating = false;
-        $deactivateHeating = false;
-
-        if ($smartFoxHighPower) {
-            // SmartFox has force heating flag set
-            $activateHeating = true;
-            // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
-            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+        if (array_key_exists('pcoweb', $this->getContainer()->getParameter('connectors'))) {
+            if ($avgClouds < 30) {
+                // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
+            } else {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
             }
-        }
 
-        // heat storige is low or net power is deeply negative. Warm up on high PV power or low energy rate
-        if ($heatStorageMidTemp < 33 || $avgPower < 2000) {
-            if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1700) || ($isSummer && $avgPvPower > 3000) )) {
-                // detected high PV power (independently of current use), but SmartFox is not forcing heating
-                // and either
-                // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
-                // - summer and avgPvPower > 3000 W
+            // decide whether it's summer half year
+            $isSummer = (\date('z') > 70 && \date('z') < 273); // 10th of march - 30th september
+
+            $activateHeating = false;
+            $deactivateHeating = false;
+
+            if ($smartFoxHighPower) {
+                // SmartFox has force heating flag set
                 $activateHeating = true;
-                // we make sure the hwHysteresis is set to the default value
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-            }
-            if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-            }
-        }
-
-        // default cases for energy low rate
-        if ($energyLowRate) {  
-            $warmWater = false;
-            if ($diffToEndOfLowEnergyRate <= 2 && $diffToEndOfLowEnergyRate > 1) {
-                // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
+                // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
-                $warmWater = true;
-                $activateHeating = true;
-            }
-            if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER) {
-                // warm water generation only
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
-            }
-            if (!$warmWater && $heatStorageMidTemp < 36) {
-                // combined heating
-                $activateHeating = true;
                 if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                 }
             }
-        }
 
-        // end of energy low rate is near. switch to MODE_2ND as soon as possible and reset the hwHysteresis to default value
-        if ($diffToEndOfLowEnergyRate <= 1) {
-            $deactivateHeating = true;
-            if ($ppMode !== PcoWebConnector::MODE_2ND) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+            // heat storige is low or net power is deeply negative. Warm up on high PV power or low energy rate
+            if ($heatStorageMidTemp < 33 || $avgPower < 2000) {
+                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1700) || ($isSummer && $avgPvPower > 3000) )) {
+                    // detected high PV power (independently of current use), but SmartFox is not forcing heating
+                    // and either
+                    // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
+                    // - summer and avgPvPower > 3000 W
+                    $activateHeating = true;
+                    // we make sure the hwHysteresis is set to the default value
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                }
+                if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                }
             }
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-        }
 
-        // apply emergency actions
-        if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
-            // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
-            $activateHeating = true;
-            if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+            // default cases for energy low rate
+            if ($energyLowRate) {  
+                $warmWater = false;
+                if ($diffToEndOfLowEnergyRate <= 2 && $diffToEndOfLowEnergyRate > 1) {
+                    // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                    $warmWater = true;
+                    $activateHeating = true;
+                }
+                if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                    // warm water generation only
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                }
+                if (!$warmWater && $heatStorageMidTemp < 36) {
+                    // combined heating
+                    $activateHeating = true;
+                    if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                    }
+                }
             }
-        }
-        if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 1) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
-            // the minimum requirements are fulfilled, no heating is required during high energy rate
-            $deactivateHeating = true;
-            if ($ppMode !== PcoWebConnector::MODE_2ND) {
+
+            // end of energy low rate is near. switch to MODE_2ND as soon as possible and reset the hwHysteresis to default value
+            if ($diffToEndOfLowEnergyRate <= 1) {
+                $deactivateHeating = true;
+                if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                }
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+            }
+
+            // apply emergency actions
+            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+                // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis
+                $activateHeating = true;
+                if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                }
+            }
+            if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 1) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
+                // the minimum requirements are fulfilled, no heating is required during high energy rate
+                $deactivateHeating = true;
+                if ($ppMode !== PcoWebConnector::MODE_2ND) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                }
+            }
+
+            // make sure heating is deactivated if not required, during low energy rate
+            if (!$activateHeating && $energyLowRate && $ppMode !== PcoWebConnector::MODE_2ND) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
             }
-        }
-
-        // make sure heating is deactivated if not required, during low energy rate
-        if (!$activateHeating && $energyLowRate && $ppMode !== PcoWebConnector::MODE_2ND) {
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-            $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
         }
     }
 }
