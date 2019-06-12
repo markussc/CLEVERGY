@@ -6,6 +6,7 @@ use AppBundle\Entity\Settings;
 use AppBundle\Entity\EdiMaxDataStore;
 use AppBundle\Entity\MyStromDataStore;
 use AppBundle\Entity\ConexioDataStore;
+use AppBundle\Entity\LogoControlDataStore;
 use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
 use AppBundle\Entity\MobileAlertsDataStore;
@@ -20,8 +21,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DataUpdateCommand extends ContainerAwareCommand
 {
-    private $output; // OutputInterface
-
     protected function configure()
     {
         $this
@@ -79,6 +78,19 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $conexioEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
                 $conexioEntity->setData($conexio);
                 $em->persist($conexioEntity);
+            }
+        }
+
+        // logocontrol
+        if (array_key_exists('logocontrol', $this->getContainer()->getParameter('connectors'))) {
+            $logocontrol = $this->getContainer()->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAll();
+            if ($logocontrol) {
+                // we only want to store valid and complete data
+                $logocontrolEntity = new LogoControlDataStore();
+                $logocontrolEntity->setTimestamp(new \DateTime('now'));
+                $logocontrolEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\LogoControlConnector')->getIp());
+                $logocontrolEntity->setData($logocontrol);
+                $em->persist($logocontrolEntity);
             }
         }
 
@@ -266,13 +278,19 @@ class DataUpdateCommand extends ContainerAwareCommand
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
-        // get conexio values
-        if (array_key_exists('smartfox', $this->getContainer()->getParameter('connectors'))) {
+        // if no heatStorage sensor is available, we assume 35°C
+        $heatStorageMidTemp = 35;
+        
+        if (array_key_exists('conexio', $this->getContainer()->getParameter('connectors'))) {
+            // get conexio value for heatStorage temperature (if available)
             $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
             $heatStorageMidTemp = ($conexio['s3'] + $conexio['s2'])/2;
-        } else {
-            // if no heatStorage sensor is available, we assume 35°C
-            $heatStorageMidTemp = 35;
+        } else if (array_key_exists('logocontrol', $this->getContainer()->getParameter('connectors')) && array_key_exists('heatStorageSensor', $this->getContainer()->getParameter('connectors')['logocontrol'])) {
+            // get conexio value for heatStorage temperature (if available and not set by conexio already)
+            $logocontrol = $this->getContainer()->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
+            $logocontrolConf = $this->getContainer()->getParameter('connectors')['logocontrol'];
+            $heatStorageMidTemp = $logocontrol[$logocontrolConf['heatStorageSensor']];
+
         }
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)

@@ -53,12 +53,15 @@
     </div>
 </div>
 {% endif %}
-{% if currentStat['conexio'] is defined %}
+{% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
 <div class="small-12 medium-3 columns" id="conexio">
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
     <ul>
-    {% for idx, sensor in connectors['conexio']['sensors'] %}
+    {% for idx, sensor in connectors['conexio']['sensors']|default([]) %}
         <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx] }} {{ sensor[1] }}</li>
+    {% endfor %}
+    {% for sensor in connectors['logocontrol']['sensors']|default([]) %}
+        {{ sensor[0] }}: {{ currentStat['logoControl'][sensor[0]] }} {{ sensor[1] }}<br/>
     {% endfor %}
     </ul>
 </div>
@@ -126,7 +129,7 @@
     </div>
 </div>
 {% endif %}
-{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio'] %}
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
 <div class="row">
     <div class="small-12 columns">
         <canvas id="twentyFourPowerCanvas" ></canvas>
@@ -309,7 +312,7 @@
         }
     });
     {% endif %}
-    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) %}
+    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
     // 24hTemperatures
     charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
         type: 'line',
@@ -376,6 +379,23 @@
                 {% else %}
                     yAxisID: "y-axis-°C"
                 {% endif %}
+            }
+            {% endfor %}
+            {% for idx, sensor in connectors['logocontrol']['sensors']|default([]) if sensor[2] is defined %}
+            ,{
+                label: '{{ sensor[0] }}',
+                borderColor: ['{{ sensor[2] }}'],
+                fill: false,
+                data: [
+                {% for coData in history['logoControl'] if coData.getData() %}
+                    {% if not loop.first %},{% endif %}
+                    {
+                        x: new Date("{{ coData.timestamp|date('c') }}"),
+                        y: {{ coData.getData()[sensor[0]]|default(0) / sensor[3]|default(1) }}
+                    }
+                {% endfor %}
+                ],
+                yAxisID: "y-axis-°C"
             }
             {% endfor %}
             ]

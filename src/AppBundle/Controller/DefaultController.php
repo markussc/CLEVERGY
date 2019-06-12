@@ -68,6 +68,9 @@ class DefaultController extends Controller
         if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
             $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
         }
+        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+            $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
+        }
 
         $em = $this->getDoctrine()->getManager();
 
@@ -87,6 +90,9 @@ class DefaultController extends Controller
         }
         if (array_key_exists('conexio', $this->getParameter('connectors'))) {
             $history['conexio'] = $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+        }
+        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+            $history['logoControl'] = $em->getRepository('AppBundle:LogoControlDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getIp());
         }
 
         // render the template
@@ -177,6 +183,9 @@ class DefaultController extends Controller
         }
         if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
             $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+        }
+        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+            $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAll(true);
         }
 
         $template = "default/contentHomepage.html.twig";
