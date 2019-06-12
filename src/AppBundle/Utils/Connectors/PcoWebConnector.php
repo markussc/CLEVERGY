@@ -197,7 +197,6 @@ class PcoWebConnector
 
         // get latest timestamp with opposite status
         $oldStatus = $this->em->getRepository('AppBundle:PcoWebDataStore')->getLatestNotStatus($this->getIp(), $currentStatus);
-
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
@@ -207,6 +206,9 @@ class PcoWebConnector
             if ($diff > 10) {
                 return true;
             }
+        } elseif (!$oldStatus) {
+            // status has never been switched yet
+            return true;
         }
 
         return false;
