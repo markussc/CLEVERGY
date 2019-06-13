@@ -264,6 +264,8 @@ class DataUpdateCommand extends ContainerAwareCommand
             // we are on low energy rate
             $minWaterTemp = 38;
             $minInsideTemp = 19.2;
+        // set the max inside temp above which we do not want to have the 2nd heat circle active
+            $maxInsideTemp = 23;
 
         // readout current temperature values
         if (array_key_exists('mobilealerts', $this->getContainer()->getParameter('connectors'))) {
@@ -367,6 +369,14 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
             }
 
+            // deactivate 2nd heating circle if insideTemp is > $minInsideTemp
+            if ($insideTemp > $maxInsideTemp) {
+                // it's warm enough, disable 2nd heating circle
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
+            } elseif ($insideTemp < $minInsideTemp || $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                // it's not warm enough or mode is not summer, enable 2nd heating circle with default target temperature
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
+            }
             // apply emergency actions
             if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
                 // we are below expected values (at least for one of the criteria), switch to auto mode and minimize hot water hysteresis

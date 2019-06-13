@@ -79,6 +79,9 @@ class PcoWebConnector
             case 'hc1':
                 $this->setHeatCircle1($command);
                 break;
+            case 'hc2':
+                $this->setHeatCircle2($command);
+                break;
         }
         
     }
@@ -112,6 +115,11 @@ class PcoWebConnector
     private function setHeatCircle1($value)
     {
         $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
+    }
+
+    private function setHeatCircle2($value)
+    {
+        $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
     }
 
     private function ppModeToString($mode)
