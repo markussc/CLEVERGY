@@ -32,7 +32,7 @@ class PcoWebDataStoreRepository extends EntityRepository
             ->andWhere('e.jsonValue NOT LIKE :status')
             ->orderBy('e.timestamp', 'desc')
             ->setParameter('ip', $ip)
-            ->setParameter('status', '%"ppMode":"' . $notStatus . '"%')
+            ->setParameter('status', '%"' . $notStatus . '"%')
             ->setMaxResults(1);
         return $qb->getQuery()->getResult();
     }
