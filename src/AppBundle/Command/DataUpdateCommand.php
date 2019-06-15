@@ -391,6 +391,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
                 if ($insideTemp > $maxInsideTemp && $heatStorageMidTemp > 50 && $waterTemp > 52 && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                 } elseif ($ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
