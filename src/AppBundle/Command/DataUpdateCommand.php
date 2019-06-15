@@ -390,9 +390,11 @@ class DataUpdateCommand extends ContainerAwareCommand
             if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 1) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
-                if ($insideTemp > $maxInsideTemp && $heatStorageMidTemp > 50 && $waterTemp > 52 && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                if ($insideTemp > $maxInsideTemp && $heatStorageMidTemp > 50 && $waterTemp > 52) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                    if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                    }
                 } elseif ($ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
@@ -401,8 +403,10 @@ class DataUpdateCommand extends ContainerAwareCommand
 
             // make sure heating is deactivated if not required, during low energy rate
             if (!$activateHeating && $energyLowRate) {
-                if ($insideTemp > $maxInsideTemp && $heatStorageMidTemp > 50 && $waterTemp > 52 && $ppMode !== PcoWebConnector::MODE_SUMMER) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                if ($insideTemp > $maxInsideTemp && $heatStorageMidTemp > 50 && $waterTemp > 52) {
+                    if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                    }
                 } elseif ($ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
