@@ -265,7 +265,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             $minWaterTemp = 38;
             $minInsideTemp = 19.2;
         // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = 23;
+            $maxInsideTemp = 22;
 
         // readout current temperature values
         if (array_key_exists('mobilealerts', $this->getContainer()->getParameter('connectors'))) {
