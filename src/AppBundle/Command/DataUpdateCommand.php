@@ -371,14 +371,15 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
             }
 
-            // deactivate 2nd heating circle if insideTemp is > $minInsideTemp
+            // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
             if ($insideTemp > $maxInsideTemp) {
                 // it's warm enough, disable 2nd heating circle
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
             } else {
-                // it's not warm enough and mode is not summer, enable 2nd heating circle with default target temperature
+                // it's not too warm, set 2nd heating circle with default target temperature
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
-                if ($ppMode == PcoWebConnector::MODE_SUMMER) {
+                if ($ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
+                    // if we are in summer mode and insideTemp drops towards minInsideTemp
                     // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                 }
