@@ -311,7 +311,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             $activateHeating = false;
             $deactivateHeating = false;
 
-            if ($smartFoxHighPower) {
+            if ($smartFoxHighPower && $waterTemp < 65) {
                 // SmartFox has force heating flag set
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
@@ -321,8 +321,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                 }
             }
 
-            // heat storage is low or net power is deeply negative. Warm up on high PV power or low energy rate
-            if ($heatStorageMidTemp < 33 || $avgPower < 2000) {
+            // heat storage is low or net power is deeply negative. Warm up on high PV power or low energy rate (if it makes any sense)
+            if ($heatStorageMidTemp < 33 || ($avgPower < 2000 && ($heatStorageMidTemp < 50 || $waterTemp < 62 ))) {
                 if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1700) || ($isSummer && $avgPvPower > 3000) )) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
@@ -376,7 +376,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 // it's warm enough, disable 2nd heating circle
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
             } elseif ($ppMode !== PcoWebConnector::MODE_SUMMER) {
-                // it's not warm enough or mode is not summer, enable 2nd heating circle with default target temperature
+                // it's not warm enough and mode is not summer, enable 2nd heating circle with default target temperature
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
             }
             // apply emergency actions
