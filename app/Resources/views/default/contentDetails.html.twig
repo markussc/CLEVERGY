@@ -344,6 +344,32 @@
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
+            },
+            {
+                label: '{% trans %}label.pco.eff_distr_temp{% endtrans %}',
+                borderColor: ['pink'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['effDistrTemp'] }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {
+                label: '{% trans %}label.pco.cp_status{% endtrans %}',
+                borderColor: ['grey'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['cpStatus']|replace({'label.device.status.off':0, 'label.device.status.on':100}) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
             }
             {% endif %}
             {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
