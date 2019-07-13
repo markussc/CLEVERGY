@@ -346,6 +346,19 @@
                 ]
             },
             {
+                label: '{% trans %}label.pco.set_distr_temp{% endtrans %}',
+                borderColor: ['violet'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['setDistrTemp'] }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {
                 label: '{% trans %}label.pco.eff_distr_temp{% endtrans %}',
                 borderColor: ['pink'],
                 fill: false,
