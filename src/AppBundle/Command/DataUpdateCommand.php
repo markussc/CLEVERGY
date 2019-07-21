@@ -255,7 +255,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $avgPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         $avgPvPower = $em->getRepository('AppBundle:SmartFoxDataStore')->getPvPowerAverage($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 10);
         $nowDateTime = new \DateTime();
-        $diffToEndOfLowEnergyRate = $this->getContainer()->getParameter('energy_low_rate')['end'] - $nowDateTime->format('h');
+        $diffToEndOfLowEnergyRate = $this->getContainer()->getParameter('energy_low_rate')['end'] - $nowDateTime->format('H');
         if ($diffToEndOfLowEnergyRate < 0) {
             $diffToEndOfLowEnergyRate += 24;
         }
@@ -363,9 +363,9 @@ class DataUpdateCommand extends ContainerAwareCommand
             // end of energy low rate is near. switch to MODE_2ND or MODE_SUMMER (depending on current inside temperature) as soon as possible and reset the hwHysteresis to default value
             if ($diffToEndOfLowEnergyRate <= 1) {
                 $deactivateHeating = true;
-                if ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $maxInsideTemp) {
+                if ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
-                } elseif ($ppMode !== PcoWebConnector::MODE_SUMMER && $insideTemp >= $maxInsideTemp) {
+                } elseif ($ppMode !== PcoWebConnector::MODE_SUMMER && $insideTemp >= $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                 }
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
