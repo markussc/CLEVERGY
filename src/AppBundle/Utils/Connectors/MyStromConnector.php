@@ -195,7 +195,7 @@ class MyStromConnector
             case 'on':
                 $reqUrl = 'relay?state=1';
                 break;
-            case 'off';
+            case 'off':
                 $reqUrl =  'relay?state=0';
                 break;
             default:
