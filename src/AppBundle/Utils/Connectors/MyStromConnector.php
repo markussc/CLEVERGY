@@ -107,7 +107,7 @@ class MyStromConnector
         }
 
         // check if nominal power is set (if not, this is not a device to be managed based on available power)
-        if (!isset($this->connectors['mystrom'][$deviceId]['minOnTime'])) {
+        if (!isset($this->connectors['mystrom'][$deviceId]['nominalPower'])) {
             return false;
         }
 
