@@ -117,8 +117,8 @@ class ShellyConnector
             return false;
         }
 
-        // check if minWaitTime is set (if not, this is not a device to be managed automatically)
-        if (!isset($this->connectors['shelly'][$deviceId]['minWaitTime'])) {
+        // check if autoIntervals or nominalPower are set (if not, this is not a device to be managed automatically)
+        if (!isset($this->connectors['shelly'][$deviceId]['autoIntervals']) && !isset($this->connectors['shelly'][$deviceId]['nominalPower'])) {
             return false;
         }
 
