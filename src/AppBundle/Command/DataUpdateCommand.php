@@ -10,6 +10,7 @@ use AppBundle\Entity\LogoControlDataStore;
 use AppBundle\Entity\PcoWebDataStore;
 use AppBundle\Entity\SmartFoxDataStore;
 use AppBundle\Entity\MobileAlertsDataStore;
+use AppBundle\Entity\ShellyDataStore;
 use AppBundle\Utils\Connectors\PcoWebConnector;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -56,6 +57,15 @@ class DataUpdateCommand extends ContainerAwareCommand
             $mystromEntity->setConnectorId($mystrom['ip']);
             $mystromEntity->setData($mystrom['status']['val']);
             $em->persist($mystromEntity);
+        }
+
+        // shelly
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->getAll() as $shelly) {
+            $shellyEntity = new ShellyDataStore();
+            $shellyEntity->setTimestamp(new \DateTime('now'));
+            $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
+            $shellyEntity->setData($shelly['status']);
+            $em->persist($shellyEntity);
         }
 
         // smartfox
@@ -120,12 +130,16 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // openweathermap
         $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->save5DayForecastToDb();
+        $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->saveCurrentWeatherToDb();
 
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
 
         // execute auto actions for mystrom devices
         $this->autoActionsMystrom();
+
+        // execute auto actions for shelly devices
+        $this->autoActionsShelly();
 
         // execute auto actions for PcoWeb heating, if we are in auto mode
         if (Settings::MODE_MANUAL != $em->getRepository('AppBundle:Settings')->getMode($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp())) {
@@ -237,6 +251,47 @@ class DataUpdateCommand extends ContainerAwareCommand
         if ($forceOn && !$mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Based on the available environmental data, decide whether any commands should be sent to attached shelly devices
+     * NOTE: currently only implemented for roller devices
+     */
+    private function autoActionsShelly()
+    {
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest() as $deviceId => $shelly) {
+            // check for forceOpen and forceClose conditions
+            $shellyConfig = $this->getContainer()->getParameter('connectors')['shelly'][$deviceId];
+            if ($shellyConfig['type'] == 'roller' && $this->forceOpenShelly($deviceId, $shelly)) {
+                continue;
+            } elseif ($shellyConfig['type'] == 'roller' && $this->forceCloseShelly($deviceId, $shelly)) {
+                continue;
+            }
+        }
+    }
+
+    private function forceOpenShelly($deviceId, $shelly)
+    {
+        $forceOpen = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen');
+        if ($forceOpen && $shelly['status']['position'] < 100 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+            // force open if we are allowed to
+            $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 2);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function forceCloseShelly($deviceId, $shelly)
+    {
+        $forceClose = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose');
+        if ($forceClose && $shelly['status']['position'] > 0 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+            // force open if we are allowed to
+            $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 3);
             return true;
         } else {
             return false;

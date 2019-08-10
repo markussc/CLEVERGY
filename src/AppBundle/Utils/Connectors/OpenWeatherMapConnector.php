@@ -25,8 +25,34 @@ class OpenWeatherMapConnector
     public function getAllLatest()
     {
         return [
-          'cloudsNextDaylight' => $this->getRelevantCloudsNextDaylightPeriod(),  
+            'cloudsNextDaylight' => $this->getRelevantCloudsNextDaylightPeriod(),
+            'currentClouds' => $this->getCurrentClouds(),
         ];
+    }
+
+    public function saveCurrentWeatherToDb($force = false)
+    {
+        $id = 'current';
+        $latest = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest($id);
+        // calculate time diff
+        $now = new \DateTime('now');
+        if ($latest) {
+            $diff = ($now->getTimestamp() - $latest->getTimestamp()->getTimestamp())/60; // diff in minutes
+        } else {
+            $diff = 20;
+        }
+        // we want to store a new forecast not more frequently than every 10 minutes
+        if ($force || $diff > 15) {
+            $dataJson = $this->browser->get('http://api.openweathermap.org/data/2.5/weather?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
+            $dataArr = json_decode($dataJson, true);
+            $forecast = new OpenWeatherMapDataStore();
+            $forecast->setTimestamp(new \DateTime());
+            $forecast->setConnectorId($id);
+            $forecast->setData($dataArr);
+            $this->em->persist($forecast);
+            $this->em->flush();
+        }
+        return;
     }
 
     public function save5DayForecastToDb($force = false)
@@ -88,5 +114,19 @@ class OpenWeatherMapConnector
         }
 
         return (int)$cloudiness;
+    }
+
+    public function getCurrentClouds()
+    {
+        $current = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest('current');
+        if ($current) {
+            $currentData = $current->getData();
+            if (isset($currentData['clouds']['all'])) {
+                return $currentData['clouds']['all'];
+            }
+        }
+
+        // default
+        return 50;
     }
 }

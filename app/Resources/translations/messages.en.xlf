@@ -110,6 +110,14 @@
                 <source>label.details.header</source>
                 <target>Details</target>
             </trans-unit>
+            <trans-unit id="label.device.status.closed">
+                <source>label.device.status.closed</source>
+                <target>Closed</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.open">
+                <source>label.device.status.open</source>
+                <target>Open</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

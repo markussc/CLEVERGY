@@ -5,20 +5,20 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * MyStromDataStoreRepository
+ * ShellyDataStoreRepository
  */
-class MyStromDataStoreRepository extends EntityRepository
+class ShellyDataStoreRepository extends EntityRepository
 {
-    public function getLatest($ip, $status = -1)
+    public function getLatest($connectorId, $status = -1)
     {
         $qb = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
+            ->where('e.connectorId = :connectorId')
             ->orderBy('e.timestamp', 'desc')
-            ->setParameter('ip', $ip)
+            ->setParameter('connectorId', $connectorId)
             ->setMaxResults(1);
         if ($status != -1) {
-            $qb->andWhere('e.boolValue = :status')
-               ->setParameter('status', $status);
+            $qb->andWhere('e.jsonValue LIKE :status')
+               ->setParameter('status', '%"val":'.$status.'%');
             return $qb->getQuery()->getResult();
         }
         $latest = $qb->getQuery()->getResult();
@@ -29,18 +29,19 @@ class MyStromDataStoreRepository extends EntityRepository
         }
     }
 
-    public function getActiveDuration($ip, $start, $end)
+    public function getActiveDuration($connectorId, $start, $end)
     {
         $qb = $this->createQueryBuilder('e')
             ->select('count(e.id)')
-            ->where('e.connectorId = :ip')
+            ->where('e.connectorId = :connectorId')
             ->andWhere('e.timestamp >= :start')
             ->andWhere('e.timestamp <= :end')
-            ->andWhere('e.boolValue = 1')
+            ->andWhere('e.jsonValue LIKE :status')
             ->setParameters([
-                'ip' => $ip,
+                'connectorId' => $connectorId,
                 'start' => $start,
-                'end' => $end
+                'end' => $end,
+                'status' => '%"val":1%',
             ]);
 
         return $qb->getQuery()->getSingleScalarResult();

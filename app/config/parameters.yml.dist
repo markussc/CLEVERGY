@@ -75,12 +75,26 @@ parameters:
                 nominalPower: 500 # max. expected power in Watt consumed by the device
                 lowRateOn:
                     'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                    'openweathermap:currentClouds': '<15' # note: if several conditions are set, all of them must be fulfilled
                 forceOn:
                     'mobilealerts:XXXXXXXXXXXX:4': '>72'
         mystrom:
             '192.168.55.3':
                 nominalPower: 100
                 #other parameters such as lowRateOn and forceOn identical to edimax
+        shelly:
+            -
+                name: Storen Schlafzimmer
+                ip: 10.12.1.71
+                port: 0
+                type: roller # other type is "relay" (currently untested)
+                nominalPower: 100
+                minWaitTime: 120 # in minutes
+                autoIntervals: # several intervals for auto control are possible
+                    - [08:00,20:00]
+                forceOpen: # other commands: forceClose, forceOn, forceOff
+                    'mobilealerts:072D1F97F48B:1': '>24'
+                    'openweathermap:currentClouds': '<15'
         openweathermap:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
             lat: 46.9

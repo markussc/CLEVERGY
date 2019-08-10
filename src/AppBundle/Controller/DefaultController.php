@@ -65,6 +65,9 @@ class DefaultController extends Controller
         if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
             $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest();
         }
+        if (array_key_exists('shelly', $this->getParameter('connectors'))) {
+            $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest();
+        }
         if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
             $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
         }
@@ -126,6 +129,8 @@ class DefaultController extends Controller
                 return $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
             case 'mystrom':
                 return $this->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($command[1], $command[2]);
+            case 'shelly':
+                return $this->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($command[1], $command[2]);
             case 'pcoweb':
                 return $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
             case 'settings':
@@ -177,6 +182,9 @@ class DefaultController extends Controller
         }
         if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
             $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll();
+        }
+        if (array_key_exists('shelly', $this->getParameter('connectors'))) {
+            $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAll();
         }
         if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
             $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();

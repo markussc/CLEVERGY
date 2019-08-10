@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class PcoWebDataStore extends DataStoreBase
 {
     /**
-     * @var bool
+     * @var array
      *
      * @ORM\Column(type="json_array")
      */

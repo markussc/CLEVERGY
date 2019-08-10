@@ -5,33 +5,33 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Entity\MyStromDataStoreRepository")
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\ShellyDataStoreRepository")
  */
-class MyStromDataStore extends DataStoreBase
+class ShellyDataStore extends DataStoreBase
 {
     /**
-     * @var bool
+     * @var array
      *
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="json_array")
      */
-    private $boolValue;
+    private $jsonValue;
 
     /**
      * Set the data.
      *
-     * @param bool $data
+     * @param array $data
      *
-     * @return MyStromDataStorage $this
+     * @return ShellyDataStorage $this
      */
-    public function setData($data = false)
+    public function setData($data = array())
     {
-        $this->boolValue = $data;
+        $this->jsonValue = $data;
 
         return $this;
     }
 
     public function getData()
     {
-        return $this->boolValue;
+        return $this->jsonValue;
     }
 }
