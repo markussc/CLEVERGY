@@ -74,10 +74,15 @@ parameters:
                 password: 1234
                 nominalPower: 500 # max. expected power in Watt consumed by the device
                 lowRateOn:
-                    'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
-                    'openweathermap:currentClouds': '<15' # note: if several conditions are set, all of them must be fulfilled
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                        'openweathermap:currentClouds': '<15' # note: if several conditions are set within one conditions set, all of them must be fulfilled
+                    -
+                        'openweathermap:currentMain': 'rain' # note: several sets of conditions can be defined. if at least one set is fulfilled, the overall condition is fulfilled
+                                                             # note: valid choices for currentMain are: clear, rain, snow, drizzle, thunderstorm (check openweathermap documentation for more choices)
                 forceOn:
-                    'mobilealerts:XXXXXXXXXXXX:4': '>72'
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>72'
         mystrom:
             '192.168.55.3':
                 nominalPower: 100
@@ -93,8 +98,11 @@ parameters:
                 autoIntervals: # several intervals for auto control are possible
                     - [08:00,20:00]
                 forceOpen: # other commands: forceClose, forceOn, forceOff
-                    'mobilealerts:072D1F97F48B:1': '>24'
-                    'openweathermap:currentClouds': '<15'
+                    -
+                        'mobilealerts:072D1F97F48B:1': '>24'
+                        'openweathermap:currentClouds': '<15'
+                    -
+                        'time': '>8:30' # < and > are supported. 24h time format
         openweathermap:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
             lat: 46.9

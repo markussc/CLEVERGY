@@ -265,10 +265,13 @@ class DataUpdateCommand extends ContainerAwareCommand
     {
         foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest() as $deviceId => $shelly) {
             // check for forceOpen and forceClose conditions
+            $forceOpen = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen');
+            $forceClose = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose');
             $shellyConfig = $this->getContainer()->getParameter('connectors')['shelly'][$deviceId];
-            if ($shellyConfig['type'] == 'roller' && $this->forceOpenShelly($deviceId, $shelly)) {
+            if ($shellyConfig['type'] == 'roller' && $forceClose && $this->forceCloseShelly($deviceId, $shelly)) {
                 continue;
-            } elseif ($shellyConfig['type'] == 'roller' && $this->forceCloseShelly($deviceId, $shelly)) {
+            } elseif ($shellyConfig['type'] == 'roller' && !$forceClose && $forceOpen && $this->forceOpenShelly($deviceId, $shelly)) {
+                // we only try to open if we did not close just before (closing wins)
                 continue;
             }
         }
@@ -276,8 +279,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
     private function forceOpenShelly($deviceId, $shelly)
     {
-        $forceOpen = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen');
-        if ($forceOpen && $shelly['status']['position'] < 100 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+        if ($shelly['status']['position'] < 100 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
             // force open if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 2);
             return true;
@@ -288,8 +290,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
     private function forceCloseShelly($deviceId, $shelly)
     {
-        $forceClose = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose');
-        if ($forceClose && $shelly['status']['position'] > 0 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+        if ($shelly['status']['position'] > 0 && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
             // force open if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 3);
             return true;

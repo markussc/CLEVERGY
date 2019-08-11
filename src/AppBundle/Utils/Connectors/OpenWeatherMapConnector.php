@@ -27,6 +27,7 @@ class OpenWeatherMapConnector
         return [
             'cloudsNextDaylight' => $this->getRelevantCloudsNextDaylightPeriod(),
             'currentClouds' => $this->getCurrentClouds(),
+            'currentMain' => $this->getCurrentMain(),
         ];
     }
 
@@ -116,7 +117,7 @@ class OpenWeatherMapConnector
         return (int)$cloudiness;
     }
 
-    public function getCurrentClouds()
+    private function getCurrentClouds()
     {
         $current = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest('current');
         if ($current) {
@@ -128,5 +129,19 @@ class OpenWeatherMapConnector
 
         // default
         return 50;
+    }
+
+    public function getCurrentMain()
+    {
+        $current = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest('current');
+        if ($current) {
+            $currentData = $current->getData();
+            if (isset($currentData['weather'][0]['main'])) {
+                return $currentData['weather'][0]['main'];
+            }
+        }
+
+        // default
+        return "clear";
     }
 }

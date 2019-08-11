@@ -89,9 +89,23 @@ class ConditionChecker
         }
     }
 
-    private function processConditions($conditions)
+    private function processConditions($conditionSets)
     {
-        // if we have several conditions defined, all of them must be fulfilled
+        // all conditions in one set must be fulfilled
+        // at least one set must be fulfilled
+        $fulfilled = false;
+        foreach ($conditionSets as $conditions) {
+            if ($this->checkConditionSet($conditions)) {
+                $fulfilled = true;
+                break;
+            }
+        }
+
+        return $fulfilled;
+    }
+
+    private function checkConditionSet($conditions)
+    {
         $fulfilled = false;
         foreach ($conditions as $sensor => $condition) {
             $condArr = explode(':', $sensor);
@@ -132,10 +146,42 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
-                } else {
+                } elseif (strpos($condition, '<') !== false) {
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
                     if (floatval($weatherData) < floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } else {
+                    // we have a equal condition
+                    $condition = str_replace('=', '', $condition);
+                    if (strtolower($weatherData) == strtolower($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                }
+            }
+            if ($condArr[0] == 'time') {
+                $currentTime = date('H')*60 + date('i');
+                $timeDataArr = explode(':', str_replace('>', '', str_replace('<', '', $condition)));
+                $timeData = $timeDataArr[0]*60+$timeDataArr[1];
+                // check if > or < should be checked
+                if (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    if ($currentTime > $timeData) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, '<') !== false) {
+                    // we have a smaller than condition
+                    if ($currentTime < $timeData) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
