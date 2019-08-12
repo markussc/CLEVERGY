@@ -43,12 +43,18 @@ class ShellyConnector
                 } else {
                     $nominalPower = 0;
                 }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'port' => $device['port'],
                     'name' => $device['name'],
                     'status' => $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']),
                     'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
                 ];
@@ -72,12 +78,18 @@ class ShellyConnector
                 } else {
                     $nominalPower = 0;
                 }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'port' => $device['port'],
                     'name' => $device['name'],
                     'status' => $status,
                     'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
                 ];

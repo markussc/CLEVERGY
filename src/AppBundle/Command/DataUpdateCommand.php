@@ -264,15 +264,15 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function autoActionsShelly()
     {
         foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest() as $deviceId => $shelly) {
-            // check for forceOpen and forceClose conditions
-            $forceOpen = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen');
-            $forceClose = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose');
             $shellyConfig = $this->getContainer()->getParameter('connectors')['shelly'][$deviceId];
-            if ($shellyConfig['type'] == 'roller' && $forceClose && $this->forceCloseShelly($deviceId, $shelly)) {
-                continue;
-            } elseif ($shellyConfig['type'] == 'roller' && !$forceClose && $forceOpen && $this->forceOpenShelly($deviceId, $shelly)) {
-                // we only try to open if we did not close just before (closing wins)
-                continue;
+            if ($shellyConfig['type'] == 'roller') {
+                // for rollers, check forceOpen and forceClose conditions
+                if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose')) {
+                    $this->forceCloseShelly($deviceId, $shelly);
+                } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen')) {
+                    // we only try to open if we did not close just before (closing wins)
+                    $this->forceOpenShelly($deviceId, $shelly);
+                }
             }
         }
     }
