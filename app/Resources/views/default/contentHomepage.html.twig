@@ -86,10 +86,10 @@
         {% if not loop.last or currentStat['shelly']|length > 0 %}<br/>{% endif %}
     {% endfor %}
     {% for key, device in currentStat['shelly'] %}
-        {% if device['status']['val'] < 2 %}
+        {% if device['status']['val']|default(100) < 2 %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not device['nominalPower'] %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
-        {% elseif device['status']['val'] < 4 %}
+        {% elseif device['status']['val']|default(100) < 4 %}
             {% if is_granted('ROLE_OWNER') %}
             {% if device['status']['position']|default(50) < 100 %}<a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="sendCommand(['shelly', {{ key }}, 2])"><i class="fas fa-arrow-circle-up"></i></a>{% endif %}{% if device['status']['position']|default(50) > 0 %}<a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i></a>{% endif %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not device['autoIntervals']|length %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>{% endif %}

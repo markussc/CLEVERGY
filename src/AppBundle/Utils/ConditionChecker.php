@@ -166,7 +166,7 @@ class ConditionChecker
                     }
                 }
             }
-            if ($condArr[0] == 'time') {
+            if (strpos($condArr[0], 'time')===0) {
                 $currentTime = date('H')*60 + date('i');
                 $timeDataArr = explode(':', str_replace('>', '', str_replace('<', '', $condition)));
                 $timeData = $timeDataArr[0]*60+$timeDataArr[1];

@@ -268,10 +268,14 @@ class DataUpdateCommand extends ContainerAwareCommand
             if ($shellyConfig['type'] == 'roller') {
                 // for rollers, check forceOpen and forceClose conditions
                 if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceClose')) {
-                    $this->forceCloseShelly($deviceId, $shelly);
+                    if ($this->forceCloseShelly($deviceId, $shelly)) {
+                        break;
+                    }
                 } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOpen')) {
                     // we only try to open if we did not close just before (closing wins)
-                    $this->forceOpenShelly($deviceId, $shelly);
+                    if ($this->forceOpenShelly($deviceId, $shelly)) {
+                        break;
+                    }
                 }
             }
         }
