@@ -238,6 +238,14 @@
                 <source>label.device.status.open</source>
                 <target>Offen</target>
             </trans-unit>
+            <trans-unit id="label.device.status.opening">
+                <source>label.device.status.opening</source>
+                <target>öffnet</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closing">
+                <source>label.device.status.closing</source>
+                <target>schliesst</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

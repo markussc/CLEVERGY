@@ -118,6 +118,14 @@
                 <source>label.device.status.open</source>
                 <target>Open</target>
             </trans-unit>
+            <trans-unit id="label.device.status.opening">
+                <source>label.device.status.opening</source>
+                <target>opening</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closing">
+                <source>label.device.status.closing</source>
+                <target>closing</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
