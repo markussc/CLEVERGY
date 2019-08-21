@@ -259,7 +259,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     continue;
                 }
                 // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
-                if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+                if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
                     break;
                 }
