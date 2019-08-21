@@ -54,6 +54,9 @@ class ConditionChecker
 
                 return true;
             }
+        } elseif ($type == 'on') {
+            // if we check for 'on' condition but this is not set, it is implicitely fulfilled
+            return true;
         }
         // check for force conditions for all energy rates
         if (isset($conf['forceOn'])) {
