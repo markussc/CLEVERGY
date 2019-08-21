@@ -73,6 +73,9 @@ parameters:
                 username: admin
                 password: 1234
                 nominalPower: 500 # max. expected power in Watt consumed by the device
+                on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>55'
                 lowRateOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'

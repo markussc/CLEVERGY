@@ -48,9 +48,22 @@ class ConditionChecker
             // there is no edimax and mystrom device with this IP. We check if there is a shelly device instead
             $conf = $this->shelly->getConfig($device['ip'], $device['port']);
         }
+        // check for on condition for all energy rates
+        if (isset($conf['on'])) {
+            if ($this->processConditions($conf['on'])) {
+
+                return true;
+            }
+        }
         // check for force conditions for all energy rates
         if (isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {
+
+                return true;
+            }
+        }
+        if (isset($conf['forceOff'])) {
+            if ($this->processConditions($conf['forceOff'])) {
 
                 return true;
             }
