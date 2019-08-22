@@ -49,7 +49,7 @@ class ConditionChecker
             $conf = $this->shelly->getConfig($device['ip'], $device['port']);
         }
         // check for on condition for all energy rates
-        if (isset($conf['on'])) {
+        if (isset($conf['on']) && $type == 'on') {
             if ($this->processConditions($conf['on'])) {
 
                 return true;
