@@ -413,8 +413,8 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // heat storage is low or net power is not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
-            if ($heatStorageMidTemp < 33 || ($avgPower < 3000 && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
-                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1500) || ($isSummer && $avgPvPower > 3000) )) {
+            if ($heatStorageMidTemp < 33 || ($avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
+                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1300) || ($isSummer && $avgPvPower > 3000) )) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
                     // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
