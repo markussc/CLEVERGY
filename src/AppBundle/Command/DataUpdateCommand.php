@@ -384,7 +384,6 @@ class DataUpdateCommand extends ContainerAwareCommand
             $logocontrol = $this->getContainer()->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
             $logocontrolConf = $this->getContainer()->getParameter('connectors')['logocontrol'];
             $heatStorageMidTemp = $logocontrol[$logocontrolConf['heatStorageSensor']];
-
         }
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
@@ -398,7 +397,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // decide whether it's summer half year
-            $isSummer = (\date('z') > 70 && \date('z') < 273); // 10th of march - 30th september
+            $isSummer = (\date('z') > 70 && \date('z') < 243); // 10th of march - 31th august
 
             $activateHeating = false;
             $deactivateHeating = false;
@@ -413,9 +412,9 @@ class DataUpdateCommand extends ContainerAwareCommand
                 }
             }
 
-            // heat storage is low or net power is deeply negative. Warm up on high PV power or low energy rate (if it makes any sense)
-            if ($heatStorageMidTemp < 33 || ($avgPower < 2000 && ($heatStorageMidTemp < 50 || $waterTemp < 62 ))) {
-                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1700) || ($isSummer && $avgPvPower > 3000) )) {
+            // heat storage is low or net power is not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
+            if ($heatStorageMidTemp < 33 || ($avgPower < 3000 && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
+                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1500) || ($isSummer && $avgPvPower > 3000) )) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
                     // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
@@ -423,9 +422,10 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                }
-                if ($activateHeating && $ppMode !== PcoWebConnector::MODE_AUTO) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+
+                    if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
+                    }
                 }
             }
 
