@@ -305,8 +305,8 @@ class DefaultController extends Controller
             $hightemp = $currentStat['conexio']['s3']." °C";
             $lowtemp = $currentStat['conexio']['s2']." °C";
         } elseif (isset($currentStat['logoControl'])) {
-            $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']];
-            $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']];
+            $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . " °C";
+            $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . " °C";
             $hightemp = "";
             $lowtemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
         } else {
