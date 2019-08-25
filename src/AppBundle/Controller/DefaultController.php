@@ -305,10 +305,10 @@ class DefaultController extends Controller
             $hightemp = $currentStat['conexio']['s3']." °C";
             $lowtemp = $currentStat['conexio']['s2']." °C";
         } elseif (isset($currentStat['logoControl'])) {
-            $solpower = $currentStat['logoControl']['powerSensor'];
-            $soltemp = $currentStat['logoControl']['collectorSensor'];
+            $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']];
+            $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']];
             $hightemp = "";
-            $lowtemp = $currentStat['logoControl']['heatStorageSensor'];
+            $lowtemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
         } else {
             $solpower = "";
             $soltemp = "";
@@ -316,6 +316,12 @@ class DefaultController extends Controller
             $lowtemp = "";
         }
 
+        $insidetemp = "";
+        $firstfloortemp = "";
+        $secondfloortemp = "";
+        $insidehumidity = "";
+        $basementtemp = "";
+        $basementhumidity = "";
         if (isset($currentStat['mobileAlerts'])) {
             if (isset($maValues['insidetemp'])) {
                 $insidetemp = $maValues['insidetemp'] . " °C";
