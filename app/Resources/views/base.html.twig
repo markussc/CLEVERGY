@@ -12,15 +12,14 @@
             "assets/scss/*.scss"
             "assets/css/*.css"
         %}
-            <link rel="stylesheet" href="{{ asset_url }}" />
+        <link rel="stylesheet" href="{{ asset_url }}" />
         {% endstylesheets %}
-        <link href="{{ asset('css/owfont-regular.css') }}" rel="stylesheet" type="text/css">
+        <link href="{{ asset('cssstatic/owfont-regular.min.css') }}" rel="stylesheet" type="text/css">
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/foundation/6.2.4/foundation.min.js"></script>
-        {#<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/locale/{{ locale }}.js"></script>#}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment-with-locales.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
