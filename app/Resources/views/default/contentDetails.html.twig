@@ -31,7 +31,7 @@
 {% endif %}
 <div class="row">
 {% if currentStat['smartFox'] is defined %}
-<div class="small-12 medium-3 columns" id="smartfoxOuter">
+<div class="small-12 medium-3 columns refresh" id="smartfoxOuter">
     <div id="smartfox">
     <h4>{% trans %}label.energy{% endtrans %}</h4>
     <ul>
@@ -54,7 +54,7 @@
 </div>
 {% endif %}
 {% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
-<div class="small-12 medium-3 columns" id="conexio">
+<div class="small-12 medium-3 columns refresh" id="conexio">
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
     <ul>
     {% for idx, sensor in connectors['conexio']['sensors']|default([]) %}
@@ -67,7 +67,7 @@
 </div>
 {% endif %}
 {% if currentStat['pcoWeb'] is defined %}
-<div class="small-12 medium-3 columns" id="pcoWeb">
+<div class="small-12 medium-3 columns refresh" id="pcoWeb">
     <h4>{% trans %}label.heating{% endtrans %}</h4>
     <ul>
         <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }}°C</li>
@@ -83,7 +83,7 @@
 </div>
 {% endif %}
 {% if currentStat['mobileAlerts']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['openweathermap']|default(false) %}
-<div class="small-12 medium-3 columns" id="mobileAlerts">
+<div class="small-12 medium-3 columns refresh" id="mobileAlerts">
     <h4>{% trans %}label.climate{% endtrans %}</h4>
     <ul>
         {% if currentStat['openweathermap']|default(false) %}<li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>{% endif %}
@@ -97,7 +97,7 @@
 </div>
 {% endif %}
 {% if currentStat['edimax'] is defined or currentStat['mystrom'] is defined%}
-<div class="small-12 medium-3 columns" id="edimax">
+<div class="small-12 medium-3 columns refresh" id="edimax">
     <h4>{% trans %}label.devices{% endtrans %}</h4>
     <ul>
     {% for key, device in currentStat['edimax']|default([]) %}
@@ -128,22 +128,22 @@
 {% if not refresh|default(false) %}
 {% if currentStat['smartFoxChart']|default(false) %}
 <div class="row">
-    <div class="small-12 large-6 columns">
+    <div class="small-12 large-6 columns refresh">
         <canvas id="currentPowerCanvas" ></canvas>
     </div>
-    <div class="small-12 large-6 columns">
+    <div class="small-12 large-6 columns refresh">
         <canvas id="energyDayCanvas" ></canvas>
     </div>
 </div>
 {% endif %}
 {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
 <div class="row">
-    <div class="small-12 columns">
+    <div class="small-12 columns refresh">
         <canvas id="twentyFourPowerCanvas" ></canvas>
     </div>
 </div>
 <div class="row">
-    <div class="small-12 columns">
+    <div class="small-12 columns refresh">
         <canvas id="twentyFourTemperaturesCanvas" ></canvas>
     </div>
 </div>

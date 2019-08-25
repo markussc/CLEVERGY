@@ -389,10 +389,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
         if (array_key_exists('pcoweb', $this->getContainer()->getParameter('connectors'))) {
-            if ($avgClouds < 30) {
+            if (!$smartFoxHighPower && $avgClouds < 30) {
                 // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
-            } else {
+            } elseif (!$smartFoxHighPower) {
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
             }
 
@@ -407,6 +407,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
+                // we make sure the heating curve (circle 1) is maximized
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 40);
                 if ($ppMode !== PcoWebConnector::MODE_AUTO) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                 }

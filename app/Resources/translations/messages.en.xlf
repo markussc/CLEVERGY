@@ -90,9 +90,13 @@
                 <source>label.smartfox.energy_in_day</source>
                 <target>Energy in Today</target>
             </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_current">
+                <source>label.openweathermap.clouds_current</source>
+                <target>Current Cloudiness</target>
+            </trans-unit>
             <trans-unit id="label.openweathermap.clouds_next_daylight">
                 <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Cloudiness</target>
+                <target>Upcoming Cloudiness</target>
             </trans-unit>
             <trans-unit id="label.dashboard.header">
                 <source>label.dashboard.header</source>

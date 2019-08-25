@@ -93,11 +93,17 @@ class MobileAlertsConnector
                     } else {
                         $dashboard = false;
                     }
+                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter])) {
+                        $usage = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4];
+                    } else {
+                        $usage = false;
+                    }
                     $data[$currentSensor][] = [
                         'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
                         'value' => preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value)),
                         'unit' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1],
-                        'dashboard' => $dashboard
+                        'dashboard' => $dashboard,
+                        'usage' => $usage,
                     ];
                     $measurementCounter++;
                 }

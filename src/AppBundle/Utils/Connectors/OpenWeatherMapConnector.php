@@ -28,6 +28,8 @@ class OpenWeatherMapConnector
             'cloudsNextDaylight' => $this->getRelevantCloudsNextDaylightPeriod(),
             'currentClouds' => $this->getCurrentClouds(),
             'currentMain' => $this->getCurrentMain(),
+            'currentCode' => $this->getCurrentCode(),
+            'dayNight' => $this->getDayNight(),
         ];
     }
 
@@ -143,5 +145,36 @@ class OpenWeatherMapConnector
 
         // default
         return "clear";
+    }
+
+    public function getCurrentCode()
+    {
+        $current = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest('current');
+        if ($current) {
+            $currentData = $current->getData();
+            if (isset($currentData['weather'][0]['icon'])) {
+                return $currentData['weather'][0]['id'];
+            }
+        }
+
+        // default
+        return "clear";
+    }
+
+    public function getDayNight()
+    {
+        $current = $this->em->getRepository('AppBundle:OpenWeatherMapDataStore')->getLatest('current');
+        if ($current) {
+            $currentData = $current->getData();
+            if (isset($currentData['sys']['sunrise']) && isset($currentData['sys']['sunset'])) {
+                $now = time();
+                if ($now < $currentData['sys']['sunrise'] || $now > isset($currentData['sys']['sunset'])) {
+                    return "n";
+                }
+            }
+        }
+
+        // default
+        return "d";
     }
 }

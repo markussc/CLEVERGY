@@ -6,6 +6,8 @@ use AppBundle\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
@@ -42,61 +44,70 @@ class DefaultController extends Controller
     public function overviewAction(Request $request)
     {
         $activePage = "overview";
+        $history = [];
+        $currentStat = [];
         if ($request->query->get("details")) {
             $activePage = "details";
-        }
-        $currentStat = [];
-        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
-            $currentStat['smartFoxChart'] = true;
-        }
-        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-            $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
-        }
-        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-            $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
-        }
-        if (array_key_exists('mobileAlerts', $this->getParameter('connectors'))) {
-            $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
-        }
-        if (array_key_exists('edimax', $this->getParameter('connectors'))) {
-            $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest();
-        }
-        if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
-            $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest();
-        }
-        if (array_key_exists('shelly', $this->getParameter('connectors'))) {
-            $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest();
-        }
-        if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
-            $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
-        }
-        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-            $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
-        }
-
-        $em = $this->getDoctrine()->getManager();
-
-        $history = [];
-        if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
-            $mobileAlertsHistory = [];
-            foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
-                $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+            $em = $this->getDoctrine()->getManager();
+            // get current values
+            if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+                $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+                $currentStat['smartFoxChart'] = true;
             }
-            $history['mobileAlerts'] = $mobileAlertsHistory;
-        }
-        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $history['smartFox'] = $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
-        }
-        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-            $history['pcoWeb'] = $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
-        }
-        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-            $history['conexio'] = $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
-        }
-        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-            $history['logoControl'] = $em->getRepository('AppBundle:LogoControlDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getIp());
-        }
+            if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+                $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
+            }
+            if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+                $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
+            }
+            if (array_key_exists('mobileAlerts', $this->getParameter('connectors'))) {
+                $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+            }
+            if (array_key_exists('edimax', $this->getParameter('connectors'))) {
+                $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest();
+            }
+            if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
+                $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest();
+            }
+            if (array_key_exists('shelly', $this->getParameter('connectors'))) {
+                $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAllLatest();
+            }
+            if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
+                $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+            }
+            if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+                $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
+            }
+
+            // get history
+            if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
+                $mobileAlertsHistory = [];
+                foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
+                    $mobileAlertsHistory[$sensorId] = $em->getRepository('AppBundle:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+                }
+                $history['mobileAlerts'] = $mobileAlertsHistory;
+            }
+            if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+                $history['smartFox'] = $em->getRepository('AppBundle:SmartFoxDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
+            }
+            if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+                $history['pcoWeb'] = $em->getRepository('AppBundle:PcoWebDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
+            }
+            if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+                $history['conexio'] = $em->getRepository('AppBundle:ConexioDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp());
+            }
+            if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+                $history['logoControl'] = $em->getRepository('AppBundle:LogoControlDataStore')->getHistoryLast24h($this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getIp());
+            }
+        } else {
+            $currentStat = $this->getCurrentStat([
+                'edimax' => true,
+                'mystrom' => true,
+                'shelly' => true,
+                'pcoweb' => true,
+                'openweathermap' => true,
+            ]);
+        }     
 
         // render the template
         return $this->render('default/index.html.twig', [
@@ -168,37 +179,19 @@ class DefaultController extends Controller
     public function refreshAction(Request $request)
     {
         $currentStat = [];
-        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true);
-        }
-        if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-            $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
-        }
-        if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-            $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true);
-        }
-        if (array_key_exists('edimax', $this->getParameter('connectors'))) {
-            $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll();
-        }
-        if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
-            $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll();
-        }
-        if (array_key_exists('shelly', $this->getParameter('connectors'))) {
-            $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAll();
-        }
-        if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
-            $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
-        }
-        if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
-            $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
-        }
-        if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-            $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAll(true);
-        }
 
         $template = "default/contentHomepage.html.twig";
         if ($request->query->get("details")) {
             $template = "default/contentDetails.html.twig";
+            $currentStat = $this->getCurrentStat(true);
+        } else {
+            $currentStat = $this->getCurrentStat([
+                'edimax' => true,
+                'mystrom' => true,
+                'shelly' => true,
+                'pcoweb' => true,
+                'openweathermap' => true,
+            ]);
         }
         
         // render the template
@@ -268,5 +261,169 @@ class DefaultController extends Controller
             'activePage' => 'history',
             'history' => $history,
         ]);
+    }
+
+    /**
+     * Create the visual dashboard
+     * @Route("/visualdashboard", name="visual_dashboard")
+     */
+    public function visualDashboardAction(Request $request)
+    {
+        $currentStat = $this->getCurrentStat([
+            'smartfox' => true,
+            'mobilealerts' => true,
+            'pcoweb' => true,
+            'conexio' => true,
+            'logocontrol' => true,
+        ]);
+
+        $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/web/visual_dashboard.svg');
+
+        $maValues = [];
+        foreach ($currentStat['mobileAlerts'] as $maDevice) {
+            foreach ($maDevice as $maSensor) {
+                if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
+                    $maValues[$maSensor['usage']] = $maSensor['value'];
+                }
+            }
+        }
+
+        // get values
+        if (isset($currentStat['smartFox'])) {
+            $pvpower = $currentStat['smartFox']['PvPower'][0]." W";
+            $netpower = $currentStat['smartFox']['power_io']." W";
+            $intpower = ($currentStat['smartFox']['power_io'] + $currentStat['smartFox']['PvPower'][0])." W";
+        } else {
+            $pvpower = "";
+            $netpower = "";
+            $intpower = "";
+        }
+
+        if (isset($currentStat['conexio'])) {
+            $solpower = $currentStat['conexio']['p']." W";
+            $soltemp = $currentStat['conexio']['s1']." °C";
+            $hightemp = $currentStat['conexio']['s3']." °C";
+            $lowtemp = $currentStat['conexio']['s2']." °C";
+        } elseif (isset($currentStat['logoControl'])) {
+            $solpower = $currentStat['logoControl']['powerSensor'];
+            $soltemp = $currentStat['logoControl']['collectorSensor'];
+            $hightemp = "";
+            $lowtemp = $currentStat['logoControl']['heatStorageSensor'];
+        } else {
+            $solpower = "";
+            $soltemp = "";
+            $hightemp = "";
+            $lowtemp = "";
+        }
+
+        if (isset($currentStat['mobileAlerts'])) {
+            if (isset($maValues['insidetemp'])) {
+                $insidetemp = $maValues['insidetemp'] . " °C";
+            }
+            if (isset($maValues['firstfloortemp'])) {
+                $firstfloortemp = $maValues['firstfloortemp'] . " °C";
+            }
+            if (isset($maValues['secondfloortemp'])) {
+                $secondfloortemp = $maValues['secondfloortemp']. " °C";
+            }
+            if (isset($maValues['insidehumidity'])) {
+                $insidehumidity = $maValues['insidehumidity'] . " %";
+            }
+            if (isset($maValues['basementtemp'])) {
+                $basementtemp = $maValues['basementtemp'] . " °C";
+            }
+            if (isset($maValues['basementhumidity'])) {
+                $basementhumidity = $maValues['basementhumidity'] . " %";
+            }
+        }
+        
+        // write current values into the svg
+        $labels = [
+            "pvpower",
+            "netpower",
+            "intpower",
+            "solpower",
+            "soltemp",
+            "watertemp",
+            "ppstatus",
+            "insidetemp",
+            "firstfloortemp",
+            "secondfloortemp",
+            "insidehumidity",
+            "basementtemp",
+            "basementhumidity",
+            "hightemp",
+            "lowtemp",
+        ];
+        $values = [
+            $pvpower,
+            $netpower,
+            $intpower,
+            $solpower,
+            $soltemp,
+            $currentStat['pcoWeb']['waterTemp']." °C",
+            $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']),
+            $insidetemp,
+            $firstfloortemp,
+            $secondfloortemp,
+            $insidehumidity,
+            $basementtemp,
+            $basementhumidity,
+            $hightemp,
+            $lowtemp,
+        ];
+
+        $fileContent = str_replace($labels, $values, $fileContent);
+
+        // Return a response with a specific content
+        $response = new Response($fileContent);
+
+        // Create the disposition of the file
+        $disposition = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'dashboard.svg'
+        );
+
+        // Set the content disposition
+        $response->headers->set('Content-Disposition', $disposition);
+
+        $response->headers->set('Content-Type', 'image/svg+xml');
+
+        // Dispatch request
+        return $response;
+    }
+
+    private function getCurrentStat($fullSet = true)
+    {
+        $currentStat = [];
+        if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true);
+        }
+        if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
+            $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
+        }
+        if (($fullSet === true || isset($fullSet['conexio'])) && array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll(true);
+        }
+        if (($fullSet === true || isset($fullSet['edimax'])) && array_key_exists('edimax', $this->getParameter('connectors'))) {
+            $currentStat['edimax'] = $this->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAll();
+        }
+        if (($fullSet === true || isset($fullSet['mystrom'])) && array_key_exists('mystrom', $this->getParameter('connectors'))) {
+            $currentStat['mystrom'] = $this->get('AppBundle\Utils\Connectors\MyStromConnector')->getAll();
+        }
+        if (($fullSet === true || isset($fullSet['shelly'])) && array_key_exists('shelly', $this->getParameter('connectors'))) {
+            $currentStat['shelly'] = $this->get('AppBundle\Utils\Connectors\ShellyConnector')->getAll();
+        }
+        if (($fullSet === true || isset($fullSet['mobilealerts'])) && array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
+            $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+        }
+        if (($fullSet === true || isset($fullSet['openweathermap'])) && array_key_exists('openweathermap', $this->getParameter('connectors'))) {
+            $currentStat['openweathermap'] = $this->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+        }
+        if (($fullSet === true || isset($fullSet['logocontrol'])) && array_key_exists('logocontrol', $this->getParameter('connectors'))) {
+            $currentStat['logoControl'] = $this->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAll(true);
+        }
+
+        return $currentStat;
     }
 }

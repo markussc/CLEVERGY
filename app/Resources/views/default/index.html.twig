@@ -20,6 +20,7 @@
         });
 
         (function worker() {
+            $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
             $.ajax({
               url: '{{ path('refresh', {'details': details}) }}', 
               success: function(data) {
@@ -28,7 +29,7 @@
                     showSpinner();
                     window.location = "{{ path('homepage') }}";
                 }
-                $(data).find('.columns').each(function(){
+                $(data).find('.refresh').each(function(){
                     var divId = $(this).attr('id');
                     $("#" + divId).replaceWith($(this));
                     $(this).find('.chart').each(function() {
@@ -38,7 +39,7 @@
               },
               complete: function() {
                // Schedule the next request when the current one's complete
-               setTimeout(worker, 1000);
+               setTimeout(worker, 3000);
               }
             });
         })();

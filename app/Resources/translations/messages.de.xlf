@@ -32,7 +32,7 @@
             </trans-unit>
             <trans-unit id="label.pco.outside_temp">
                 <source>label.pco.outside_temp</source>
-                <target>Aussen</target>
+                <target>Aussentemperatur</target>
             </trans-unit>
             <trans-unit id="label.pco.water_temp">
                 <source>label.pco.water_temp</source>
@@ -114,9 +114,13 @@
                 <source>label.smartfox.energy_in_day</source>
                 <target>Energiebezug heute</target>
             </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_current">
+                <source>label.openweathermap.clouds_current</source>
+                <target>Aktuelle Bewölkung</target>
+            </trans-unit>
             <trans-unit id="label.openweathermap.clouds_next_daylight">
                 <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Bewölkung</target>
+                <target>Kommende Bewölkung</target>
             </trans-unit>
             <trans-unit id="label.solarheat">
                 <source>label.solarheat</source>
