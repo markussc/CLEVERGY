@@ -168,7 +168,7 @@ class OpenWeatherMapConnector
             $currentData = $current->getData();
             if (isset($currentData['sys']['sunrise']) && isset($currentData['sys']['sunset'])) {
                 $now = time();
-                if ($now < $currentData['sys']['sunrise'] || $now > isset($currentData['sys']['sunset'])) {
+                if ($now < $currentData['sys']['sunrise'] || $currentData['sys']['sunset']) {
                     return "n";
                 }
             }
