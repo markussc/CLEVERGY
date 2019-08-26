@@ -355,7 +355,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         // set the emergency temperature levels
             // we are on low energy rate
             $minWaterTemp = 38;
-            $minInsideTemp = 19.2;
+            $minInsideTemp = 19.5;
         // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = 22;
 
@@ -483,8 +483,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 if ($insideTemp < $minInsideTemp) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
                     if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                     }
                 } else {

@@ -1,14 +1,7 @@
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
-        <div class="refresh" id="visualDashboardHead">
-            <i class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x" style="color:silver;"></i><br>
-            <span style="font-size:small;">
-            {% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C<br>
-            {% trans %}label.openweathermap.clouds_current{% endtrans %}: {{ currentStat['openweathermap']['currentClouds'] }} %<br>
-            {% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }} %
-            </span>
-        </div>
-        {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap" style="width:98%;"></img>{% endif %}
+        <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x" style="color:silver;"></i><br>
+        {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap"></img>{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
     <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="chromecast">

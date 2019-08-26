@@ -189,7 +189,6 @@ class DefaultController extends Controller
                 'edimax' => true,
                 'mystrom' => true,
                 'shelly' => true,
-                'pcoweb' => true,
                 'openweathermap' => true,
             ]);
         }
@@ -350,6 +349,7 @@ class DefaultController extends Controller
             "intpower",
             "solpower",
             "soltemp",
+            "outsidetemp",
             "watertemp",
             "ppstatus",
             "insidetemp",
@@ -367,6 +367,7 @@ class DefaultController extends Controller
             $intpower,
             $solpower,
             $soltemp,
+            $currentStat['pcoWeb']['outsideTemp']." °C",
             $currentStat['pcoWeb']['waterTemp']." °C",
             $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']),
             $insidetemp,

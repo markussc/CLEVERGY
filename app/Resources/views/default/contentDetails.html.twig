@@ -86,7 +86,10 @@
 <div class="small-12 medium-3 columns refresh" id="mobileAlerts">
     <h4>{% trans %}label.climate{% endtrans %}</h4>
     <ul>
-        {% if currentStat['openweathermap']|default(false) %}<li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>{% endif %}
+        {% if currentStat['openweathermap']|default(false) %}
+            <li>{% trans %}label.openweathermap.clouds_current{% endtrans %}: {{ currentStat['openweathermap']['currentClouds'] }} %</li>
+            <li>{% trans %}label.openweathermap.clouds_next_daylight{% endtrans %}: {{ currentStat['openweathermap']['cloudsNextDaylight'] }}%</li>
+        {% endif %}
         {% if currentStat['pcoWeb']|default(false) %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
     {% for maSensor in currentStat['mobileAlerts']|default([]) %}
         {% for measurement in maSensor if measurement['label'] != 'timestamp' %}

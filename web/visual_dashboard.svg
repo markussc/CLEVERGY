@@ -504,7 +504,7 @@
 				<title>Tabelle.297</title>
 			</g>
 			<g id="shape293-106" v:mID="293" v:groupContext="groupContent" v:layerMember="5;6">
-				<path d="M0 359.35 C-0 450.42 19.51 450.42 32.01 450.42 C39.68 450.42 44.71 450.42 53.37 450.42 C57.71 450.42 62.97
+				<path d="M0 359.35 C0 450.42 19.51 450.42 32.01 450.42 C39.68 450.42 44.71 450.42 53.37 450.42 C57.71 450.42 62.97
 							 450.42 62.97 447.77" class="st14"/>
 			</g>
 		</g>
@@ -751,5 +751,24 @@
 							 340.69 Z" class="st20"/>
 			</g>
 		</g>
+		<g id="shape364-221" v:mID="364" v:groupContext="shape" transform="translate(-311.5,195.492) rotate(-90)">
+			<title>Temperatur.364</title>
+			<v:userDefs>
+				<v:ud v:nameU="H" v:val="VT0(0.078740157480315):24"/>
+				<v:ud v:nameU="CH1" v:val="VT0(5):26"/>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="H" v:prompt="" v:val="VT0(0.065170630912581):1"/>
+			</v:userDefs>
+			<path d="M0 357 A2.34614 2.34614 -180 0 0 4.69 357 A2.34614 2.34614 -180 0 0 0 357 Z" class="st8"/>
+			<path d="M0 357 L11.74 357" class="st9"/>
+			<path d="M0 357 A2.34614 2.34614 -180 0 0 4.69 357 A2.34614 2.34614 -180 0 0 0 357" class="st9"/>
+		</g>
+		<g id="shape365-226" v:mID="365" v:groupContext="shape" transform="translate(39.5358,-157.144)">
+			<title>Tabelle.365</title>
+			<desc>outsidetemp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="42.2383" cy="347.61" width="84.48" height="23.4788"/>
+			<rect x="0" y="335.871" width="84.4766" height="23.4788" class="st15"/>
+			<text x="11.11" y="351.21" class="st16" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>outsidetemp</text>		</g>
 	</g>
 </svg>
