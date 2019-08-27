@@ -1,6 +1,6 @@
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
-        <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x" style="color:silver;"></i><br>
+        <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i><br>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap"></img>{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
