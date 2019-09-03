@@ -370,7 +370,6 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
         $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
         $waterTemp = $pcoweb['waterTemp'];
-        $setDistrTemp = $pcoweb['setDistrTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
 
         // if no heatStorage sensor is available, we assume 35°C
@@ -458,7 +457,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             // end of energy low rate is near. switch to MODE_2ND or MODE_SUMMER (depending on current inside temperature) as soon as possible and reset the hwHysteresis to default value
             if ($diffToEndOfLowEnergyRate <= 1) {
                 $deactivateHeating = true;
-                if ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1 && $setDistrTemp > $insideTemp) {
+                if ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                 } elseif ($ppMode !== PcoWebConnector::MODE_SUMMER && $insideTemp >= $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
