@@ -432,9 +432,9 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // default cases for energy low rate
-            if ($energyLowRate) {  
+            if ($energyLowRate && $diffToEndOfLowEnergyRate > 1) {
                 $warmWater = false;
-                if ($diffToEndOfLowEnergyRate <= 2 && $diffToEndOfLowEnergyRate > 1) {
+                if ($diffToEndOfLowEnergyRate <= 2) {
                     // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
                     $warmWater = true;
@@ -463,6 +463,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                 }
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                return;
             }
 
             // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
