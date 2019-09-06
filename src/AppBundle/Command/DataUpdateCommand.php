@@ -478,9 +478,11 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
-                } elseif ($insideTemp <= ($minInsideTemp + 0.8)) {
-                    // set default value for 2nd heating circle
+                } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 8)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
+                } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
+                    // set default value for 2nd heating circle
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 28);
                 }
             }
             // apply emergency actions
