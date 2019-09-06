@@ -475,9 +475,10 @@ class DataUpdateCommand extends ContainerAwareCommand
                 if ($ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
                     // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 15);
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
-                } elseif ($insideTemp <= ($minInsideTemp + 0.5)) {
+                } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
+                } elseif ($insideTemp <= ($minInsideTemp + 0.8)) {
                     // set default value for 2nd heating circle
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
                 }
