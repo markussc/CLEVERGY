@@ -409,7 +409,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
                 // we make sure the heating curve (circle 1) is maximized
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 40);
-                if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                if ($ppMode !== PcoWebConnector::MODE_AUTO && $avgPower < -1000) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                 }
             }
