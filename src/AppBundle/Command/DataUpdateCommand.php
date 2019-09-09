@@ -491,7 +491,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $activateHeating = true;
                 if ($insideTemp < $minInsideTemp) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 40);
-                    if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                    if ($ppMode !== PcoWebConnector::MODE_AUTO && $heatStorageMidTemp < 36) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                     }
                 } else {
