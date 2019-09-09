@@ -566,6 +566,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         $pcowebNew = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
         $commandLog->setPpMode($pcowebNew['ppMode']);
         $commandLog->setLog($log);
+        $commandLog->setTimestamp(new \DateTime());
         $em->persist($commandLog);
         $em->flush();
     }

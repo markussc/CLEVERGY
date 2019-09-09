@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="AppBundle\Entity\CommandLogRepository")
- * @ORM\Table(name="commandlog")
+ * @ORM\Table(name="commandlog", indexes={@ORM\Index(name="timestamp_idx", columns={"timestamp"})})
  */
 class CommandLog
 {
@@ -27,6 +27,32 @@ class CommandLog
     public function getId()
     {
         return $this->id;
+    }
+    
+    /**
+     * @var datetime
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $timestamp;
+
+    /**
+     * Set the timestamp.
+     *
+     * @param datetime $timestamp
+     *
+     * @return CommandLog $this
+     */
+    public function setTimestamp($timestamp = null)
+    {
+        $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    public function getTimestamp()
+    {
+        return $this->timestamp;
     }
 
     /**
