@@ -210,6 +210,10 @@
                 <source>label.year</source>
                 <target>Jahr</target>
             </trans-unit>
+            <trans-unit id="label.lastYearPart">
+                <source>label.lastYearPart</source>
+                <target>Vorjahreszeitraum</target>
+            </trans-unit>
             <trans-unit id="label.lastYear">
                 <source>label.lastYear</source>
                 <target>Letzes Jahr</target>
