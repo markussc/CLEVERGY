@@ -441,7 +441,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                    $log[] = "log heatStorageMidTemp, high PV but flag not set. Set hwHysteresis to default (10)";
+                    $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10)";
                     if ($ppMode !== PcoWebConnector::MODE_AUTO) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                         $log[] = "set MODE_AUTO due to high PV without flag set";
