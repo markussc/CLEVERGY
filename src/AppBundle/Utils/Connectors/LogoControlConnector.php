@@ -50,6 +50,7 @@ class LogoControlConnector
      */
     public function getAll()
     {
+        try {
         $url = $this->basePath . '/rest/devices';
         $response = $this->browser->get($url);
         $statusCode = $response->getStatusCode();
@@ -60,9 +61,13 @@ class LogoControlConnector
         }
 
         $rawdata = json_decode($response, true);
+        } catch (\Exception $e) {
+          // do nothing
+        }
+
 
         $data = [];
-        if (array_key_exists('logocontrol', $this->connectors)) {
+        if (isset($rawdata) && array_key_exists('logocontrol', $this->connectors)) {
             foreach($this->connectors['logocontrol']['sensors'] as $key=>$value) {
                 $data[$rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Name']] = $rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Value'];
             }
