@@ -59,13 +59,13 @@ class ConditionChecker
             return true;
         }
         // check for force conditions for all energy rates
-        if (isset($conf['forceOn'])) {
+        if ($type == 'forceOn' && isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {
 
                 return true;
             }
         }
-        if (isset($conf['forceOff'])) {
+        if ($type == 'forceOff' && isset($conf['forceOff'])) {
             if ($this->processConditions($conf['forceOff'])) {
 
                 return true;

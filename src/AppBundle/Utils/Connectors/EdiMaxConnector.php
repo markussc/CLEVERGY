@@ -106,8 +106,8 @@ class EdiMaxConnector
             return false;
         }
 
-        // check if nominal power is set (if not, this is not a device to be managed based on available power)
-        if (!isset($this->connectors['edimax'][$deviceId]['minOnTime'])) {
+        // check if autoIntervals or nominalPower are set (if not, this is not a device to be managed automatically)
+        if (!isset($this->connectors['edimax'][$deviceId]['autoIntervals']) && !isset($this->connectors['edimax'][$deviceId]['nominalPower'])) {
             return false;
         }
 

@@ -162,37 +162,58 @@ class DataUpdateCommand extends ContainerAwareCommand
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
         $netPower = $smartfox['power_io'];
 
+        // auto actions for devices which have a nominalPower
         if ($netPower > 0) {
             if ($avgPower > 0) {
                 // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
                 foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
-                    // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
-                    if ($this->forceOnEdimax($deviceId, $edimax)) {
-                        continue;
-                    }
-                    // check if the device is on and allowed to be turned off
-                    if ($edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 0);
-                        break;
+                    if ($edimax['nominalPower'] > 0) {
+                        // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                        if ($this->forceOnEdimax($deviceId, $edimax)) {
+                            continue;
+                        }
+                        // check if the device is on and allowed to be turned off
+                        if ($edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
+                            $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 0);
+                            break;
+                        }
                     }
                 }
             }
         } else {
             // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
             foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
-                // check for "forceOff" conditions (if true, try to turn it off and skip
-                if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOff')) {
-                    $this->forceOffEdimax($deviceId, $edimax);
-                    continue;
+                if ($edimax['nominalPower'] > 0) {
+                    // check for "forceOff" conditions (if true, try to turn it off and skip
+                    if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOff')) {
+                        $this->forceOffEdimax($deviceId, $edimax);
+                        continue;
+                    }
+                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
+                    if ($this->forceOnEdimax($deviceId, $edimax)) {
+                        continue;
+                    }
+                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                    if (!$edimax['status']['val'] && $edimax['nominalPower'] < -1*$netPower && $edimax['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
+                        break;
+                    }
                 }
-                // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                if ($this->forceOnEdimax($deviceId, $edimax)) {
-                    continue;
-                }
-                // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
-                if (!$edimax['status']['val'] && $edimax['nominalPower'] < -1*$netPower && $edimax['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
-                    break;
+            }
+        }
+
+        // auto actions for devices without nominal power
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->getAllLatest() as $deviceId => $edimax) {
+            if ($edimax['nominalPower'] == 0) {
+                if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOff')) {
+                    if ($this->forceOffEdimax($deviceId, $edimax)) {
+                        break;
+                    }
+                } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOn')) {
+                    // we only try to activate if we disable not close just before (disable wins)
+                    if ($this->forceOnEdimax($deviceId, $edimax)) {
+                        break;
+                    }
                 }
             }
         }
@@ -200,7 +221,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
     private function forceOnEdimax($deviceId, $edimax)
     {
-        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax);
+        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOn');
         if ($forceOn && !$edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
@@ -232,37 +253,58 @@ class DataUpdateCommand extends ContainerAwareCommand
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
         $netPower = $smartfox['power_io'];
 
+        // auto actions for devices which have a nominalPower
         if ($netPower > 0) {
             if ($avgPower > 0) {
                 // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
                 foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest() as $deviceId => $mystrom) {
-                    // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
-                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
-                        continue;
-                    }
-                    // check if the device is on and allowed to be turned off
-                    if ($mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 0);
-                        break;
+                    if ($mystrom['nominalPower'] > 0) {
+                        // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                        if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                            continue;
+                        }
+                        // check if the device is on and allowed to be turned off
+                        if ($mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+                            $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 0);
+                            break;
+                        }
                     }
                 }
             }
         } else {
             // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
             foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest() as $deviceId => $mystrom) {
-                // check for "forceOff" conditions (if true, try to turn it off and skip
-                if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOff')) {
-                    $this->forceOffMystrom($deviceId, $mystrom);
-                    continue;
+                if ($mystrom['nominalPower'] > 0) {
+                    // check for "forceOff" conditions (if true, try to turn it off and skip
+                    if ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOff')) {
+                        $this->forceOffMystrom($deviceId, $mystrom);
+                        continue;
+                    }
+                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
+                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                        continue;
+                    }
+                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                    if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
+                        break;
+                    }
                 }
-                // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                if ($this->forceOnMystrom($deviceId, $mystrom)) {
-                    continue;
-                }
-                // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
-                if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'on') && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
-                    break;
+            }
+        }
+
+        // auto actions for devices without nominal power
+        foreach ($this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAllLatest() as $deviceId => $mystrom) {
+            if ($mystrom['nominalPower'] == 0) {
+                if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOff')) {
+                    if ($this->forceOffMystrom($deviceId, $mystrom)) {
+                        continue;
+                    }
+                } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOn')) {
+                    // we only try to activate if we disable not close just before (disable wins)
+                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                        continue;
+                    }
                 }
             }
         }
@@ -270,7 +312,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
     private function forceOnMystrom($deviceId, $mystrom)
     {
-        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom);
+        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOn');
         if ($forceOn && !$mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
             $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);

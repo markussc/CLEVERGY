@@ -106,8 +106,8 @@ class MyStromConnector
             return false;
         }
 
-        // check if nominal power is set (if not, this is not a device to be managed based on available power)
-        if (!isset($this->connectors['mystrom'][$deviceId]['nominalPower'])) {
+        // check if autoIntervals or nominalPower are set (if not, this is not a device to be managed automatically)
+        if (!isset($this->connectors['mystrom'][$deviceId]['autoIntervals']) && !isset($this->connectors['mystrom'][$deviceId]['nominalPower'])) {
             return false;
         }
 
