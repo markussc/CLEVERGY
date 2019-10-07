@@ -43,11 +43,17 @@ class MyStromConnector
                 } else {
                     $nominalPower = 0;
                 }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'name' => $device['name'],
                     'status' => $this->createStatus($this->em->getRepository('AppBundle:MyStromDataStore')->getLatest($device['ip'])),
                     'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
                 ];
@@ -71,11 +77,17 @@ class MyStromConnector
                 } else {
                     $nominalPower = 0;
                 }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'name' => $device['name'],
                     'status' => $status,
                     'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
                 ];
