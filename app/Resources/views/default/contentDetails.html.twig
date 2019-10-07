@@ -337,7 +337,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['waterTemp'] }}
+                        y: {{ pwData.getData()['waterTemp']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -350,7 +350,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['outsideTemp'] }}
+                        y: {{ pwData.getData()['outsideTemp']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -363,7 +363,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['setDistrTemp'] }}
+                        y: {{ pwData.getData()['setDistrTemp']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -376,7 +376,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['effDistrTemp'] }}
+                        y: {{ pwData.getData()['effDistrTemp']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -389,7 +389,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['cpStatus']|replace({'label.device.status.off':0, 'label.device.status.on':100}) }}
+                        y: {{ pwData.getData()['cpStatus']|default(0)|replace({'label.device.status.off':0, 'label.device.status.on':100}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
