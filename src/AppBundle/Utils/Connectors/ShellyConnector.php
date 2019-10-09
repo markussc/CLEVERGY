@@ -52,6 +52,7 @@ class ShellyConnector
                     'ip' => $device['ip'],
                     'port' => $device['port'],
                     'name' => $device['name'],
+                    'type' => $device['type'],
                     'status' => $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']),
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
@@ -87,6 +88,7 @@ class ShellyConnector
                     'ip' => $device['ip'],
                     'port' => $device['port'],
                     'name' => $device['name'],
+                    'type' => $device['type'],
                     'status' => $status,
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
@@ -171,10 +173,27 @@ class ShellyConnector
             // calculate time diff
             $now = new \DateTime('now');
             $diff = ($now->getTimestamp() - $oldTimestamp->getTimestamp())/60; // diff in minutes
-            $minWaitTime = array_key_exists('minWaitTime', $this->connectors['shelly'][$deviceId])?$this->connectors['shelly'][$deviceId]['minWaitTime']:15;
-            if ($diff > $minWaitTime) {
-                // check the minWaitTime
-                return true;
+            if ($this->connectors['shelly'][$deviceId]['type'] == 'roller') {
+                $minWaitTime = array_key_exists('minWaitTime', $this->connectors['shelly'][$deviceId])?$this->connectors['shelly'][$deviceId]['minWaitTime']:15;
+                if ($diff > $minWaitTime) {
+                    // check the minWaitTime
+                    return true;
+                }
+            } else {
+                if ($currentStatus) {
+                    // currently on, we want to switch off
+                    $minOnTime = array_key_exists('minOnTime', $this->connectors['shelly'][$deviceId])?$this->connectors['shelly'][$deviceId]['minOnTime']:15;
+                    if ($diff > $minOnTime) {
+                        // check the minOnTime
+                        return true;
+                    }
+                } else {
+                    // currently off, we want to switch on
+                    $minOffTime = array_key_exists('minOffTime', $this->connectors['shelly'][$deviceId])?$this->connectors['shelly'][$deviceId]['minOffTime']:15;
+                    if ($diff > $minOffTime) {
+                        return true;
+                    }
+                }
             }
         }
 
@@ -197,7 +216,7 @@ class ShellyConnector
                 return $this->createStatus(3, $r['current_pos']);
             }
         } elseif (!empty($r) && $device['type'] == 'relay') {
-            if (array_key_exists('state', $r) && $r['state'] == true) {
+            if (array_key_exists('ison', $r) && $r['ison'] == true) {
                 return $this->createStatus(1);
             } else {
                 return $this->createStatus(0);

@@ -352,6 +352,18 @@ class DataUpdateCommand extends ContainerAwareCommand
                         break;
                     }
                 }
+            } else {
+                // for switches, check force off and forceOn conditions
+                if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOff')) {
+                    if ($this->forceOffShelly($deviceId, $shelly)) {
+                        break;
+                    }
+                } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOn')) {
+                    // we only try to activate if we disable not close just before (disable wins)
+                    if ($this->forceOnShelly($deviceId, $shelly)) {
+                        break;
+                    }
+                }
             }
         }
     }
@@ -376,6 +388,28 @@ class DataUpdateCommand extends ContainerAwareCommand
         } else {
             return false;
         }
+    }
+
+    private function forceOnShelly($deviceId, $shelly)
+    {
+        $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOn');
+        if ($forceOn && !$shelly['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+            // force turn it on if we are allowed to
+            $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 1);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function forceOffShelly($deviceId, $shelly)
+    {
+        if ($shelly['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+            // force turn it on if we are allowed to
+            $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 0);
+        }
+
+        return true;
     }
 
     /**
