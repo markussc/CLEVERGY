@@ -356,12 +356,12 @@ class DataUpdateCommand extends ContainerAwareCommand
                 // for switches, check force off and forceOn conditions
                 if($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOff')) {
                     if ($this->forceOffShelly($deviceId, $shelly)) {
-                        break;
+                        continue;
                     }
                 } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOn')) {
                     // we only try to activate if we disable not close just before (disable wins)
                     if ($this->forceOnShelly($deviceId, $shelly)) {
-                        break;
+                        continue;
                     }
                 }
             }
