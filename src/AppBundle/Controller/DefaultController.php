@@ -60,7 +60,7 @@ class DefaultController extends Controller
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
                 $currentStat['conexio'] = $this->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
             }
-            if (array_key_exists('mobileAlerts', $this->getParameter('connectors'))) {
+            if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
                 $currentStat['mobileAlerts'] = $this->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
             }
             if (array_key_exists('edimax', $this->getParameter('connectors'))) {
