@@ -809,5 +809,24 @@
 							 2.5 359.24 L3.58 357.76 L3.1 357.68 L3.69 353.85 C3.72 353.68 3.65 353.5 3.51 353.39 Z" class="st20"/>
 			</g>
 		</g>
+		<g id="shape380-223" v:mID="380" v:groupContext="shape" transform="translate(-311.218,200.714) rotate(-90)">
+			<title>Temperatur.380</title>
+			<v:userDefs>
+				<v:ud v:nameU="H" v:val="VT0(0.078740157480315):24"/>
+				<v:ud v:nameU="CH1" v:val="VT0(5):26"/>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+				<v:ud v:nameU="H" v:prompt="" v:val="VT0(0.065170630912581):1"/>
+			</v:userDefs>
+			<path d="M0 357 A2.34614 2.34614 -180 0 0 4.69 357 A2.34614 2.34614 -180 0 0 0 357 Z" class="st6"/>
+			<path d="M0 357 L11.74 357" class="st7"/>
+			<path d="M0 357 A2.34614 2.34614 -180 0 0 4.69 357 A2.34614 2.34614 -180 0 0 0 357" class="st7"/>
+		</g>
+		<g id="shape381-228" v:mID="381" v:groupContext="shape" transform="translate(42.8011,-151.922)">
+			<title>Tabelle.381</title>
+			<desc>outsidetemp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="42.2383" cy="347.61" width="84.48" height="23.4788"/>
+			<rect x="0" y="335.871" width="84.4766" height="23.4788" class="st12"/>
+			<text x="11.11" y="351.21" class="st13" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>outsidetemp</text>		</g>
 	</g>
 </svg>
