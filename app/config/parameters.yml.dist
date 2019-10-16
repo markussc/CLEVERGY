@@ -58,6 +58,7 @@ parameters:
                         - °C
                         - red # color used in charts
                         - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
+                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity,  contact
                     -
                         - 'Relative humidity inside'
                         - '%'
@@ -67,6 +68,9 @@ parameters:
                     -
                         - 'Relative humidity outside'
                         - '%'
+                    -
+                        - 'Window XY'
+                        - contact # if set to contact, a warning will be shown if open
         edimax:
             '192.168.55.2':
                 name: 'Plug 1'

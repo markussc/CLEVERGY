@@ -1,3 +1,4 @@
+{% set contactAvailable = false %}
 {% if is_granted('ROLE_OWNER') %}
     <div id="pcowebModeModal" class="reveal" data-reveal>
       <h4 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h4>
@@ -93,7 +94,11 @@
         {% if currentStat['pcoWeb']|default(false) %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
     {% for maSensor in currentStat['mobileAlerts']|default([]) %}
         {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
+            {% if measurement['usage']|default('') == 'contact' %}
+                {% set contactAvailable = true %}
+            {% else %}
             <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
+            {% endif %}
         {% endfor %}
     {% endfor %}
     </ul>
@@ -123,6 +128,18 @@
             <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fa {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a> |
             <a title="{% trans %}label.edimax.activation_interval_today{% endtrans %}"><i class="fa fa-clock-o"></i> {{ (device['activeMinutes']/60)|round(0, 'floor') }}h {{ device['activeMinutes']%60 }}m</a>
         </li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% if contactAvailable|default(false) %}
+<div class="small-12 medium-3 columns refresh" id="alarm">
+    <h4>{% trans %}label.alarm{% endtrans %}</h4>
+    <ul>
+    {% for maSensor in currentStat['mobileAlerts']|default([]) %}
+        {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
+            <li>{{ measurement['label']}}: {{ measurement['value']|trans }}</li>
+        {% endfor %}
     {% endfor %}
     </ul>
 </div>

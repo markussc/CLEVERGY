@@ -88,6 +88,9 @@ class MobileAlertsConnector
                     ];
                 } else {
                     // next measurement
+                    if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
+                        $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
+                    }
                     if (array_key_exists(3, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][3] === "dashboard") {
                         $dashboard = true;
                     } else {
@@ -98,10 +101,17 @@ class MobileAlertsConnector
                     } else {
                         $usage = false;
                     }
+                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
+                        $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
+                        $value = str_replace('Offen', 'label.device.status.open', $value);
+                    } else {
+                        $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
+                        $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
+                    }
                     $data[$currentSensor][] = [
                         'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
-                        'value' => preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value)),
-                        'unit' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1],
+                        'value' => $value,
+                        'unit' => $unit,
                         'dashboard' => $dashboard,
                         'usage' => $usage,
                     ];

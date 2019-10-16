@@ -254,6 +254,10 @@
                 <source>label.device.status.closing</source>
                 <target>schliesst</target>
             </trans-unit>
+            <trans-unit id="label.alarm">
+                <source>label.alarm</source>
+                <target>Alarmanlage</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

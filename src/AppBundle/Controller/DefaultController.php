@@ -106,6 +106,7 @@ class DefaultController extends Controller
                 'shelly' => true,
                 'pcoweb' => true,
                 'openweathermap' => true,
+                'mobilealerts' => true,
             ]);
         }     
 
@@ -190,6 +191,7 @@ class DefaultController extends Controller
                 'mystrom' => true,
                 'shelly' => true,
                 'openweathermap' => true,
+                'mobilealerts' => true,
             ]);
         }
         
