@@ -258,6 +258,10 @@
                 <source>label.alarm</source>
                 <target>Alarmanlage</target>
             </trans-unit>
+            <trans-unit id="label.alarm.active">
+                <source>label.alarm.active</source>
+                <target>Alarm aktiv</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

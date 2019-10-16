@@ -1,6 +1,18 @@
+{% set contactAvailable = false %}
+{% set alarmActive = false %}
+{% if currentStat['mobileAlerts']|default([])|length > 0 %}
+    {% for maSensor in currentStat['mobileAlerts']|default([]) %}
+        {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
+            {% set contactAvailable = true %}
+            {% if measurement['value'] == 'label.device.status.open' %}{% set alarmActive = true %}{% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
-        <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i><br>
+        <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
+        <div id="visualDashboardAlarmSymbol" class="refresh">{% if alarmActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.alarm.active{% endtrans %}</span>{% endif %}</div>
+        <br>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap"></img>{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
@@ -72,6 +84,17 @@
             {% if not loop.last %}<br/>{% endif %}
         {% endfor %}
         </div>
+    {% endif %}
+    {% if currentStat['mobileAlerts']|default([])|length > 0 %}
+        {% if contactAvailable|default(false) %}
+        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
+        <h4><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></h4>
+        {% for maSensor in currentStat['mobileAlerts']|default([]) %}
+            {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
+                {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
+            {% endfor %}
+        {% endfor %}
+        {% endif %}
     {% endif %}
     {% if connectors['command']|default([])|length > 0 %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="command">
