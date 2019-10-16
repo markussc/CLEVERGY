@@ -348,6 +348,11 @@ class DefaultController extends Controller
                 $basementhumidity = $maValues['basementhumidity'] . " %";
             }
         }
+        if($currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
+            $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']." °C";
+        } else {
+            $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
+        }
         
         // write current values into the svg
         $labels = [
@@ -359,6 +364,7 @@ class DefaultController extends Controller
             "outsidetemp",
             "watertemp",
             "ppstatus",
+            "effdistrtemp",
             "insidetemp",
             "firstfloortemp",
             "secondfloortemp",
@@ -377,6 +383,7 @@ class DefaultController extends Controller
             $currentStat['pcoWeb']['outsideTemp']." °C",
             $currentStat['pcoWeb']['waterTemp']." °C",
             $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']),
+            $effDistrTemp,
             $insidetemp,
             $firstfloortemp,
             $secondfloortemp,
