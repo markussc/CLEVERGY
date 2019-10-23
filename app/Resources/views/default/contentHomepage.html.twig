@@ -78,7 +78,7 @@
                 {% if device['status']['position']|default(50) < 100 %}<a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="sendCommand(['shelly', {{ key }}, 2])"><i class="fas fa-arrow-circle-up"></i></a>{% endif %}{% if device['status']['position']|default(50) > 0 %}<a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i></a>{% endif %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not device['autoIntervals']|length %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>{% endif %}
             {% else %}
-                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, -1])"{% endif %}><i class="fas fa-stop-circle"></i></a>
+                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, -1]);"{% endif %}><i class="fas fa-stop-circle"></i></a>
             {% endif %}
             {{ device['name']}}
             {% if not loop.last %}<br/>{% endif %}
@@ -89,6 +89,10 @@
         {% if contactAvailable|default(false) %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
         <h4><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></h4>
+        {% if connectors['threema']|default([])|length > 0 %}
+            {% set alarmMode = mobilealertsConnector.getAlarmMode()|default(0) %}
+            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', 'alarm', {{ (alarmMode + 1) % 2 }}]);"{% endif %}><i class="fas {% if alarmMode %}fa-comment{% else %}fa-comment-slash{% endif %}"></i></a> {% trans %}label.alarm.notification{% endtrans %}<br>
+        {% endif %}
         {% for maSensor in currentStat['mobileAlerts']|default([]) %}
             {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
                 {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
@@ -100,7 +104,7 @@
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="command">
         <h4><i class="fas fa-terminal" style="font-size:2em; color:#2e4053 ;"></i></h4>
         {% for key, command in connectors['command'] %}
-            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}])"{% endif %}><i class="{{ command['icon']}}" style="color:silver"></i></a>
+            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}]);"{% endif %}><i class="{{ command['icon']}}" style="color:silver"></i></a>
             {{ command['name']}}
             {% if not loop.last %}<br/>{% endif %}
         {% endfor %}

@@ -25,6 +25,31 @@ class MobileAlertsConnector
         $this->connectors = $connectors;
     }
 
+    public function getAlarms()
+    {
+        $alarms = [];
+        if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                if (array_key_exists(4, $sensorConf[0]) && $sensorConf[0][4] == 'contact') {
+                    $data = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+                    if ($data[1]['value'] == 'label.device.status.open') {
+                        $alarms[] = [
+                            'name' => $sensorConf[0][0],
+                            'state' => $data[1]['value'],
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $alarms;
+    }
+
+    public function getAlarmMode()
+    {
+        return $this->em->getRepository('AppBundle:Settings')->getMode('alarm');
+    }
+
     /**
      * Reads the latest available data from the database
      * @return array

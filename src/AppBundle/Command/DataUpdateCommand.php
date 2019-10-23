@@ -135,6 +135,23 @@ class DataUpdateCommand extends ContainerAwareCommand
         $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->save5DayForecastToDb();
         $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->saveCurrentWeatherToDb();
 
+        // process alarms
+        $alarms = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAlarms();
+        if (count($alarms)) {
+            $alarmSetting = $em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
+            if ($alarmSetting && $alarmSetting->getMode() == 1) {
+                $alarmMsg = $this->getContainer()->get('translator')->trans("label.alarm.active");
+                foreach ($alarms as $alarm) {
+                    $alarmMsg .= "\n" . $alarm['name'] . ": " . $this->getContainer()->get('translator')->trans($alarm['state']);
+                }
+                foreach ($this->getContainer()->getParameter('connectors')['threema']['alarm'] as $alarmRecipient) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\ThreemaConnector')->sendMessage($alarmRecipient, $alarmMsg);
+                }
+                $alarmSetting->setMode(0);
+                $em->flush();
+            }
+        }
+
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
 

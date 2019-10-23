@@ -262,6 +262,10 @@
                 <source>label.alarm.active</source>
                 <target>Alarm aktiv</target>
             </trans-unit>
+            <trans-unit id="label.alarm.notification">
+                <source>label.alarm.notification</source>
+                <target>Alarmmeldung</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
