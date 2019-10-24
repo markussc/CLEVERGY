@@ -139,6 +139,11 @@ class DataUpdateCommand extends ContainerAwareCommand
         $alarms = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAlarms();
         if (count($alarms)) {
             $alarmSetting = $em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
+            if(!$alarmSetting) {
+                $alarmSetting = new Settings();
+                $alarmSetting->setConnectorId('alarm');
+                $alarmSetting->setMode(0);
+            }
             if ($alarmSetting && $alarmSetting->getMode() == 1) {
                 $alarmMsg = $this->getContainer()->get('translator')->trans("label.alarm.active");
                 foreach ($alarms as $alarm) {
