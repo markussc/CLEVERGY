@@ -3,6 +3,7 @@
 namespace AppBundle\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
+use AppBundle\Entity\Settings;
 
 /**
  * Connector to retrieve data from EdiMax devices
@@ -32,28 +33,67 @@ class EdiMaxConnector
     public function getAllLatest()
     {
         $results = [];
-        foreach ($this->connectors['edimax'] as $device) {
-            $results[] = [
-                'ip' => $device['ip'],
-                'name' => $device['name'],
-                'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
-                'nominalPower' => $device['nominalPower'],
-            ];
+        $today = new \DateTime('today');
+        $now = new \DateTime();
+        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
+            foreach ($this->connectors['edimax'] as $device) {
+                $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
+                if (isset($device['nominalPower'])) {
+                    $nominalPower = $device['nominalPower'];
+                } else {
+                    $nominalPower = 0;
+                }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
+                $results[] = [
+                    'ip' => $device['ip'],
+                    'name' => $device['name'],
+                    'status' => $this->createStatus($this->em->getRepository('AppBundle:EdiMaxDataStore')->getLatest($device['ip'])),
+                    'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
+                    'mode' => $mode,
+                    'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
+                ];
+            }
         }
+
         return $results;
     }
 
     public function getAll()
     {
         $results = [];
-        foreach ($this->connectors['edimax'] as $device) {
-            $status = $this->getStatus($device);
-            $results[] = [
-                'ip' => $device['ip'],
-                'name' => $device['name'],
-                'status' => $status,
-            ];
+        $today = new \DateTime('today');
+        $now = new \DateTime();
+        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
+            foreach ($this->connectors['edimax'] as $device) {
+                $status = $this->getStatus($device);
+                $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip']);
+                if (isset($device['nominalPower'])) {
+                    $nominalPower = $device['nominalPower'];
+                } else {
+                    $nominalPower = 0;
+                }
+                if (isset($device['autoIntervals'])) {
+                    $autoIntervals = $device['autoIntervals'];
+                } else {
+                    $autoIntervals = [];
+                }
+                $results[] = [
+                    'ip' => $device['ip'],
+                    'name' => $device['name'],
+                    'status' => $status,
+                    'nominalPower' => $nominalPower,
+                    'autoIntervals' => $autoIntervals,
+                    'mode' => $mode,
+                    'activeMinutes' => $this->em->getRepository('AppBundle:EdiMaxDataStore')->getActiveDuration($device['ip'], $today, $now),
+                ];
+            }
         }
+
         return $results;
     }
 
@@ -73,6 +113,16 @@ class EdiMaxConnector
 
     public function switchOK($deviceId)
     {
+        // check if manual mode is set
+        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->connectors['edimax'][$deviceId]['ip']) == Settings::MODE_MANUAL) {
+            return false;
+        }
+
+        // check if autoIntervals or nominalPower are set (if not, this is not a device to be managed automatically)
+        if (!isset($this->connectors['edimax'][$deviceId]['autoIntervals']) && !isset($this->connectors['edimax'][$deviceId]['nominalPower'])) {
+            return false;
+        }
+
         // get current status
         $currentStatus = $this->getStatus($this->connectors['edimax'][$deviceId])['val'];
 
@@ -83,9 +133,20 @@ class EdiMaxConnector
 
             // calculate time diff
             $now = new \DateTime('now');
-            $diff = $oldTimestamp->diff($now)->format('%i');
-            if ($diff > 15) {
-                return true;
+            $diff = ($now->getTimestamp() - $oldTimestamp->getTimestamp())/60; // diff in minutes
+            if ($currentStatus) {
+                // currently on, we want to switch off
+                $minOnTime = array_key_exists('minOnTime', $this->connectors['edimax'][$deviceId])?$this->connectors['edimax'][$deviceId]['minOnTime']:15;
+                if ($diff > $minOnTime) {
+                    // check the minOnTime
+                    return true;
+                }
+            } else {
+                // currently off, we want to switch on
+                $minOffTime = array_key_exists('minOffTime', $this->connectors['edimax'][$deviceId])?$this->connectors['edimax'][$deviceId]['minOffTime']:15;
+                if ($diff > $minOffTime) {
+                    return true;
+                }
             }
         }
 
@@ -120,7 +181,7 @@ class EdiMaxConnector
     private function setOn($device)
     {
         $r = $this->queryEdiMax($device, 'on');
-        if (!empty($r) AND array_key_exists('CMD', $r) AND $r['CMD'] == 'OK') {
+        if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
             return true;
         } else {
             return false;
@@ -130,7 +191,7 @@ class EdiMaxConnector
     private function setOff($device)
     {
         $r = $this->queryEdiMax($device, 'off');
-        if (!empty($r) AND array_key_exists('CMD', $r) AND $r['CMD'] == 'OK') {
+        if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
             return true;
         } else {
             return false;

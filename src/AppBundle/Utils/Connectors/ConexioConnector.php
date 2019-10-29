@@ -22,7 +22,11 @@ class ConexioConnector
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
-        $this->basePath = 'http://' . $connectors['conexio']['ip'];
+        if (array_key_exists('conexio', $connectors)) {
+            $this->basePath = 'http://' . $connectors['conexio']['ip'];
+        } else {
+            $this->basePath = '';
+        }
     }
 
     /**
@@ -31,10 +35,13 @@ class ConexioConnector
      */
     public function getAllLatest()
     {
-        $ip = $this->connectors['conexio']['ip'];
-        $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
-        if (count($latest)) {
-             $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+        $latest = [];
+        if (array_key_exists('conexio', $this->connectors)) {
+            $ip = $this->connectors['conexio']['ip'];
+            $latest = $this->em->getRepository('AppBundle:ConexioDataStore')->getLatest($ip);
+            if ($latest && count($latest)) {
+                 $latest['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+            }
         }
 
         return $latest;
@@ -121,8 +128,21 @@ class ConexioConnector
             }
         }
         // add calculated current power (delta between S6 and S7 multiplied by a constant [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
+        if (!array_key_exists('s6', $data)) {
+            $data['s6'] = 0;
+        }
+        if (!array_key_exists('s7', $data)) {
+            $data['s7'] = 0;
+        }
+        if (!array_key_exists('r1', $data)) {
+            $data['r1'] = 0;
+        }
         $data['p'] = (int)(($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100/2); // unclear why the division by 2 is required
 
+        if(!array_key_exists('q', $data)) {
+            // the retrieved data is incomplete or invalid, we do not want to use it
+            $data = false;
+        }
         return $data;
     }
 

@@ -66,7 +66,7 @@ class Settings
     /**
      * @var int
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable = true)
      */
     private $mode;
 
@@ -90,5 +90,31 @@ class Settings
     public function getMode()
     {
         return $this->mode;
+    }
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(type="json", nullable = true)
+     */
+    private $config;
+
+    /**
+     * Set config
+     *
+     * @param array $config
+     *
+     * @return Settings $this
+     */
+    public function setConfig($config)
+    {
+        $this->config = $config;
+
+        return $this;
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
     }
 }

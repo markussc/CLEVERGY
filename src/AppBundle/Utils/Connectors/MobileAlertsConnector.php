@@ -25,6 +25,31 @@ class MobileAlertsConnector
         $this->connectors = $connectors;
     }
 
+    public function getAlarms()
+    {
+        $alarms = [];
+        if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                if (array_key_exists(4, $sensorConf[0]) && $sensorConf[0][4] == 'contact') {
+                    $data = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+                    if ($data[1]['value'] == 'label.device.status.open') {
+                        $alarms[] = [
+                            'name' => $sensorConf[0][0],
+                            'state' => $data[1]['value'],
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $alarms;
+    }
+
+    public function getAlarmMode()
+    {
+        return $this->em->getRepository('AppBundle:Settings')->getMode('alarm');
+    }
+
     /**
      * Reads the latest available data from the database
      * @return array
@@ -32,8 +57,10 @@ class MobileAlertsConnector
     public function getAllLatest()
     {
         $data = [];
-        foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
-            $data[$sensorId] = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+        if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                $data[$sensorId] = $this->em->getRepository('AppBundle:MobileAlertsDataStore')->getLatest($sensorId);
+            }
         }
         return $data;
     }
@@ -56,13 +83,14 @@ class MobileAlertsConnector
      */
     public function getAllWeb()
     {
+        $requestHeaders = ['Content-Length:0'];
         $this->basePath = 'http://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
-        $response = $this->browser->post($this->basePath . $this->connectors['mobilealerts']['phoneid']);
+        $response = $this->browser->post($this->basePath . $this->connectors['mobilealerts']['phoneid'], $requestHeaders);
 
         $crawler = new Crawler();
         $crawler->addContent($response->getContent());
         $sensorComponents = $crawler->filter('.sensor-component');
-        
+
         $data = [];
         $currentSensor = '';
         $measurementCounter = 0;
@@ -74,7 +102,8 @@ class MobileAlertsConnector
             if ($label == 'ID') {
                 // next sensor
                 $currentSensor = $value;
-            } else {
+                $measurementCounter = 0;
+            } elseif (array_key_exists($currentSensor, $this->connectors['mobilealerts']['sensors'])) {
                 if ($this->validateDate($value)) {
                     // this is the timestamp
                     $data[$currentSensor][] = [
@@ -84,10 +113,32 @@ class MobileAlertsConnector
                     ];
                 } else {
                     // next measurement
+                    if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
+                        $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
+                    }
+                    if (array_key_exists(3, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][3] === "dashboard") {
+                        $dashboard = true;
+                    } else {
+                        $dashboard = false;
+                    }
+                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter])) {
+                        $usage = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4];
+                    } else {
+                        $usage = false;
+                    }
+                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
+                        $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
+                        $value = str_replace('Offen', 'label.device.status.open', $value);
+                    } else {
+                        $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
+                        $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
+                    }
                     $data[$currentSensor][] = [
                         'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
-                        'value' => preg_replace("/[^0-9,.]/", "", str_replace(',', '.', $value)),
-                        'unit' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1]
+                        'value' => $value,
+                        'unit' => $unit,
+                        'dashboard' => $dashboard,
+                        'usage' => $usage,
                     ];
                     $measurementCounter++;
                 }

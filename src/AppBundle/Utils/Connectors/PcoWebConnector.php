@@ -39,6 +39,7 @@ class PcoWebConnector
     public function getAll()
     {
         // get analog, digital and integer values
+        try {
         $responseXml = $this->browser->get($this->basePath . '/usr-cgi/xml.cgi?|A|1|127|D|1|127|I|1|127')->getContent();
         $ob = simplexml_load_string($responseXml);
         $json  = json_encode($ob);
@@ -57,6 +58,9 @@ class PcoWebConnector
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
         ];
+        } catch (\Exception $e) {
+          return false;
+        }
     }
 
     public function getIp()
@@ -79,6 +83,9 @@ class PcoWebConnector
             case 'hc1':
                 $this->setHeatCircle1($command);
                 break;
+            case 'hc2':
+                $this->setHeatCircle2($command);
+                break;
         }
         
     }
@@ -93,7 +100,11 @@ class PcoWebConnector
         ];
 
         // post request
-        $response = $this->browser->post($this->basePath . '/http/index/j_modus.html', $headers, http_build_query($data))->getContent();
+        try {
+            $response = $this->browser->post($this->basePath . '/http/index/j_modus.html', $headers, http_build_query($data))->getContent();
+        } catch (\Exception $e) {
+        // do nothing
+        }
     }
 
     private function setHotWaterHysteresis($value)
@@ -106,12 +117,29 @@ class PcoWebConnector
         ];
 
         // post request
-        $response = $this->browser->post($this->basePath . '/http/index/j_settings_hotwater.html', $headers, http_build_query($data))->getContent();
+        try {
+            $response = $this->browser->post($this->basePath . '/http/index/j_settings_hotwater.html', $headers, http_build_query($data))->getContent();
+        } catch (\Exception $e) {
+        // do nothing
+        }
     }
 
     private function setHeatCircle1($value)
     {
-        $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
+        try {
+            $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
+        } catch (\Exception $e) {
+        // do nothing
+        }
+    }
+
+    private function setHeatCircle2($value)
+    {
+        try {
+            $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
+        } catch (\Exception $e) {
+        // do nothing
+        }
     }
 
     private function ppModeToString($mode)
@@ -197,16 +225,18 @@ class PcoWebConnector
 
         // get latest timestamp with opposite status
         $oldStatus = $this->em->getRepository('AppBundle:PcoWebDataStore')->getLatestNotStatus($this->getIp(), $currentStatus);
-
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
             // calculate time diff
             $now = new \DateTime('now');
-            $diff = $oldTimestamp->diff($now)->format('%i');
+            $diff = ($now->getTimestamp() - $oldTimestamp->getTimestamp())/60; // diff in minutes
             if ($diff > 10) {
                 return true;
             }
+        } elseif (!$oldStatus) {
+            // status has never been switched yet
+            return true;
         }
 
         return false;

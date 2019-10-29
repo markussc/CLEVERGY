@@ -21,14 +21,18 @@ class SmartFoxConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        $this->ip = $connectors['smartfox']['ip'];
+        if (array_key_exists('smartfox', $connectors)) {
+            $this->ip = $connectors['smartfox']['ip'];
+        } else {
+            $this->ip = null;
+        }
         $this->basePath = 'http://' . $this->ip;
     }
 
     public function getAllLatest()
     {
         $latest = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
-        if (count($latest)) {
+        if ($latest && count($latest)) {
             $latest['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
         }
 

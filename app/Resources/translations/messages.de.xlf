@@ -36,7 +36,7 @@
             </trans-unit>
             <trans-unit id="label.pco.water_temp">
                 <source>label.pco.water_temp</source>
-                <target>Wassertemperatur</target>
+                <target>Warmwasser</target>
             </trans-unit>
             <trans-unit id="label.pco.pre_temp">
                 <source>label.pco.pre_temp</source>
@@ -60,7 +60,7 @@
             </trans-unit>
             <trans-unit id="label.pco.pp_status">
                 <source>label.pco.pp_status</source>
-                <target>Erdsondenpumpe</target>
+                <target>Erdsonde</target>
             </trans-unit>
             <trans-unit id="label.pco.pp_mode">
                 <source>label.pco.pp_mode</source>
@@ -96,11 +96,11 @@
             </trans-unit>
             <trans-unit id="label.smartfox.net_power">
                 <source>label.smartfox.net_power</source>
-                <target>Leistung Netz</target>
+                <target>Netz</target>
             </trans-unit>
             <trans-unit id="label.smartfox.pv_power">
                 <source>label.smartfox.pv_power</source>
-                <target>PV Leistung</target>
+                <target>PV</target>
             </trans-unit>
             <trans-unit id="label.smartfox.int_power">
                 <source>label.smartfox.int_power</source>
@@ -114,9 +114,13 @@
                 <source>label.smartfox.energy_in_day</source>
                 <target>Energiebezug heute</target>
             </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_current">
+                <source>label.openweathermap.clouds_current</source>
+                <target>Aktuelle Bewölkung</target>
+            </trans-unit>
             <trans-unit id="label.openweathermap.clouds_next_daylight">
                 <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Relevante Bewölkung</target>
+                <target>Kommende Bewölkung</target>
             </trans-unit>
             <trans-unit id="label.solarheat">
                 <source>label.solarheat</source>
@@ -206,6 +210,10 @@
                 <source>label.year</source>
                 <target>Jahr</target>
             </trans-unit>
+            <trans-unit id="label.lastYearPart">
+                <source>label.lastYearPart</source>
+                <target>Vorjahreszeitraum</target>
+            </trans-unit>
             <trans-unit id="label.lastYear">
                 <source>label.lastYear</source>
                 <target>Letzes Jahr</target>
@@ -213,6 +221,50 @@
             <trans-unit id="label.solarheat.production">
                 <source>label.solarheat.production</source>
                 <target>Solarthermische Produktion</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.self_suff_degree">
+                <source>label.smartfox.self_suff_degree</source>
+                <target>Autarkie</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.self_suff_degree_today">
+                <source>label.smartfox.self_suff_degree_today</source>
+                <target>Autarkie heute</target>
+            </trans-unit>
+            <trans-unit id="label.edimax.activation_interval_today">
+                <source>label.edimax.activation_interval_today</source>
+                <target>Aktivierungszeitraum heute</target>
+            </trans-unit>
+            <trans-unit id="label.details.header">
+                <source>label.details.header</source>
+                <target>Details</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closed">
+                <source>label.device.status.closed</source>
+                <target>Geschlossen</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.open">
+                <source>label.device.status.open</source>
+                <target>Offen</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.opening">
+                <source>label.device.status.opening</source>
+                <target>öffnet</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closing">
+                <source>label.device.status.closing</source>
+                <target>schliesst</target>
+            </trans-unit>
+            <trans-unit id="label.alarm">
+                <source>label.alarm</source>
+                <target>Alarmanlage</target>
+            </trans-unit>
+            <trans-unit id="label.alarm.active">
+                <source>label.alarm.active</source>
+                <target>Alarm aktiv</target>
+            </trans-unit>
+            <trans-unit id="label.alarm.notification">
+                <source>label.alarm.notification</source>
+                <target>Alarmmeldung</target>
             </trans-unit>
         </body>
     </file>
