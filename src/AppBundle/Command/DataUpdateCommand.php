@@ -602,7 +602,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
                     $log[] = "set hc2=17 due to current inside temp";
-                } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 8)) {
+                } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 22);
                     $log[] = "set hc2=22 due to current inside temp";
                 } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
