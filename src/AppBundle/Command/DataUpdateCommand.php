@@ -617,22 +617,29 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
                 $log[] = "warm enough inside, disable hc2 (set hc2=0)";
             } else {
+                $activate2ndCircle = false;
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
                     // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
-                    $log[] = "set MODE_2ND due to inside temp dropping towards minInsideTemp";
+                    $activate2ndCircle = true;
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
                     $log[] = "set hc2=17 due to current inside temp";
+                    $activate2ndCircle = true;
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 23);
                     $log[] = "set hc2=22 due to current inside temp";
+                    $activate2ndCircle = true;
                 } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 28);
                     $log[] = "set hc2=28 due to current inside temp";
+                    $activate2ndCircle = true;
+                }
+                if (!$emergency && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                    $log[] = "set MODE_2ND instead of MODE_SUMMER due to inside temp dropping towards minInsideTemp";
                 }
             }
 
