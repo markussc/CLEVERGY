@@ -587,34 +587,12 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $log[] = "set hwHysteresis to default (10)";
             }
 
-            // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
-            if ($insideTemp > $maxInsideTemp) {
-                // it's warm enough, disable 2nd heating circle
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
-                $log[] = "warm enough inside, disable hc2 (set hc2=0)";
-            } else {
-                // it's not too warm, set 2nd heating circle with a reasonable target temperature
-                if ($ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
-                    // if we are in summer mode and insideTemp drops towards minInsideTemp
-                    // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
-                    $log[] = "set MODE_2ND due to inside temp dropping towards minInsideTemp";
-                } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
-                    $log[] = "set hc2=17 due to current inside temp";
-                } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 23);
-                    $log[] = "set hc2=22 due to current inside temp";
-                } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
-                    // set default value for 2nd heating circle
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 28);
-                    $log[] = "set hc2=28 due to current inside temp";
-                }
-            }
             // apply emergency actions
+            $emergency = false;
             if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
+                $emergency = true;
                 if ($insideTemp < $minInsideTemp) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 40);
                     $log[] = "set hc2=40 as emergency action";
@@ -632,6 +610,33 @@ class DataUpdateCommand extends ContainerAwareCommand
                     }
                 }
             }
+
+            // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
+            if ($insideTemp > $maxInsideTemp) {
+                // it's warm enough, disable 2nd heating circle
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
+                $log[] = "warm enough inside, disable hc2 (set hc2=0)";
+            } else {
+                // it's not too warm, set 2nd heating circle with a reasonable target temperature
+                if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
+                    // if we are in summer mode and insideTemp drops towards minInsideTemp
+                    // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                    $log[] = "set MODE_2ND due to inside temp dropping towards minInsideTemp";
+                } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 17);
+                    $log[] = "set hc2=17 due to current inside temp";
+                } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 23);
+                    $log[] = "set hc2=22 due to current inside temp";
+                } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
+                    // set default value for 2nd heating circle
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 28);
+                    $log[] = "set hc2=28 due to current inside temp";
+                }
+            }
+
+            // check if minimum requirements are fulfilled during high energy rate
             if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 1) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
