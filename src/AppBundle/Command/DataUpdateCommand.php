@@ -470,6 +470,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
+        $ppStatus = 0;
+        if ($pcoweb['ppStatus'] == "label.device.status.on") {
+            $ppStatus = 1;
+        }
 
         // if no heatStorage sensor is available, we assume 35°C
         $heatStorageMidTemp = 35;
@@ -637,7 +641,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $log[] = "set hc2=28 due to current inside temp";
                     $activate2ndCircle = true;
                 }
-                if (!$emergency && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER) {
+                if (!$emergency && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && !$ppStatus) {
+                    // do no switch to MODE_2ND if we are in emergency mode or pp is currently running
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND instead of MODE_SUMMER due to inside temp dropping towards minInsideTemp";
                 }
