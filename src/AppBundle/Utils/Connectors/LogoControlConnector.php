@@ -69,7 +69,14 @@ class LogoControlConnector
         $data = [];
         if (isset($rawdata) && array_key_exists('logocontrol', $this->connectors)) {
             foreach($this->connectors['logocontrol']['sensors'] as $key=>$value) {
-                $data[$rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Name']] = $rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Value'];
+                $rawVal = $rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Value'];
+                if ($rawVal > 200) {
+                    // handle int-overflow at 255
+                    $cleanVal = $rawVal - 255;
+                } else {
+                    $cleanVal = $rawVal;
+                }
+                $data[$rawdata['Groups'][0]['Devices'][0]['Attributes'][$key]['Name']] = $cleanVal;
             }
         }
 
