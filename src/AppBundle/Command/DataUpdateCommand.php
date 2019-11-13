@@ -564,7 +564,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER && ($waterTemp < 50 || $heatStorageMidTemp < 36)) {
                     // warm water generation only
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
-                    $log[] = "set MODE_SUMMER for warm water generation only during end of low energy rate";
+                    $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                 }
                 if (!$warmWater && $heatStorageMidTemp < 36) {
                     // combined heating
@@ -572,7 +572,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     if ($ppMode !== PcoWebConnector::MODE_AUTO) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-                        $log[] = "set MODE_AUTO for combined heating during end of low energy rate";
+                        $log[] = "set MODE_AUTO for combined heating during low energy rate";
                     }
                 }
             }
