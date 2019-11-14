@@ -78,8 +78,8 @@
         <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}</li>
-        <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }}°C</li>
-        <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }}°C</li>
+        <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
     </ul>
 </div>
 {% endif %}
