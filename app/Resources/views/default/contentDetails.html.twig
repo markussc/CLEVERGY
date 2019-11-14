@@ -71,13 +71,13 @@
 <div class="small-12 medium-3 columns refresh" id="pcoWeb">
     <h4>{% trans %}label.heating{% endtrans %}</h4>
     <ul>
-        <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }}°C</li>
-        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
-        <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }}°C</li>
-        <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }}°C</li>
-        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|trans }}</a></li>
-        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|trans }}</a></li>
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|trans != currentStat['pcoWeb']['ppStatus']|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|trans }}){% endif %}</li>
+        <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|default('---')|trans }}</li>
+        <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
+        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</a></li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }}°C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }}°C</li>
     </ul>
