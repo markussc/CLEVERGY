@@ -641,8 +641,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $log[] = "set hc2=28 due to current inside temp";
                     $activate2ndCircle = true;
                 }
-                if (!$emergency && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && !$ppStatus) {
-                    // do no switch to MODE_2ND if we are in emergency mode or pp is currently running
+                if (!$emergency && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {
+                    // do no switch to MODE_2ND if we are in emergency mode or pp is currently running (except water temp is warmer than min + 5°C)
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND instead of MODE_SUMMER due to inside temp dropping towards minInsideTemp";
                 }
