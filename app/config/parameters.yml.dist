@@ -98,6 +98,8 @@ parameters:
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
+                minRunTime: 120 # minimal runtime in minutes. If not reached until begin of low energy rate and it is evening (P.M.), the device will be turned on (forceOn)
+                                # note the maximum is given by the time between low rate start and midnight
         mystrom:
             '192.168.55.3':
                 nominalPower: 100
@@ -112,7 +114,7 @@ parameters:
                 minWaitTime: 120 # in minutes
                 autoIntervals: # several intervals for auto control are possible
                     - [08:00,20:00]
-                forceOpen: # other commands: forceClose, forceOn, forceOff
+                forceOpen: # other commands: forceClose, forceOn, forceOff, minRunTime
                     -
                         'mobilealerts:072D1F97F48B:1': '>24'
                         'openweathermap:currentClouds': '<15'

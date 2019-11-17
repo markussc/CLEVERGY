@@ -29,8 +29,15 @@ class ShellyDataStoreRepository extends EntityRepository
         }
     }
 
-    public function getActiveDuration($connectorId, $start, $end)
+    public function getActiveDuration($connectorId, $start = null, $end = null)
     {
+        if ($start === null) {
+            $start = new \DateTime('today');
+        }
+        if ($end === null) {
+            $end = new \DateTime('now');
+        }
+
         $qb = $this->createQueryBuilder('e')
             ->select('count(e.id)')
             ->where('e.connectorId = :connectorId')

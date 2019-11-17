@@ -39,14 +39,17 @@ class ConditionChecker
 
     public function checkCondition($device, $type='forceOn')
     {
+        $deviceClass = "EdiMax";
         $conf = $this->edimax->getConfig($device['ip']);
         if (null === $conf) {
             // there is no edimax device with this IP. We check if there is a mystrom device instead
             $conf = $this->mystrom->getConfig($device['ip']);
+            $deviceClass = "MyStrom";
         }
         if (null === $conf) {
             // there is no edimax and mystrom device with this IP. We check if there is a shelly device instead
             $conf = $this->shelly->getConfig($device['ip'], $device['port']);
+            $deviceClass = "Shelly";
         }
         // check for on condition for all energy rates
         if (isset($conf['on']) && $type == 'on') {
@@ -87,6 +90,22 @@ class ConditionChecker
         // check for force conditions valid on low energy rate
         if (isset($conf['lowRateOn']) && $this->checkEnergyLowRate()) {
             if ($this->processConditions($conf['lowRateOn'])) {
+                return true;
+            }
+        }
+
+        // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
+        $now = new \DateTime("now");
+        if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
+            $runTime = null;
+            if ($deviceClass == "EdiMax") {
+                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "MyStrom") {
+                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "Shelly") {
+                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($device['ip']);
+            }
+            if ($runTime !== null && $runTime < $conf['minRunTime']) {
                 return true;
             }
         }

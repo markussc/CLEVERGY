@@ -29,8 +29,15 @@ class EdiMaxDataStoreRepository extends EntityRepository
         }
     }
 
-    public function getActiveDuration($ip, $start, $end)
+    public function getActiveDuration($ip, $start = null, $end = null)
     {
+        if ($start === null) {
+            $start = new \DateTime('today');
+        }
+        if ($end === null) {
+            $end = new \DateTime('now');
+        }
+
         $qb = $this->createQueryBuilder('e')
             ->select('count(e.id)')
             ->where('e.connectorId = :ip')
