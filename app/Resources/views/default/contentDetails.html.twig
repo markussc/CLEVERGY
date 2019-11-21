@@ -50,7 +50,7 @@
     </div>
     <div class="chart" style="display:none;">
         <span class="chartId">energyDay</span>
-        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}, {{ currentStat['conexio']['energyToday'] }}]</span>
+        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}, {{ currentStat['conexio']['energyToday']|default(0) }}]</span>
     </div>
 </div>
 {% endif %}

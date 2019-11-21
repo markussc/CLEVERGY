@@ -75,10 +75,14 @@ class DataUpdateCommand extends ContainerAwareCommand
             $smartfoxEntity = new SmartFoxDataStore();
             $smartfoxEntity->setTimestamp(new \DateTime('now'));
             $smartfoxEntity->setConnectorId($this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp());
-            $smartfoxEntity->setData($smartfox);
-            if ($smartfox['PvEnergy'][0] > 0) {
-                $em->persist($smartfoxEntity);
+            if ($smartfox['PvEnergy'][0] <= 0) {
+                $lastSmartFox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+                if ($lastSmartFox) {
+                    $smartfox['PvEnergy'][0] = $lastSmartFox['PvEnergy'][0];
+                }
             }
+            $smartfoxEntity->setData($smartfox);
+            $em->persist($smartfoxEntity);
         }
 
         // conexio
