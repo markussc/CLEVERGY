@@ -82,7 +82,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
 
         // conexio
-        if (array_key_exists('smartfox', $this->getContainer()->getParameter('connectors'))) {
+        if (array_key_exists('conexio', $this->getContainer()->getParameter('connectors'))) {
             $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAll();
             if ($conexio) {
                 // we only want to store valid and complete data
