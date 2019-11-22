@@ -669,7 +669,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // make sure heating is deactivated if not required, during low energy rate
-            if (!$activateHeating && $energyLowRate) {
+            if (!$activateHeating && $energyLowRate && !$ppStatus) {
                 if ($insideTemp > ($minInsideTemp + 1.5)) {
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
