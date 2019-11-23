@@ -103,6 +103,7 @@ class MobileAlertsConnector
             $cr = new Crawler($sensorComponent);
             $label = $cr->filter('h5')->text();
             $value = $cr->filter('h4')->text();
+            $unit = '';
             if ($label == 'ID') {
                 // next sensor
                 $currentSensor = $value;
