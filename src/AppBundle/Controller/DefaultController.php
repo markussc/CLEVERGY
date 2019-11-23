@@ -289,9 +289,11 @@ class DefaultController extends Controller
 
         $maValues = [];
         foreach ($currentStat['mobileAlerts'] as $maDevice) {
-            foreach ($maDevice as $maSensor) {
-                if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
-                    $maValues[$maSensor['usage']] = $maSensor['value'];
+            if (is_array($maDevice)) {
+                foreach ($maDevice as $maSensor) {
+                    if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
+                        $maValues[$maSensor['usage']] = $maSensor['value'];
+                    }
                 }
             }
         }
