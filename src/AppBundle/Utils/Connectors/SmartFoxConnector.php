@@ -36,11 +36,6 @@ class SmartFoxConnector
     public function getAllLatest()
     {
         $latest = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
-        if ($latest && count($latest)) {
-            $latest['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
-            $latest['day_energy_in'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'day_energy_in');
-            $latest['day_energy_out'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'day_energy_out');
-        }
 
         return $latest;
     }
@@ -99,6 +94,8 @@ class SmartFoxConnector
             "digital" => ["0" => ["state" => $data["u5674-41"]]],
             "PvPower" => ["0" => $data["u5272-41"]],
             "PvEnergy" => ["0" => $data["u7015"]],
+            "day_energy_in" => $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in'),
+            "day_energy_out" => $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out'),
             "energyToday" => $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip)
         ];
     }
