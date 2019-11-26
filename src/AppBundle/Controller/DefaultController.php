@@ -422,7 +422,7 @@ class DefaultController extends Controller
     {
         $currentStat = [];
         if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true);
+            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
             $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();

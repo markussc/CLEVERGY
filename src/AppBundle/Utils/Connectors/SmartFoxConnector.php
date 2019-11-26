@@ -38,22 +38,19 @@ class SmartFoxConnector
         $latest = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getLatest($this->ip);
         if ($latest && count($latest)) {
             $latest['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
+            $latest['day_energy_in'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'day_energy_in');
+            $latest['day_energy_out'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'day_energy_out');
         }
 
         return $latest;
     }
 
-    public function getAll($calculatedData = false)
+    public function getAll()
     {
         if ($this->version === "pro") {
             $responseArr = $this->getFromPRO();
         } else {
             $responseArr = $this->getFromREG9TE();
-        }
-
-        // if requested, add calculated data
-        if ($calculatedData) {
-            $responseArr['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
         }
 
         return $responseArr;
@@ -66,7 +63,12 @@ class SmartFoxConnector
 
     private function getFromREG9TE()
     {
-        return json_decode($this->browser->get($this->basePath . '/all')->getContent(), true);
+        $arr = json_decode($this->browser->get($this->basePath . '/all')->getContent(), true);
+        $arr['day_energy_in'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in');
+        $arr['day_energy_out'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out');
+        $arr['energyToday'] = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip);
+
+        return $arr;
     }
 
     private function getFromPRO()
@@ -93,12 +95,11 @@ class SmartFoxConnector
         return [
             "energy_in" => $data["u5827-41"],
             "energy_out" => $data["u5824-41"],
-            "day_energy_in" => $data["u5863-41"],
-            "day_energy_out" => $data["u5872-41"],
             "power_io" => $data["u5790-41"],
             "digital" => ["0" => ["state" => $data["u5674-41"]]],
             "PvPower" => ["0" => $data["u5272-41"]],
             "PvEnergy" => ["0" => $data["u7015"]],
+            "energyToday" => $this->em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyToday($this->ip)
         ];
     }
 }
