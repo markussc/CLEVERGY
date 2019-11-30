@@ -94,8 +94,13 @@
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', 'alarm', {{ (alarmMode + 1) % 2 }}]);"{% endif %}><i class="fas {% if alarmMode %}fa-comment{% else %}fa-comment-slash{% endif %}"></i></a> {% trans %}label.alarm.notification{% endtrans %}<br>
         {% endif %}
         {% for maSensor in currentStat['mobileAlerts']|default([]) %}
-            {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
-                {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
+            {% set maTimestamp = null %}
+            {% for measurement in maSensor %}
+                {% if measurement['label'] == 'timestamp' %}
+                    {% set maTimestamp = measurement['datetime'] %}
+                {% elseif measurement['usage']|default('') == 'contact' %}
+                    {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 6 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %}{% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
+                {% endif %}
             {% endfor %}
         {% endfor %}
         {% endif %}
