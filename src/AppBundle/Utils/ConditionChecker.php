@@ -77,9 +77,6 @@ class ConditionChecker
                 if ($type !== 'forceOff') {
                     // in case we check an "activate" condition, we want to return true
                     return true;
-                } else {
-                    // in case we check a "disable" condition, we want to return false
-                    return false;
                 }
             }
         }
