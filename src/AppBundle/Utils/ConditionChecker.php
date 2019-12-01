@@ -61,6 +61,29 @@ class ConditionChecker
             // if we check for 'on' condition but this is not set, it is implicitely fulfilled
             return true;
         }
+
+        // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
+        $now = new \DateTime("now");
+        if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
+            $runTime = null;
+            if ($deviceClass == "EdiMax") {
+                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "MyStrom") {
+                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "Shelly") {
+                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($device['ip']);
+            }
+            if ($runTime !== null && $runTime < $conf['minRunTime']) {
+                if ($type !== 'forceOff') {
+                    // in case we check an "activate" condition, we want to return true
+                    return true;
+                } else {
+                    // in case we check a "disable" condition, we want to return false
+                    return false;
+                }
+            }
+        }
+
         // check for force conditions for all energy rates
         if ($type == 'forceOn' && isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {
@@ -90,22 +113,6 @@ class ConditionChecker
         // check for force conditions valid on low energy rate
         if (isset($conf['lowRateOn']) && $this->checkEnergyLowRate()) {
             if ($this->processConditions($conf['lowRateOn'])) {
-                return true;
-            }
-        }
-
-        // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
-        $now = new \DateTime("now");
-        if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
-            $runTime = null;
-            if ($deviceClass == "EdiMax") {
-                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($device['ip']);
-            } elseif($deviceClass == "MyStrom") {
-                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($device['ip']);
-            } elseif($deviceClass == "Shelly") {
-                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($device['ip']);
-            }
-            if ($runTime !== null && $runTime < $conf['minRunTime']) {
                 return true;
             }
         }

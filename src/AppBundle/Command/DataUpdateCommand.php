@@ -385,7 +385,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                         continue;
                     }
                 } elseif ($this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOn')) {
-                    // we only try to activate if we disable not close just before (disable wins)
+                    // we only try to activate if we did not disable just before (disable wins)
                     if ($this->forceOnShelly($deviceId, $shelly)) {
                         continue;
                     }
