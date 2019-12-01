@@ -248,9 +248,11 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function forceOnEdimax($deviceId, $edimax)
     {
         $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($edimax, 'forceOn');
-        if ($forceOn && !$edimax['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
+        if ($forceOn && $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
-            $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
+            if (!$edimax['status']['val']) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\EdiMaxConnector')->executeCommand($deviceId, 1);
+            }
             return true;
         } else {
             return false;
@@ -339,9 +341,11 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function forceOnMystrom($deviceId, $mystrom)
     {
         $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($mystrom, 'forceOn');
-        if ($forceOn && !$mystrom['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
+        if ($forceOn  && $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
-            $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
+            if (!$mystrom['status']['val']) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->executeCommand($deviceId, 1);
+            }
             return true;
         } else {
             return false;
@@ -419,9 +423,11 @@ class DataUpdateCommand extends ContainerAwareCommand
     private function forceOnShelly($deviceId, $shelly)
     {
         $forceOn = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkCondition($shelly, 'forceOn');
-        if ($forceOn && !$shelly['status']['val'] && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
+        if ($forceOn && $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->switchOK($deviceId)) {
             // force turn it on if we are allowed to
-            $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 1);
+            if (!$shelly['status']['val']) {
+                $this->getContainer()->get('AppBundle\Utils\Connectors\ShellyConnector')->executeCommand($deviceId, 1);
+            }
             return true;
         } else {
             return false;
