@@ -549,7 +549,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1300) || ($isSummer && $avgPvPower > 3000) )) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
-                    // - winter, cloudy or later than 12am together with avgPvPower > 1700 W
+                    // - winter, cloudy or later than 12am together with avgPvPower > 1300 W
                     // - summer and avgPvPower > 3000 W
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
@@ -630,7 +630,11 @@ class DataUpdateCommand extends ContainerAwareCommand
             if ($insideTemp > $maxInsideTemp) {
                 // it's warm enough, disable 2nd heating circle
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
-                $log[] = "warm enough inside, disable hc2 (set hc2=0)";
+                $log[] = "warm enough inside and waterTemp above minimum, disable hc2 (set hc2=0)";
+                if ($waterTemp < $minWaterTemp + 3 && $ppMode == PcoWebConnector::MODE_SUMMER && !$emergency && !$warmWater && !$energyLowRate) {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                    $log[] = "set MODE_2ND instead of MODE_SUMMER due to water temp dropping towards but not below minimum during high energy rate";
+                }
             } else {
                 $activate2ndCircle = false;
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
