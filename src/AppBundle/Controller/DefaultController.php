@@ -213,6 +213,8 @@ class DefaultController extends Controller
         $today = new \DateTime('today');
         $thisWeek = new \DateTime('monday this week midnight');
         $thisMonth = new \DateTime('first day of this month midnight');
+        $lastYearMonth = new \DateTime('first day of this month midnight');
+        $lastYearMonth = $lastYearMonth->sub(new \DateInterval('P1Y'));
         $thisYear = new \DateTime('first day of january this year midnight');
         $lastYearPart = new \DateTime();
         $lastYearPart = $lastYearPart->sub(new \DateInterval('P1Y'));
@@ -223,6 +225,7 @@ class DefaultController extends Controller
             'yesterday',
             'week',
             'month',
+            'lastYearMonth',
             'year',
             'lastYearPart',
             'lastYear',
@@ -233,6 +236,7 @@ class DefaultController extends Controller
                 'pv_yesterday' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $yesterday, $today),
                 'pv_week' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisWeek, $now),
                 'pv_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisMonth, $now),
+                'pv_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYearMonth, $lastYearPart),
                 'pv_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisYear, $now),
                 'pv_lastYearPart' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $lastYearPart),
                 'pv_lastYear' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $thisYear),
@@ -244,6 +248,8 @@ class DefaultController extends Controller
                 'energy_out_week' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisWeek, $now),
                 'energy_in_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisMonth, $now),
                 'energy_out_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisMonth, $now),
+                'energy_in_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYearMonth, $lastYearPart),
+                'energy_out_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYearMonth, $lastYearPart),
                 'energy_in_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisYear, $now),
                 'energy_out_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisYear, $now),
                 'energy_in_lastYearPart' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYear, $lastYearPart),
@@ -258,6 +264,7 @@ class DefaultController extends Controller
                 'energy_yesterday' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $yesterday, $today),
                 'energy_week' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisWeek, $now),
                 'energy_month' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisMonth, $now),
+                'energy_lastYearMonth' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYearMonth, $lastYearPart),
                 'energy_year' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisYear, $now),
                 'energy_lastYearPart' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $lastYearPart),
                 'energy_lastYear' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $thisYear),
