@@ -460,14 +460,21 @@ class DataUpdateCommand extends ContainerAwareCommand
         if ($diffToEndOfLowEnergyRate < 0) {
             $diffToEndOfLowEnergyRate += 24;
         }
+        $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
+
+        // set the temperature offset for low outside temp
+        $tempOffset = 0;
+        $outsideTemp = $pcoweb['outsideTemp'];
+        if ($outsideTemp < 2) {
+            $tempOffset = (1 +(0-$outsideTemp)/10);
+        }
 
         // set the emergency temperature levels
             // we are on low energy rate
             $minWaterTemp = 38;
-            $minInsideTemp = 19.5;
+            $minInsideTemp = 19.5+$tempOffset/5;
         // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = 21.7;
-
+            $maxInsideTemp = 21.7+$tempOffset;
         // readout current temperature values
         if (array_key_exists('mobilealerts', $this->getContainer()->getParameter('connectors'))) {
             $mobilealerts = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
@@ -477,7 +484,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             // if no inside sensor is available, we assume 20°C
             $insideTemp = 20;
         }
-        $pcoweb = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
+
         $waterTemp = $pcoweb['waterTemp'];
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
         $ppStatus = 0;
