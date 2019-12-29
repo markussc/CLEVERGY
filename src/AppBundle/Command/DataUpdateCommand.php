@@ -170,9 +170,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         // execute auto actions for shelly devices
         $this->autoActionsShelly();
 
-        // execute auto actions for PcoWeb heating, if we are in auto mode
-        if (Settings::MODE_MANUAL != $em->getRepository('AppBundle:Settings')->getMode($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp())) {
-            $this->autoActionsPcoWeb();
+        // execute auto actions for PcoWeb heating, if we are not in manual mode
+        $pcoMode = $em->getRepository('AppBundle:Settings')->getMode($this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getIp());
+        if (Settings::MODE_MANUAL != $pcoMode) {
+            $this->autoActionsPcoWeb($pcoMode);
         }
     }
 
@@ -447,8 +448,13 @@ class DataUpdateCommand extends ContainerAwareCommand
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached pcoweb heating
      */
-    private function autoActionsPcoWeb()
+    private function autoActionsPcoWeb($pcoMode)
     {
+        if ($pcoMode === Settings::MODE_HOLIDAY) {
+            $autoMode = PcoWebConnector::MODE_HOLIDAY;
+        } else {
+            $autoMode = PcoWebConnector::MODE_AUTO;
+        }
         $energyLowRate = $this->getContainer()->get('AppBundle\Utils\ConditionChecker')->checkEnergyLowRate();
         $smartfox = $this->getContainer()->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAllLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
@@ -562,9 +568,9 @@ class DataUpdateCommand extends ContainerAwareCommand
                     // we make sure the hwHysteresis is set to the default value
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10)";
-                    if ($ppMode !== PcoWebConnector::MODE_AUTO) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-                        $log[] = "set MODE_AUTO due to high PV without flag set";
+                    if ($ppMode !== $autoMode) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
+                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to high PV without flag set";
                     }
                 }
             }
@@ -587,10 +593,10 @@ class DataUpdateCommand extends ContainerAwareCommand
                 if (!$warmWater && $heatStorageMidTemp < 36) {
                     // combined heating
                     $activateHeating = true;
-                    if ($ppMode !== PcoWebConnector::MODE_AUTO) {
+                    if ($ppMode !== $autoMode) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-                        $log[] = "set MODE_AUTO for combined heating during low energy rate";
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
+                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) for combined heating during low energy rate";
                     }
                 }
             }
@@ -618,11 +624,11 @@ class DataUpdateCommand extends ContainerAwareCommand
                 if ($insideTemp < $minInsideTemp) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 40);
                     $log[] = "set hc2=40 as emergency action";
-                    if ($ppMode !== PcoWebConnector::MODE_AUTO && $heatStorageMidTemp < 36) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
-                        $log[] = "set MODE_AUTO due to emergency action";
+                    if ($ppMode !== $autoMode && $heatStorageMidTemp < 36) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
+                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to emergency action";
                     }
-                } else {
+                } elseif ($pcoMode !== Settings::MODE_HOLIDAY) {
                     // only warmWater is too cold
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                     $log[] = "set hwHysteresis to default (10) due to emergency action";

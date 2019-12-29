@@ -142,6 +142,10 @@
                 <source>label.pco.mode.manual</source>
                 <target>Manuell</target>
             </trans-unit>
+            <trans-unit id="label.pco.mode.holiday">
+                <source>label.pco.mode.holiday</source>
+                <target>Ferien</target>
+            </trans-unit>
             <trans-unit id="label.pco.mode.save">
                 <source>label.pco.mode.save</source>
                 <target>Aktivieren</target>

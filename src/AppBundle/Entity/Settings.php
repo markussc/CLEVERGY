@@ -70,6 +70,7 @@ class Settings
      */
     private $mode;
 
+    const MODE_HOLIDAY = -1;
     const MODE_AUTO = 0;
     const MODE_MANUAL = 1;
 

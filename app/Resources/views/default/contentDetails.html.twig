@@ -6,6 +6,7 @@
       <select class="select2" id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
+          <option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>
       </select>
       <hr>
       <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
