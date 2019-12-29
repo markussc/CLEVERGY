@@ -166,6 +166,8 @@ class PcoWebConnector
                 return 'label.pco.mode.auto';
             case Settings::MODE_MANUAL:
                 return 'label.pco.mode.manual';
+            case Settings::MODE_HOLIDAY:
+                return 'label.pco.mode.holiday';
         }
         return 'undefined';
     }
