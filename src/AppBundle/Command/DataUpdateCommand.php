@@ -582,7 +582,9 @@ class DataUpdateCommand extends ContainerAwareCommand
                     // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 5);
                     $log[] = "diffToEndOfLowEnergyRate <= 2. reduce hwHysteresis (5)";
-                    $warmWater = true;
+                    if ($pcoMode !== Settings::MODE_HOLIDAY) {
+                        $warmWater = true;
+                    }
                     $activateHeating = true;
                 }
                 if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER && ($waterTemp < 50 || $heatStorageMidTemp < 36)) {
@@ -590,13 +592,13 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                 }
-                if (!$warmWater && $heatStorageMidTemp < 36) {
-                    // combined heating
+                elseif (!$warmWater && $heatStorageMidTemp < 36) {
+                    // storage heating only
                     $activateHeating = true;
-                    if ($ppMode !== $autoMode) {
+                    if ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
-                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) for combined heating during low energy rate";
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
+                        $log[] = "set MODE_HOLIDAY for storage only heating during low energy rate";
                     }
                 }
             }
