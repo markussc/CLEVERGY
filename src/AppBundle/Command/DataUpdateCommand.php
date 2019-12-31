@@ -619,14 +619,16 @@ class DataUpdateCommand extends ContainerAwareCommand
 
             // apply emergency actions
             $emergency = false;
+            $insideEmergency = false;
             if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
                 if ($insideTemp < $minInsideTemp) {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 40);
-                    $log[] = "set hc2=40 as emergency action";
-                    if ($ppMode !== $autoMode && $heatStorageMidTemp < 36) {
+                    $insideEmergency = true;
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 30);
+                    $log[] = "set hc2=30 as emergency action";
+                    if (($ppMode !== Settings::MODE_AUTO || $ppMode !== Settings::MODE_HOLIDAY) && $heatStorageMidTemp < 36) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
                         $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to emergency action";
                     }
@@ -665,7 +667,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 23);
                     $log[] = "set hc2=22 due to current inside temp";
                     $activate2ndCircle = true;
-                } elseif ($insideTemp < ($minInsideTemp + 0.5)) {
+                } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 28);
                     $log[] = "set hc2=28 due to current inside temp";
