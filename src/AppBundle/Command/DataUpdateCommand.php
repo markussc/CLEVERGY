@@ -575,8 +575,34 @@ class DataUpdateCommand extends ContainerAwareCommand
                 }
             }
 
+            // apply emergency actions
+            $emergency = false;
+            $insideEmergency = false;
+            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+                // we are below expected values (at least for one of the criteria), switch HP on
+                $activateHeating = true;
+                $emergency = true;
+                if ($insideTemp < $minInsideTemp) {
+                    $insideEmergency = true;
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 30);
+                    $log[] = "set hc2=30 as emergency action";
+                    if (($ppMode !== Settings::MODE_AUTO || $ppMode !== Settings::MODE_HOLIDAY) && $heatStorageMidTemp < 36) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
+                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to emergency action";
+                    }
+                } elseif ($pcoMode !== Settings::MODE_HOLIDAY) {
+                    // only warmWater is too cold
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
+                    $log[] = "set hwHysteresis to default (10) due to emergency action";
+                    if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                        $log[] = "set MODE_SUMMER due to emergency action (warm water only)";
+                    }
+                }
+            }
+
             // default cases for energy low rate
-            if ($energyLowRate && $diffToEndOfLowEnergyRate > 1) {
+            if (!$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
                     // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
@@ -604,7 +630,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // end of energy low rate is near. switch to MODE_2ND or MODE_SUMMER (depending on current inside temperature) as soon as possible and reset the hwHysteresis to default value
-            if ($diffToEndOfLowEnergyRate <= 1 && $diffToEndOfLowEnergyRate > 0) {
+            if (!$emergency && $diffToEndOfLowEnergyRate <= 1 && $diffToEndOfLowEnergyRate > 0) {
                 $deactivateHeating = true;
                 if (!$ppStatus && $ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
@@ -615,32 +641,6 @@ class DataUpdateCommand extends ContainerAwareCommand
                 }
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                 $log[] = "set hwHysteresis to default (10)";
-            }
-
-            // apply emergency actions
-            $emergency = false;
-            $insideEmergency = false;
-            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
-                // we are below expected values (at least for one of the criteria), switch HP on
-                $activateHeating = true;
-                $emergency = true;
-                if ($insideTemp < $minInsideTemp) {
-                    $insideEmergency = true;
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 30);
-                    $log[] = "set hc2=30 as emergency action";
-                    if (($ppMode !== Settings::MODE_AUTO || $ppMode !== Settings::MODE_HOLIDAY) && $heatStorageMidTemp < 36) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
-                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to emergency action";
-                    }
-                } elseif ($pcoMode !== Settings::MODE_HOLIDAY) {
-                    // only warmWater is too cold
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                    $log[] = "set hwHysteresis to default (10) due to emergency action";
-                    if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
-                        $log[] = "set MODE_SUMMER due to emergency action (warm water only)";
-                    }
-                }
             }
 
             // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
