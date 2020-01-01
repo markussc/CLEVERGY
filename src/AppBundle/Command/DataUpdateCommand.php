@@ -621,7 +621,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 elseif (!$warmWater && $heatStorageMidTemp < 36) {
                     // storage heating only
                     $activateHeating = true;
-                    if ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) {
+                    if (!$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY)) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY for storage only heating during low energy rate";
