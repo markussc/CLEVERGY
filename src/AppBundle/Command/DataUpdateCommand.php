@@ -606,10 +606,10 @@ class DataUpdateCommand extends ContainerAwareCommand
             // end of energy low rate is near. switch to MODE_2ND or MODE_SUMMER (depending on current inside temperature) as soon as possible and reset the hwHysteresis to default value
             if ($diffToEndOfLowEnergyRate <= 1) {
                 $deactivateHeating = true;
-                if ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1) {
+                if (!$ppStatus && $ppMode !== PcoWebConnector::MODE_2ND && $insideTemp < $minInsideTemp+1) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND in final low energy rate";
-                } elseif ($ppMode !== PcoWebConnector::MODE_SUMMER && $insideTemp >= $minInsideTemp+2) {
+                } elseif (!$ppStatus && $ppMode !== PcoWebConnector::MODE_SUMMER && $insideTemp >= $minInsideTemp+2) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER in final low energy rate";
                 }
