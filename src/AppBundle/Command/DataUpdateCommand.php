@@ -647,6 +647,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             if ($insideTemp > $maxInsideTemp) {
                 // it's warm enough, disable 2nd heating circle
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 0);
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('cpAutoMode', 1);
                 $log[] = "warm enough inside and waterTemp above minimum, disable hc2 (set hc2=0)";
                 if ($waterTemp < $minWaterTemp + 3 && $ppMode == PcoWebConnector::MODE_SUMMER && !$emergency && !$warmWater && !$energyLowRate) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
@@ -659,6 +660,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
                     // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
                     $activate2ndCircle = true;
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('cpAutoMode', 0);
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 19);
                     $log[] = "set hc2=19 due to current inside temp";

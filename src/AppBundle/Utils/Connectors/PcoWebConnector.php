@@ -86,6 +86,9 @@ class PcoWebConnector
             case 'hc2':
                 $this->setHeatCircle2($command);
                 break;
+            case 'cpAutoMode':
+                $this->setCpAutoMode($command);
+                break;
         }
         
     }
@@ -137,6 +140,22 @@ class PcoWebConnector
     {
         try {
             $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
+        } catch (\Exception $e) {
+        // do nothing
+        }
+    }
+
+    private function setCpAutoMode($value)
+    {
+        // set mode
+        $data['?script:var(0,1,131,0,1)'] = $value;
+
+        $headers = [
+            'Content-Type' => 'application/x-www-form-urlencoded;',
+        ];
+        // post request
+        try {
+            $response = $this->browser->post($this->basePath . '/http/index/j_settings_pumpcontrol.html', $headers, http_build_query($data))->getContent();
         } catch (\Exception $e) {
         // do nothing
         }
