@@ -587,8 +587,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc2', 30);
                     $log[] = "set hc2=30 as emergency action";
                     if (($ppMode !== Settings::MODE_AUTO || $ppMode !== Settings::MODE_HOLIDAY) && $heatStorageMidTemp < 36) {
-                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', $autoMode);
-                        $log[] = "set MODE_AUTO (or MODE_HOLIDAY) due to emergency action";
+                        $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
+                        $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
                 } elseif ($pcoMode !== Settings::MODE_HOLIDAY) {
                     // only warmWater is too cold
