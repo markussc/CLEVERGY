@@ -492,6 +492,10 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
 
         $waterTemp = $pcoweb['waterTemp'];
+        if ($waterTemp === null) {
+            // if waterTemp could not be read out, the values can not be trusted. Skip any further processing.
+            return;
+        }
         $ppMode = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->ppModeToInt($pcoweb['ppMode']);
         $ppStatus = 0;
         if ($pcoweb['ppStatus'] == "label.device.status.on") {
@@ -500,7 +504,7 @@ class DataUpdateCommand extends ContainerAwareCommand
 
         // if no heatStorage sensor is available, we assume 35°C
         $heatStorageMidTemp = 35;
-        
+
         if (array_key_exists('conexio', $this->getContainer()->getParameter('connectors'))) {
             // get conexio value for heatStorage temperature (if available)
             $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
