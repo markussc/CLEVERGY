@@ -1,7 +1,7 @@
 <?php
 
 namespace AppBundle\Command;
-se
+
 use AppBundle\Entity\Settings;
 use AppBundle\Entity\EdiMaxDataStore;
 use AppBundle\Entity\MyStromDataStore;
