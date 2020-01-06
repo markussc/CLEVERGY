@@ -1,7 +1,7 @@
 <?php
 
 namespace AppBundle\Command;
-
+se
 use AppBundle\Entity\Settings;
 use AppBundle\Entity\EdiMaxDataStore;
 use AppBundle\Entity\MyStromDataStore;
@@ -687,7 +687,7 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // check if minimum requirements are fulfilled during high energy rate
-            if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
+            if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 5)) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 12);
