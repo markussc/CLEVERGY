@@ -687,12 +687,12 @@ class DataUpdateCommand extends ContainerAwareCommand
             }
 
             // check if minimum requirements are fulfilled during high energy rate
-            if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 5)) {
+            if (!$energyLowRate && !$activateHeating && $insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28 && $waterTemp > ($minWaterTemp + 4)) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 12);
                 $log[] = "high energy rate, set high hwHysteresis (12)";
-                if (($isSummer || $insideTemp >= $maxInsideTemp) && $ppMode !== PcoWebConnector::MODE_SUMMER) {
+                if (($isSummer || $insideTemp >= $maxInsideTemp) && $ppMode !== PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] >= 12) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
                 }

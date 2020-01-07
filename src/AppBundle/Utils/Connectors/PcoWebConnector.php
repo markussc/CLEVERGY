@@ -57,6 +57,7 @@ class PcoWebConnector
             'ppMode' => $this->ppModeToString($responseArr['PCO']['INTEGER']['VARIABLE'][13]['VALUE']),
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
+            'hwHist' => $responseArr['PCO']['INTEGER']['VARIABLE'][43]['VALUE'],
         ];
         } catch (\Exception $e) {
           return false;
