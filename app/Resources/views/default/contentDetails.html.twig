@@ -403,6 +403,19 @@
                 ]
             },
             {
+                label: '{% trans %}label.pco.storage_temp{% endtrans %}',
+                borderColor: ['darkred'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['storTemp']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {
                 label: '{% trans %}label.pco.cp_status{% endtrans %}',
                 borderColor: ['grey'],
                 fill: false,

@@ -502,7 +502,6 @@ class DataUpdateCommand extends ContainerAwareCommand
             $ppStatus = 1;
         }
 
-        // if no heatStorage sensor is available, we assume 35°C
         $heatStorageMidTemp = $pcoweb['storTemp'];
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
