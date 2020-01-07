@@ -503,18 +503,7 @@ class DataUpdateCommand extends ContainerAwareCommand
         }
 
         // if no heatStorage sensor is available, we assume 35°C
-        $heatStorageMidTemp = 35;
-
-        if (array_key_exists('conexio', $this->getContainer()->getParameter('connectors'))) {
-            // get conexio value for heatStorage temperature (if available)
-            $conexio = $this->getContainer()->get('AppBundle\Utils\Connectors\ConexioConnector')->getAllLatest();
-            $heatStorageMidTemp = ($conexio['s3'] + $conexio['s2'])/2;
-        } else if (array_key_exists('logocontrol', $this->getContainer()->getParameter('connectors')) && array_key_exists('heatStorageSensor', $this->getContainer()->getParameter('connectors')['logocontrol'])) {
-            // get conexio value for heatStorage temperature (if available and not set by conexio already)
-            $logocontrol = $this->getContainer()->get('AppBundle\Utils\Connectors\LogoControlConnector')->getAllLatest();
-            $logocontrolConf = $this->getContainer()->getParameter('connectors')['logocontrol'];
-            $heatStorageMidTemp = $logocontrol[$logocontrolConf['heatStorageSensor']];
-        }
+        $heatStorageMidTemp = $pcoweb['storTemp'];
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->getRelevantCloudsNextDaylightPeriod();
