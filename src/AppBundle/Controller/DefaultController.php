@@ -364,7 +364,14 @@ class DefaultController extends Controller
         } else {
             $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
         }
-        
+
+        if ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on") {
+            $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']." °C";
+            $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']." °C";
+        } else {
+            $sourceintemp = "";
+            $sourceouttemp = "";
+        }
         // write current values into the svg
         $labels = [
             "pvpower",
@@ -407,8 +414,8 @@ class DefaultController extends Controller
             $hightemp,
             $currentStat['pcoWeb']['storTemp']." °C",
             $lowtemp,
-            $currentStat['pcoWeb']['ppSourceIn']." °C",
-            $currentStat['pcoWeb']['ppSourceOut']." °C",
+            $sourceintemp,
+            $sourceouttemp,
         ];
 
         $fileContent = str_replace($labels, $values, $fileContent);
