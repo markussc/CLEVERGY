@@ -58,6 +58,9 @@ class PcoWebConnector
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
             'hwHist' => $responseArr['PCO']['INTEGER']['VARIABLE'][43]['VALUE'],
+            'storTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][9]['VALUE'],
+            'ppSourceIn' => $responseArr['PCO']['ANALOG']['VARIABLE'][5]['VALUE'],
+            'ppSourceOut' => $responseArr['PCO']['ANALOG']['VARIABLE'][6]['VALUE'],
         ];
         } catch (\Exception $e) {
           return false;

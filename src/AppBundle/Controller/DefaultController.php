@@ -324,8 +324,8 @@ class DefaultController extends Controller
         } elseif (isset($currentStat['logoControl'])) {
             $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . " °C";
             $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . " °C";
-            $hightemp = "";
-            $lowtemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
+            $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
+            $lowtemp = "";
         } else {
             $solpower = "";
             $soltemp = "";
@@ -383,7 +383,10 @@ class DefaultController extends Controller
             "basementtemp",
             "basementhumidity",
             "hightemp",
+            "midtemp",
             "lowtemp",
+            "sourceintemp",
+            "sourceouttemp"
         ];
         $values = [
             $pvpower,
@@ -402,7 +405,10 @@ class DefaultController extends Controller
             $basementtemp,
             $basementhumidity,
             $hightemp,
+            $currentStat['pcoWeb']['storTemp']." °C",
             $lowtemp,
+            $currentStat['pcoWeb']['ppSourceIn']." °C",
+            $currentStat['pcoWeb']['ppSourceOut']." °C",
         ];
 
         $fileContent = str_replace($labels, $values, $fileContent);

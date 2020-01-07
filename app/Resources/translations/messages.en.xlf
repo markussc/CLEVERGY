@@ -38,6 +38,10 @@
                 <source>label.pco.water_temp</source>
                 <target>Warm Water</target>
             </trans-unit>
+            <trans-unit id="label.pco.storage_temp">
+                <source>label.pco.storage_temp</source>
+                <target>Storage Temperature</target>
+            </trans-unit>
             <trans-unit id="label.pco.pre_temp">
                 <source>label.pco.pre_temp</source>
                 <target>Pre Temperature</target>

@@ -38,6 +38,10 @@
                 <source>label.pco.water_temp</source>
                 <target>Warmwasser</target>
             </trans-unit>
+            <trans-unit id="label.pco.storage_temp">
+                <source>label.pco.storage_temp</source>
+                <target>Speichertemperatur</target>
+            </trans-unit>
             <trans-unit id="label.pco.pre_temp">
                 <source>label.pco.pre_temp</source>
                 <target>Vorlauftemperatur WP</target>
@@ -45,6 +49,14 @@
             <trans-unit id="label.pco.back_temp">
                 <source>label.pco.back_temp</source>
                 <target>Rücklauftemperatur WP</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pp_source_in_temp">
+                <source>label.pco.pp_source_in_temp</source>
+                <target>Quelle Vorlauf</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pp_source_out_temp">
+                <source>label.pco.pp_source_out_temp</source>
+                <target>Quelle Rücklauf</target>
             </trans-unit>
             <trans-unit id="label.pco.set_distr_temp">
                 <source>label.pco.set_distr_temp</source>

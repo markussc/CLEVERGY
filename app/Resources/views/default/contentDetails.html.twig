@@ -73,6 +73,7 @@
     <h4>{% trans %}label.heating{% endtrans %}</h4>
     <ul>
         <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.storage_temp{% endtrans %}: {{ currentStat['pcoWeb']['storTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|default('---')|trans }}</li>
         <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp']|default('---') }}°C</li>
@@ -81,6 +82,8 @@
         <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.pp_source_out_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceOut']|default('---') }}°C</li>
     </ul>
 </div>
 {% endif %}
