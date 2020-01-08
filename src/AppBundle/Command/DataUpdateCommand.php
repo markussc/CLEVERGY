@@ -593,8 +593,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 23);
                     $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23)";
                 } else {
-                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
-                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=30)";
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 28);
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28)";
                 }
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
