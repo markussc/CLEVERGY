@@ -519,15 +519,6 @@ class DataUpdateCommand extends ContainerAwareCommand
         $log = [];
 
         if (array_key_exists('pcoweb', $this->getContainer()->getParameter('connectors'))) {
-            if (!$smartFoxHighPower && $avgClouds < 30) {
-                // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
-                $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=25)";
-            } elseif (!$smartFoxHighPower) {
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
-                $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=30)";
-            }
-
             // decide whether it's summer half year
             $isSummer = (\date('z') > 70 && \date('z') < 243); // 10th of march - 31th august
 
@@ -543,6 +534,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 // we make sure the heating curve (circle 1) is maximized
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 40);
                 $log[] = "PvHighPower, water temp < 65. minimize hwHysteresis (5), increase hc1 (set hc1=40)";
+
                 if ($ppMode !== PcoWebConnector::MODE_AUTO) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                     $log[] = "set MODE_AUTO due to PvHighPower";
@@ -559,7 +551,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 10);
-                    $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10)";
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 35);
+                    $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10), increase hc1 (set hc1=35).";
                     if ($ppMode !== PcoWebConnector::MODE_AUTO && $ppMode !== PcoWebConnector::MODE_HOLIDAY) {
                         $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to high PV without flag set";
@@ -595,6 +588,14 @@ class DataUpdateCommand extends ContainerAwareCommand
 
             // default cases for energy low rate
             if (!$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
+                if ($avgClouds < 30) {
+                    // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 23);
+                    $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23)";
+                } else {
+                    $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 30);
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=30)";
+                }
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
                     // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
@@ -680,6 +681,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $deactivateHeating = true;
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 12);
                 $log[] = "high energy rate, set high hwHysteresis (12)";
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
+                $log[] = "normalice hc1 (set hc1=25) during high energy rate";
                 if (($isSummer || $insideTemp >= $maxInsideTemp) && $ppMode !== PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] >= 12) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
@@ -702,6 +705,8 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND and normalize hwHysteresis during low energy rate and lower inside temperature";
                 }
+                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
+                $log[] = "normalice hc1 (set hc1=25) during low energy rate";
             }
         }
         $pcowebNew = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
