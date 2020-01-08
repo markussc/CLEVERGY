@@ -682,7 +682,7 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hwHysteresis', 12);
                 $log[] = "high energy rate, set high hwHysteresis (12)";
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
-                $log[] = "normalice hc1 (set hc1=25) during high energy rate";
+                $log[] = "normalize hc1 (set hc1=25) during high energy rate";
                 if (($isSummer || $insideTemp >= $maxInsideTemp) && $ppMode !== PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] >= 12) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
@@ -705,8 +705,6 @@ class DataUpdateCommand extends ContainerAwareCommand
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND and normalize hwHysteresis during low energy rate and lower inside temperature";
                 }
-                $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
-                $log[] = "normalice hc1 (set hc1=25) during low energy rate";
             }
         }
         $pcowebNew = $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAll();
