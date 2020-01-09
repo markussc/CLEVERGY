@@ -683,11 +683,11 @@ class DataUpdateCommand extends ContainerAwareCommand
                 $log[] = "high energy rate, set high hwHysteresis (12)";
                 $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('hc1', 25);
                 $log[] = "normalize hc1 (set hc1=25) during high energy rate";
-                if (($isSummer || $insideTemp >= $maxInsideTemp) && $ppMode !== PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] >= 12) {
+                if (($isSummer || $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
                 }
-                if (!$isSummer && $insideTemp < $maxInsideTemp && $ppMode !== PcoWebConnector::MODE_2ND) {
+                if (!$isSummer && ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->getContainer()->get('AppBundle\Utils\Connectors\PcoWebConnector')->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND due to high energy rate";
                 }
