@@ -132,7 +132,7 @@ class MobileAlertsConnector
                         $usage = false;
                     }
                     if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
-                        if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter] !== 'inverted') {
+                        if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][5] !== 'inverted') {
                             $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
                             $value = str_replace('Offen', 'label.device.status.open', $value);
                         } else {
