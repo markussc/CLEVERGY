@@ -132,8 +132,13 @@ class MobileAlertsConnector
                         $usage = false;
                     }
                     if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
-                        $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
-                        $value = str_replace('Offen', 'label.device.status.open', $value);
+                        if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter] !== 'inverted') {
+                            $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
+                            $value = str_replace('Offen', 'label.device.status.open', $value);
+                        } else {
+                            $value = str_replace('Geschlossen', 'label.device.status.open', $value);
+                            $value = str_replace('Offen', 'label.device.status.closed', $value);
+                        }
                     } else {
                         $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
                         $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
