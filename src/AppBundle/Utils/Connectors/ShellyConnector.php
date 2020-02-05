@@ -268,6 +268,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'on');
         if (!empty($r)) {
+            $this->storeStatus($device, 1);
             return true;
         } else {
             return false;
@@ -278,6 +279,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'off');
         if (!empty($r)) {
+            $this->storeStatus($device, 0);
             return true;
         } else {
             return false;
@@ -288,6 +290,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'open');
         if (!empty($r)) {
+            $this->storeStatus($device, 4);
             return true;
         } else {
             return false;
@@ -298,6 +301,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'close');
         if (!empty($r)) {
+            $this->storeStatus($device, 5);
             return true;
         } else {
             return false;
@@ -369,5 +373,15 @@ class ShellyConnector
             }
         }
         return null;
+    }
+
+    private function storeStatus($connectorId, $status)
+    {
+        $shellyEntity = new ShellyDataStore();
+        $shellyEntity->setTimestamp(new \DateTime('now'));
+        $shellyEntity->setConnectorId($connectorId);
+        $shellyEntity->setData($status);
+        $this->em->persist($shellyEntity);
+        $this->em->flush();
     }
 }
