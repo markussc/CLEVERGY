@@ -90,6 +90,7 @@ parameters:
                 lowRateOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                        'outsideTemp': '>20' # valid syntax: '>X'  /  '<X'
                         'openweathermap:currentClouds': '<15' # note: if several conditions are set within one conditions set, all of them must be fulfilled
                     -
                         'openweathermap:currentMain': 'rain' # note: several sets of conditions can be defined. if at least one set is fulfilled, the overall condition is fulfilled

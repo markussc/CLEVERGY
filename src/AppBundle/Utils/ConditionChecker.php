@@ -228,6 +228,29 @@ class ConditionChecker
                     }
                 }
             }
+            if (strpos($condArr[0], 'outsideTemp')===0) {
+                $pcoweb = $this->pcoweb->getAllLatest();
+                $outsideTemp = $pcoweb['outsideTemp'];
+                $tempData = str_replace('<', '', str_replace('>', '', $condition));
+                // check if > or < should be checked
+                if (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    if ($outsideTemp > $tempData) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, '<') !== false) {
+                    // we have a smaller than condition
+                    if ($outsideTemp < $tempData) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                }
+            }
         }
 
         return $fulfilled;
