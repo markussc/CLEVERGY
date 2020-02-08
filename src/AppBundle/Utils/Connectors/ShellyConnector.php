@@ -4,6 +4,7 @@ namespace AppBundle\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
 use AppBundle\Entity\Settings;
+use AppBundle\Entity\ShellyDataStore;
 
 /**
  * Connector to communicate with Shelly devices

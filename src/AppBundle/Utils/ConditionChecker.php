@@ -251,6 +251,16 @@ class ConditionChecker
                     }
                 }
             }
+            if ($condArr[0] == 'mystrom') {
+                $status = $this->em->getRepository("AppBundle:MyStromDataStore")->getLatest($condArr[1]);
+                // we only have equal condition (true / false)
+                if ($status == $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
+                }
+            }
         }
 
         return $fulfilled;

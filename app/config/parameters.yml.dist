@@ -79,8 +79,9 @@ parameters:
                         - 'Window XY'
                         - contact # if set to contact, a warning will be shown if open
         edimax:
-            '192.168.55.2':
+            -
                 name: 'Plug 1'
+                ip: '192.168.55.2'
                 username: admin
                 password: 1234
                 nominalPower: 500 # max. expected power in Watt consumed by the device
@@ -98,15 +99,21 @@ parameters:
                 forceOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>72'
+                        'mystrom:192.168.55.6': true # use motion sensors to enable / disable other devices (valid choices are true / false)
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
                 minRunTime: 120 # minimal runtime in minutes. If not reached until begin of low energy rate and it is evening (P.M.), the device will be turned on (forceOn)
                                 # note the maximum is given by the time between low rate start and midnight
         mystrom:
-            '192.168.55.3':
+            -
+                ip: '192.168.55.3'
                 nominalPower: 100
                 #other parameters such as lowRateOn and forceOn identical to edimax
+            -
+                ip: '192.168.55.6'
+                name: 'presence'
+                type: 'motion' # valid types are 'relay' (= default) and 'motion' (motion sensors may be used for alarms and as a condition)
         shelly:
             -
                 name: Storen Schlafzimmer

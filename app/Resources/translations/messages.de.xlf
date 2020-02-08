@@ -30,6 +30,10 @@
                 <source>label.device.status.off</source>
                 <target>Aus</target>
             </trans-unit>
+            <trans-unit id="label.device.status.motion_detected">
+                <source>label.device.status.motion_detected</source>
+                <target>Bewegung erkannt</target>
+            </trans-unit>
             <trans-unit id="label.pco.outside_temp">
                 <source>label.pco.outside_temp</source>
                 <target>Aussentemperatur</target>

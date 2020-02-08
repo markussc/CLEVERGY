@@ -47,6 +47,7 @@ twig:
         instancetitle: '%instancetitle%'
         chromecastConnector: '@AppBundle\Utils\Connectors\ChromecastConnector'
         mobilealertsConnector: '@AppBundle\Utils\Connectors\MobileAlertsConnector'
+        mystromConnector: '@AppBundle\Utils\Connectors\MyStromConnector'
 
 assetic:
     debug:          '%kernel.debug%'

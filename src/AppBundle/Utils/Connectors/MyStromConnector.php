@@ -26,6 +26,26 @@ class MyStromConnector
         $this->browser->getClient()->setTimeout(3);
     }
 
+    public function getAlarms()
+    {
+        $alarms = [];
+        if (array_key_exists('mystrom', $this->connectors)) {
+            foreach ($this->connectors['mystrom'] as $deviceConf) {
+                if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'motion') {
+                    $status = $this->em->getRepository('AppBundle:MyStromDataStore')->getLatest($deviceConf['ip']);
+                    if ($status) {
+                        $alarms[] = [
+                            'name' => $deviceConf['name'],
+                            'state' => 'label.device.status.motion_detected',
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $alarms;
+    }
+
     /**
      * Reads the latest available data from the database
      * @return array
@@ -48,9 +68,15 @@ class MyStromConnector
                 } else {
                     $autoIntervals = [];
                 }
+                if (isset($device['type'])) {
+                    $type = $device['type'];
+                } else {
+                    $type = 'relay';
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'name' => $device['name'],
+                    'type' => $type,
                     'status' => $this->createStatus($this->em->getRepository('AppBundle:MyStromDataStore')->getLatest($device['ip'])),
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
@@ -82,9 +108,15 @@ class MyStromConnector
                 } else {
                     $autoIntervals = [];
                 }
+                if (isset($device['type'])) {
+                    $type = $device['type'];
+                } else {
+                    $type = 'relay';
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'name' => $device['name'],
+                    'type' => $type,
                     'status' => $status,
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
@@ -155,8 +187,14 @@ class MyStromConnector
 
     private function getStatus($device)
     {
-        $r = $this->queryMyStrom($device, 'status');
-        if (!empty($r) && array_key_exists('relay', $r) && $r['relay'] == true) {
+        if (array_key_exists('type', $device) && $device['type'] == 'motion') {
+            $r = $this->queryMyStrom($device, 'motion');
+            $arrKey = 'motion';
+        } else {
+            $r = $this->queryMyStrom($device, 'status');
+            $arrKey = 'relay';
+        }
+        if (!empty($r) && array_key_exists($arrKey, $r) && $r[$arrKey] == true) {
             return $this->createStatus(1);
         } else {
             return $this->createStatus(0);
@@ -203,6 +241,9 @@ class MyStromConnector
         switch ($cmd) {
             case 'status':
                 $reqUrl = 'report';
+                break;
+            case 'motion':
+                $reqUrl = 'api/v1/motion';
                 break;
             case 'on':
                 $reqUrl = 'relay?state=1';

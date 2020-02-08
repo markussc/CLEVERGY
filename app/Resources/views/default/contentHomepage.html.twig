@@ -8,6 +8,7 @@
         {% endfor %}
     {% endfor %}
 {% endif %}
+{% if mystromConnector.getAlarms()|length > 0 %}{% set alarmActive = true %}{% set contactAvailable = true %}{% endif %}
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
@@ -59,10 +60,12 @@
             {% if not loop.last or currentStat['mystrom']|length > 0 or currentStat['shelly']|length > 0 %}<br/>{% endif %}
         {% endfor %}
         {% for key, device in currentStat['mystrom'] %}
-            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
-            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
-            {{ device['name']}}
-            {% if not loop.last or currentStat['shelly']|length > 0 %}<br/>{% endif %}
+            {% if device['type']|default('') != 'motion' %}
+                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
+                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+                {{ device['name']}}
+                {% if not loop.last or currentStat['shelly']|length > 0 %}<br/>{% endif %}
+            {% endif %}
         {% endfor %}
     </div>
     {% endif %}
@@ -99,9 +102,12 @@
                 {% if measurement['label'] == 'timestamp' %}
                     {% set maTimestamp = measurement['datetime'] %}
                 {% elseif measurement['usage']|default('') == 'contact' %}
-                    {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %}{% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
+                    {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {{ measurement['label'] }}<br/>
                 {% endif %}
             {% endfor %}
+        {% endfor %}
+        {% for motionSensor in currentStat['mystrom']|default([]) if motionSensor['type']|default('') == 'motion' %}
+        <p>{% if not motionSensor['status']['val']|default(false) %}<i class="fas fa-male" style="color:green"></i>{% else %}<i class="fas fa-running" style="color:red"></i>{% endif %} {{ motionSensor['name'] }}</p>
         {% endfor %}
         {% endif %}
     {% endif %}

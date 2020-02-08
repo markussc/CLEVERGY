@@ -140,7 +140,9 @@ class DataUpdateCommand extends ContainerAwareCommand
         $this->getContainer()->get('AppBundle\Utils\Connectors\OpenWeatherMapConnector')->saveCurrentWeatherToDb();
 
         // process alarms
-        $alarms = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAlarms();
+        $maAlarms = $this->getContainer()->get('AppBundle\Utils\Connectors\MobileAlertsConnector')->getAlarms();
+        $msAlarms = $this->getContainer()->get('AppBundle\Utils\Connectors\MyStromConnector')->getAlarms();
+        $alarms = array_merge($maAlarms, $msAlarms);
         if (count($alarms)) {
             $alarmSetting = $em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
             if(!$alarmSetting) {
