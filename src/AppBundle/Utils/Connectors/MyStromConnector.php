@@ -17,13 +17,15 @@ class MyStromConnector
     protected $browser;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
         // set timeout for buzz browser client
         $this->browser->getClient()->setTimeout(3);
+        $this->host = $host;
+        $this->session_cookie_path = $session_cookie_path;
     }
 
     public function getAlarms()
@@ -253,7 +255,7 @@ class MyStromConnector
     private function activatePIR($device)
     {
         $url = '/api/v1/action/pir/generic';
-        $payload = 'get://oshans.ch/trigger/10.12.1.68';
+        $payload = 'get://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'];
         $r = $this->postMyStrom($device, $url, $payload);
         if (!empty($r)) {
             return true;

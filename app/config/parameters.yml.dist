@@ -19,6 +19,7 @@ parameters:
     secret: ThisTokenIsNotSoSecretChangeIt
 
     locale: en
+    host: myserver.com
     session_cookie_path: /myhome
     instancetitle: This Is My Home
     authenticated_ips:
