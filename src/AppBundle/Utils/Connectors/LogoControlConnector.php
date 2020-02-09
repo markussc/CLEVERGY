@@ -21,8 +21,10 @@ class LogoControlConnector
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
+        $this->ip = null;
         if (array_key_exists('logocontrol', $connectors)) {
-            $this->basePath = 'http://' . $connectors['logocontrol']['ip'] .':8088';
+            $this->ip = $connectors['logocontrol']['ip'];
+            $this->basePath = 'http://' . $this->ip .':8088';
         } else {
             $this->basePath = '';
         }
@@ -85,6 +87,6 @@ class LogoControlConnector
 
     public function getIp()
     {
-        return $this->connectors['logocontrol']['ip'];
+        return $this->ip;
     }
 }

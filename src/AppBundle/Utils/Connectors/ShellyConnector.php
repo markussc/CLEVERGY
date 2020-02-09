@@ -128,7 +128,7 @@ class ShellyConnector
     public function switchOK($deviceId)
     {
         // check if manual mode is set
-        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port']) == Settings::MODE_MANUAL) {
+        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->getId($deviceId)) == Settings::MODE_MANUAL) {
             return false;
         }
 
@@ -167,7 +167,7 @@ class ShellyConnector
         } else {
             $oppositeStatus = ($currentStatus + 1)%2;
         }
-        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port'], $oppositeStatus);
+        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($deviceId), $oppositeStatus);
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
@@ -376,13 +376,19 @@ class ShellyConnector
         return null;
     }
 
-    private function storeStatus($connectorId, $status)
+    private function storeStatus($deviceId, $status)
     {
+        $connectorId = $this->getId($deviceId);
         $shellyEntity = new ShellyDataStore();
         $shellyEntity->setTimestamp(new \DateTime('now'));
         $shellyEntity->setConnectorId($connectorId);
         $shellyEntity->setData($status);
         $this->em->persist($shellyEntity);
         $this->em->flush();
+    }
+
+    private function getId($deviceId)
+    {
+        return $this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port'];
     }
 }

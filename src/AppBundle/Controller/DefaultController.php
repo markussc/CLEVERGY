@@ -152,6 +152,11 @@ class DefaultController extends Controller
                     } else {
                         $connectorId = $command[2];
                     }
+                    if ($connectorId == 'alarm')
+                    {
+                        // make sure all mystrom PIR devices have their action URL set correctly
+                        $this->get('AppBundle\Utils\Connectors\MyStromConnector')->activateAllPIR();
+                    }
                     $settings = $this->getDoctrine()->getManager()->getRepository('AppBundle:Settings')->findOneByConnectorId($connectorId);
                     if (!$settings) {
                         $settings = new Settings();

@@ -264,4 +264,13 @@ class MobileAlertsConnector
 
         return null;
     }
+
+    public function getAvailable()
+    {
+        if (array_key_exists('mobilealerts', $this->connectors)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -35,6 +35,12 @@ services:
         arguments:
             $energyLowRate: "%energy_low_rate%"
 
+    AppBundle\Utils\LogicProcessor:
+        public: true
+        arguments:
+            $energyLowRate: "%energy_low_rate%"
+            $connectors: "%connectors%"
+
     AppBundle\Utils\Connectors\:
         resource: '../../src/AppBundle/Utils/Connectors'
         public: true

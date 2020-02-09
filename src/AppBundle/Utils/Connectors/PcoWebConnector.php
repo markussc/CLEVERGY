@@ -27,7 +27,10 @@ class PcoWebConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        $this->ip = $connectors['pcoweb']['ip'];
+        $this->ip = null;
+        if (array_key_exists('pcoweb', $connectors)) {
+            $this->ip = $connectors['pcoweb']['ip'];
+        }
         $this->basePath = 'http://' . $this->ip;
     }
 

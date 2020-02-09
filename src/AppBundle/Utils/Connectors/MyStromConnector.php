@@ -129,6 +129,17 @@ class MyStromConnector
         return $results;
     }
 
+    public function activateAllPIR()
+    {
+        if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
+            foreach ($this->connectors['mystrom'] as $key => $device) {
+                if (isset($device['type']) && $device['type'] == 'motion') {
+                    $this->executeCommand($key, 10);
+                }
+            }
+        }
+    }
+
     public function executeCommand($deviceId, $command)
     {
         switch ($command) {
@@ -138,6 +149,9 @@ class MyStromConnector
             case 0:
                 // turn it off
                 return $this->setOff($this->connectors['mystrom'][$deviceId]);
+            case 10:
+                // activate PIR action
+                return $this->activatePIR($this->connectors['mystrom'][$deviceId]);
         }
         // no known command
         return false;
@@ -236,6 +250,18 @@ class MyStromConnector
         }
     }
 
+    private function activatePIR($device)
+    {
+        $url = '/api/v1/action/pir/generic';
+        $payload = 'get://oshans.ch/trigger/10.12.1.68';
+        $r = $this->postMyStrom($device, $url, $payload);
+        if (!empty($r)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private function queryMyStrom($device, $cmd)
     {
         switch ($cmd) {
@@ -258,6 +284,25 @@ class MyStromConnector
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
             $response = $this->browser->get($url);
+            $statusCode = $response->getStatusCode();
+            if ($statusCode != 200) {
+                return false;
+            }
+            $json = $response->getContent();
+
+            return json_decode($json, true);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private function postMyStrom($device, $reqUrl, $payload)
+    {
+        $url = 'http://' . $device['ip'] . '/' . $reqUrl;
+        $headers = [];
+        $response = $this->browser->post($url, $headers, http_build_query([$payload]));
+        try {
+            $response = $this->browser->post($url, $headers, $payload);
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;
