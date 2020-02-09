@@ -376,9 +376,9 @@ class ShellyConnector
         return null;
     }
 
-    private function storeStatus($deviceId, $status)
+    private function storeStatus($device, $status)
     {
-        $connectorId = $this->getId($deviceId);
+        $connectorId = $this->getId($device);
         $shellyEntity = new ShellyDataStore();
         $shellyEntity->setTimestamp(new \DateTime('now'));
         $shellyEntity->setConnectorId($connectorId);
@@ -387,8 +387,8 @@ class ShellyConnector
         $this->em->flush();
     }
 
-    private function getId($deviceId)
+    private function getId($device)
     {
-        return $this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port'];
+        return $device['ip'].'_'.$device['port'];
     }
 }
