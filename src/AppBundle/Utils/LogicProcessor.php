@@ -99,9 +99,6 @@ class LogicProcessor
         $this->openweathermap->save5DayForecastToDb();
         $this->openweathermap->saveCurrentWeatherToDb();
 
-        // process alarms
-        $this->processAlarms();
-
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
 
@@ -116,6 +113,9 @@ class LogicProcessor
         if (Settings::MODE_MANUAL != $pcoMode) {
             $this->autoActionsPcoWeb($pcoMode);
         }
+
+        // process alarms
+        $this->processAlarms();
     }
 
     /**
