@@ -661,6 +661,7 @@ class LogicProcessor
             $edimaxEntity->setConnectorId($edimax['ip']);
             $edimaxEntity->setData($edimax['status']['val']);
             $this->em->persist($edimaxEntity);
+            $this->em->flush();
         }
     }
 
@@ -675,6 +676,7 @@ class LogicProcessor
             $mystromEntity->setConnectorId($mystrom['ip']);
             $mystromEntity->setData($mystrom['status']['val']);
             $this->em->persist($mystromEntity);
+            $this->em->flush();
         }
     }
 
@@ -686,6 +688,7 @@ class LogicProcessor
             $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
             $shellyEntity->setData($shelly['status']);
             $this->em->persist($shellyEntity);
+            $this->em->flush();
         }
     }
 
@@ -704,6 +707,7 @@ class LogicProcessor
             }
             $smartfoxEntity->setData($smartfox);
             $this->em->persist($smartfoxEntity);
+            $this->em->flush();
         }
     }
 
@@ -718,6 +722,7 @@ class LogicProcessor
                 $conexioEntity->setConnectorId($this->conexio->getIp());
                 $conexioEntity->setData($conexio);
                 $this->em->persist($conexioEntity);
+                $this->em->flush();
             }
         }
     }
@@ -733,6 +738,7 @@ class LogicProcessor
                 $logocontrolEntity->setConnectorId($this->logo->getIp());
                 $logocontrolEntity->setData($logocontrol);
                 $this->em->persist($logocontrolEntity);
+                $this->em->flush();
             }
         }
     }
@@ -746,6 +752,7 @@ class LogicProcessor
             $pcowebEntity->setConnectorId($this->pcoweb->getIp());
             $pcowebEntity->setData($pcoweb);
             $this->em->persist($pcowebEntity);
+            $this->em->flush();
         }
     }
 
@@ -759,6 +766,7 @@ class LogicProcessor
                 $mobilealertsEntity->setData($sensorData);
                 $this->em->persist($mobilealertsEntity);
             }
+            $this->em->flush();
         }
     }
 
