@@ -128,7 +128,7 @@ class ShellyConnector
     public function switchOK($deviceId)
     {
         // check if manual mode is set
-        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->getId($deviceId)) == Settings::MODE_MANUAL) {
+        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->getId($this->connectors['shelly'][$deviceId])) == Settings::MODE_MANUAL) {
             return false;
         }
 
@@ -167,7 +167,7 @@ class ShellyConnector
         } else {
             $oppositeStatus = ($currentStatus + 1)%2;
         }
-        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($deviceId), $oppositeStatus);
+        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus);
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
