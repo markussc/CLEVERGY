@@ -63,6 +63,7 @@ class LogicProcessor
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
         $this->connectors = $connectors;
+        $this->translator = $translator;
     }
 
     public function execute()
