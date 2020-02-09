@@ -487,13 +487,13 @@ class DefaultController extends Controller
         // init the mystrom device
         $logic->initMystrom($deviceId);
 
-        // trigger the alarms
-        $logic->processAlarms();
-
         // execute auto actions where reasonable
         $logic->autoActionsEdimax();
         $logic->autoActionsMystrom();
         $logic->autoActionsShelly();
+
+        // trigger the alarms
+        $logic->processAlarms();
 
         return new JsonResponse(['success' => true]);
     }
