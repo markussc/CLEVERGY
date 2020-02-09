@@ -99,7 +99,9 @@ parameters:
                 forceOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>72'
+                    -
                         'mystrom:192.168.55.6': true # use motion sensors to enable / disable other devices (valid choices are true / false)
+                        'alarm': true # if alarm is set to true, this condition is only true while alarm mode is activated
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location

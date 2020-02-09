@@ -68,94 +68,28 @@ class LogicProcessor
     public function execute()
     {
         // edimax
-        foreach ($this->edimax->getAll() as $edimax) {
-            $edimaxEntity = new EdiMaxDataStore();
-            $edimaxEntity->setTimestamp(new \DateTime('now'));
-            $edimaxEntity->setConnectorId($edimax['ip']);
-            $edimaxEntity->setData($edimax['status']['val']);
-            $this->em->persist($edimaxEntity);
-        }
+        $this->initEdimax();
 
         // mystrom
-        foreach ($this->mystrom->getAll() as $mystrom) {
-            $mystromEntity = new MyStromDataStore();
-            $mystromEntity->setTimestamp(new \DateTime('now'));
-            $mystromEntity->setConnectorId($mystrom['ip']);
-            $mystromEntity->setData($mystrom['status']['val']);
-            $this->em->persist($mystromEntity);
-        }
+        $this->initMystrom();
 
         // shelly
-        foreach ($this->shelly->getAll() as $shelly) {
-            $shellyEntity = new ShellyDataStore();
-            $shellyEntity->setTimestamp(new \DateTime('now'));
-            $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
-            $shellyEntity->setData($shelly['status']);
-            $this->em->persist($shellyEntity);
-        }
+        $this->initShelly();
 
         // smartfox
-        if ($this->smartfox->getIp()) {
-            $smartfox = $this->smartfox->getAll();
-            $smartfoxEntity = new SmartFoxDataStore();
-            $smartfoxEntity->setTimestamp(new \DateTime('now'));
-            $smartfoxEntity->setConnectorId($this->smartfox->getIp());
-            if ($smartfox['PvEnergy'][0] <= 0) {
-                $lastSmartFox = $this->smartfox->getAllLatest();
-                if ($lastSmartFox) {
-                    $smartfox['PvEnergy'][0] = $lastSmartFox['PvEnergy'][0];
-                }
-            }
-            $smartfoxEntity->setData($smartfox);
-            $this->em->persist($smartfoxEntity);
-        }
+        $this->initSmartfox();
 
         // conexio
-        if ($this->conexio->getIp()) {
-            $conexio = $this->conexio->getAll();
-            if ($conexio) {
-                // we only want to store valid and complete data
-                $conexioEntity = new ConexioDataStore();
-                $conexioEntity->setTimestamp(new \DateTime('now'));
-                $conexioEntity->setConnectorId($this->conexio->getIp());
-                $conexioEntity->setData($conexio);
-                $this->em->persist($conexioEntity);
-            }
-        }
+        $this->initConexio();
 
         // logocontrol
-        if ($this->logo->getIp()) {
-            $logocontrol = $this->logo->getAll();
-            if ($logocontrol) {
-                // we only want to store valid and complete data
-                $logocontrolEntity = new LogoControlDataStore();
-                $logocontrolEntity->setTimestamp(new \DateTime('now'));
-                $logocontrolEntity->setConnectorId($this->logo->getIp());
-                $logocontrolEntity->setData($logocontrol);
-                $this->em->persist($logocontrolEntity);
-            }
-        }
+        $this->initLogo();
 
         // pcoweb
-        if ($this->pcoweb->getIp()) {
-            $pcoweb = $this->pcoweb->getAll();
-            $pcowebEntity = new PcoWebDataStore();
-            $pcowebEntity->setTimestamp(new \DateTime('now'));
-            $pcowebEntity->setConnectorId($this->pcoweb->getIp());
-            $pcowebEntity->setData($pcoweb);
-            $this->em->persist($pcowebEntity);
-        }
+        $this->initPcoweb();
 
         // mobilealerts
-        if ($this->mobilealerts->getAvailable()) {
-            foreach ($this->mobilealerts->getAll() as $sensorId => $sensorData) {
-                $mobilealertsEntity = new MobileAlertsDataStore();
-                $mobilealertsEntity->setTimestamp(new \DateTime('now'));
-                $mobilealertsEntity->setConnectorId($sensorId);
-                $mobilealertsEntity->setData($sensorData);
-                $this->em->persist($mobilealertsEntity);
-            }
-        }
+        $this->initMobilealerts();
 
         // write to database
         $this->em->flush();
@@ -165,28 +99,7 @@ class LogicProcessor
         $this->openweathermap->saveCurrentWeatherToDb();
 
         // process alarms
-        $maAlarms = $this->mobilealerts->getAlarms();
-        $msAlarms = $this->mystrom->getAlarms();
-        $alarms = array_merge($maAlarms, $msAlarms);
-        if (count($alarms)) {
-            $alarmSetting = $this->em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
-            if(!$alarmSetting) {
-                $alarmSetting = new Settings();
-                $alarmSetting->setConnectorId('alarm');
-                $alarmSetting->setMode(0);
-            }
-            if ($alarmSetting && $alarmSetting->getMode() == 1) {
-                $alarmMsg = $this->translator->trans("label.alarm.active");
-                foreach ($alarms as $alarm) {
-                    $alarmMsg .= "\n" . $alarm['name'] . ": " . $this->translator->trans($alarm['state']);
-                }
-                foreach ($this->connectors['threema']['alarm'] as $alarmRecipient) {
-                    $this->threema->sendMessage($alarmRecipient, $alarmMsg);
-                }
-                $alarmSetting->setMode(0);
-                $this->em->flush();
-            }
-        }
+        $this->processAlarms();
 
         // execute auto actions for edimax devices
         $this->autoActionsEdimax();
@@ -207,7 +120,7 @@ class LogicProcessor
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached edimax devices
      */
-    private function autoActionsEdimax()
+    public function autoActionsEdimax()
     {
         $avgPower = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
 
@@ -299,7 +212,7 @@ class LogicProcessor
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached mystrom devices
      */
-    private function autoActionsMystrom()
+    public function autoActionsMystrom()
     {
         $avgPower = $this->em->getRepository('AppBundle:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
 
@@ -392,7 +305,7 @@ class LogicProcessor
      * Based on the available environmental data, decide whether any commands should be sent to attached shelly devices
      * NOTE: currently only implemented for roller devices
      */
-    private function autoActionsShelly()
+    public function autoActionsShelly()
     {
         foreach ($this->shelly->getAllLatest() as $deviceId => $shelly) {
             $shellyConfig = $this->connectors['shelly'][$deviceId];
@@ -737,5 +650,140 @@ class LogicProcessor
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);
         $this->em->flush();
+    }
+
+    public function initEdimax()
+    {
+        foreach ($this->edimax->getAll() as $edimax) {
+            $edimaxEntity = new EdiMaxDataStore();
+            $edimaxEntity->setTimestamp(new \DateTime('now'));
+            $edimaxEntity->setConnectorId($edimax['ip']);
+            $edimaxEntity->setData($edimax['status']['val']);
+            $this->em->persist($edimaxEntity);
+        }
+    }
+
+    public function initMystrom($deviceId = null)
+    {
+        foreach ($this->mystrom->getAll() as $mystrom) {
+            if ($deviceId && $mystrom['ip'] !== $deviceId) {
+                continue;
+            }
+            $mystromEntity = new MyStromDataStore();
+            $mystromEntity->setTimestamp(new \DateTime('now'));
+            $mystromEntity->setConnectorId($mystrom['ip']);
+            $mystromEntity->setData($mystrom['status']['val']);
+            $this->em->persist($mystromEntity);
+        }
+    }
+
+    public function initShelly()
+    {
+        foreach ($this->shelly->getAll() as $shelly) {
+            $shellyEntity = new ShellyDataStore();
+            $shellyEntity->setTimestamp(new \DateTime('now'));
+            $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
+            $shellyEntity->setData($shelly['status']);
+            $this->em->persist($shellyEntity);
+        }
+    }
+
+    public function initSmartfox()
+    {
+        if ($this->smartfox->getIp()) {
+            $smartfox = $this->smartfox->getAll();
+            $smartfoxEntity = new SmartFoxDataStore();
+            $smartfoxEntity->setTimestamp(new \DateTime('now'));
+            $smartfoxEntity->setConnectorId($this->smartfox->getIp());
+            if ($smartfox['PvEnergy'][0] <= 0) {
+                $lastSmartFox = $this->smartfox->getAllLatest();
+                if ($lastSmartFox) {
+                    $smartfox['PvEnergy'][0] = $lastSmartFox['PvEnergy'][0];
+                }
+            }
+            $smartfoxEntity->setData($smartfox);
+            $this->em->persist($smartfoxEntity);
+        }
+    }
+
+    public function initConexio()
+    {
+        if ($this->conexio->getIp()) {
+            $conexio = $this->conexio->getAll();
+            if ($conexio) {
+                // we only want to store valid and complete data
+                $conexioEntity = new ConexioDataStore();
+                $conexioEntity->setTimestamp(new \DateTime('now'));
+                $conexioEntity->setConnectorId($this->conexio->getIp());
+                $conexioEntity->setData($conexio);
+                $this->em->persist($conexioEntity);
+            }
+        }
+    }
+
+    public function initLogo()
+    {
+        if ($this->logo->getIp()) {
+            $logocontrol = $this->logo->getAll();
+            if ($logocontrol) {
+                // we only want to store valid and complete data
+                $logocontrolEntity = new LogoControlDataStore();
+                $logocontrolEntity->setTimestamp(new \DateTime('now'));
+                $logocontrolEntity->setConnectorId($this->logo->getIp());
+                $logocontrolEntity->setData($logocontrol);
+                $this->em->persist($logocontrolEntity);
+            }
+        }
+    }
+
+    public function initPcoweb()
+    {
+        if ($this->pcoweb->getIp()) {
+            $pcoweb = $this->pcoweb->getAll();
+            $pcowebEntity = new PcoWebDataStore();
+            $pcowebEntity->setTimestamp(new \DateTime('now'));
+            $pcowebEntity->setConnectorId($this->pcoweb->getIp());
+            $pcowebEntity->setData($pcoweb);
+            $this->em->persist($pcowebEntity);
+        }
+    }
+
+    public function initMobilealerts()
+    {
+        if ($this->mobilealerts->getAvailable()) {
+            foreach ($this->mobilealerts->getAll() as $sensorId => $sensorData) {
+                $mobilealertsEntity = new MobileAlertsDataStore();
+                $mobilealertsEntity->setTimestamp(new \DateTime('now'));
+                $mobilealertsEntity->setConnectorId($sensorId);
+                $mobilealertsEntity->setData($sensorData);
+                $this->em->persist($mobilealertsEntity);
+            }
+        }
+    }
+
+    public function processAlarms()
+    {
+        $maAlarms = $this->mobilealerts->getAlarms();
+        $msAlarms = $this->mystrom->getAlarms();
+        $alarms = array_merge($maAlarms, $msAlarms);
+        if (count($alarms)) {
+            $alarmSetting = $this->em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
+            if(!$alarmSetting) {
+                $alarmSetting = new Settings();
+                $alarmSetting->setConnectorId('alarm');
+                $alarmSetting->setMode(0);
+            }
+            if ($alarmSetting && $alarmSetting->getMode() == 1) {
+                $alarmMsg = $this->translator->trans("label.alarm.active");
+                foreach ($alarms as $alarm) {
+                    $alarmMsg .= "\n" . $alarm['name'] . ": " . $this->translator->trans($alarm['state']);
+                }
+                foreach ($this->connectors['threema']['alarm'] as $alarmRecipient) {
+                    $this->threema->sendMessage($alarmRecipient, $alarmMsg);
+                }
+                $alarmSetting->setMode(0);
+                $this->em->flush();
+            }
+        }
     }
 }

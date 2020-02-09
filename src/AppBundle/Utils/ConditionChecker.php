@@ -261,6 +261,16 @@ class ConditionChecker
                     break;
                 }
             }
+            if ($condArr[0] == 'alarm') {
+                $status = $this->em->getRepository("AppBundle:Settings")->getLatest('alarm');
+                // we only have equal condition (true / false)
+                if ($status == $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
+                }
+            }
         }
 
         return $fulfilled;

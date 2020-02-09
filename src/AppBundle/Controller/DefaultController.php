@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Settings;
+use AppBundle\Utils\LogicProcessor;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -475,5 +476,25 @@ class DefaultController extends Controller
         }
 
         return $currentStat;
+    }
+
+    /**
+     * trigger by external event
+     * @Route("/trigger/{deviceId}", name="trigger")
+     */
+    public function triggerAction(Request $request, LogicProcessor $logic, $deviceId)
+    {
+        // init the mystrom device
+        $logic->initMystrom($deviceId);
+
+        // trigger the alarms
+        $logic->processAlarms();
+
+        // execute auto actions where reasonable
+        $logic->autoActionsEdimax();
+        $logic->autoActionsMystrom();
+        $logic->autoActionsShelly();
+
+        return new JsonResponse(['success' => true]);
     }
 }
