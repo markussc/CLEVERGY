@@ -1,19 +1,13 @@
-{% set contactAvailable = false %}
-{% set alarmActive = false %}
-{% if currentStat['mobileAlerts']|default([])|length > 0 %}
-    {% for maSensor in currentStat['mobileAlerts']|default([]) %}
-        {% for measurement in maSensor if measurement['label'] != 'timestamp' and measurement['usage']|default('') == 'contact' %}
-            {% set contactAvailable = true %}
-            {% if measurement['value'] == 'label.device.status.open' %}{% set alarmActive = true %}{% endif %}
-        {% endfor %}
-    {% endfor %}
-{% endif %}
-{% if mystromConnector.getAlarms()|length > 0 %}{% set alarmActive = true %}{% set contactAvailable = true %}{% endif %}
+{% set contactActive = false %}
+{% set motionActive = false %}
+{% if mobilealertsConnector.getAlarms()|length > 0 %}{% set contactActive = true %}{% endif %}
+{% if mystromConnector.getAlarms()|length > 0 %}{% set motionActive = true %}{% endif %}
+
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
-        <div id="visualDashboardAlarmSymbol" class="refresh">{% if alarmActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.alarm.active{% endtrans %}</span>{% endif %}</div>
-        <br>
+        <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
+        <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap"></img>{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
@@ -88,8 +82,8 @@
         {% endfor %}
         </div>
     {% endif %}
-    {% if currentStat['mobileAlerts']|default([])|length > 0 %}
-        {% if contactAvailable|default(false) %}
+    {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 %}
+        {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable|default(false) %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
         <h4><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></h4>
         {% if connectors['threema']|default([])|length > 0 %}
@@ -107,7 +101,7 @@
             {% endfor %}
         {% endfor %}
         {% for motionSensor in currentStat['mystrom']|default([]) if motionSensor['type']|default('') == 'motion' %}
-        <p>{% if not motionSensor['status']['val']|default(false) %}<i class="fas fa-male" style="color:green"></i>{% else %}<i class="fas fa-running" style="color:red"></i>{% endif %} {{ motionSensor['name'] }}</p>
+        {% if not motionSensor['status']['val']|default(false) %}<i class="fas fa-male" style="color:green"></i>{% else %}<i class="fas fa-running" style="color:red"></i>{% endif %} {{ motionSensor['name'] }}<br/>
         {% endfor %}
         {% endif %}
     {% endif %}

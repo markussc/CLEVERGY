@@ -39,6 +39,7 @@ class MyStromConnector
                         $alarms[] = [
                             'name' => $deviceConf['name'],
                             'state' => 'label.device.status.motion_detected',
+                            'type' => 'motion',
                         ];
                     }
                 }
@@ -46,6 +47,19 @@ class MyStromConnector
         }
 
         return $alarms;
+    }
+
+    public function motionAvailable()
+    {
+        if (array_key_exists('mystrom', $this->connectors)) {
+            foreach ($this->connectors['mystrom'] as $deviceConf) {
+                if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'motion') {
+                    return true;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -32,7 +32,11 @@
             </trans-unit>
             <trans-unit id="label.device.status.motion_detected">
                 <source>label.device.status.motion_detected</source>
-                <target>Bewegung erkannt</target>
+                <target>Anwesenheit erkannt</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.contact_detected">
+                <source>label.device.status.contact_detected</source>
+                <target>Offene Türen/Fenster</target>
             </trans-unit>
             <trans-unit id="label.pco.outside_temp">
                 <source>label.pco.outside_temp</source>

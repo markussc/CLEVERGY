@@ -36,6 +36,7 @@ class MobileAlertsConnector
                         $alarms[] = [
                             'name' => $sensorConf[0][0],
                             'state' => $data[1]['value'],
+                            'type' => 'contact',
                         ];
                     }
                 }
@@ -43,6 +44,19 @@ class MobileAlertsConnector
         }
 
         return $alarms;
+    }
+
+    public function contactAvailable()
+    {
+        if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                if (array_key_exists(4, $sensorConf[0]) && $sensorConf[0][4] == 'contact') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function getAlarmMode()
