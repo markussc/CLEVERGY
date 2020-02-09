@@ -262,7 +262,7 @@ class ConditionChecker
                 }
             }
             if ($condArr[0] == 'alarm') {
-                $status = $this->em->getRepository("AppBundle:Settings")->getLatest('alarm');
+                $status = $this->em->getRepository("AppBundle:Settings")->getMode('alarm');
                 // we only have equal condition (true / false)
                 if ($status == $condition) {
                     $fulfilled = true;
