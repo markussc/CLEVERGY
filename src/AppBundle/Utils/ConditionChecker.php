@@ -161,10 +161,21 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
-                } else {
+                } elseif (strpos($condition, '<') !== false){
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
                     if (floatval($sensorData['value']) < floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, 'rain') !== false) {
+                    // we check for rain (more than x)
+                    $condition = str_replace('rain>', '', $condition);
+                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast15Min($condArr[1]);
+                    if ($rain > strtolower($condition)) {
+                        dump("true");
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
@@ -185,19 +196,10 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
-                } elseif (strpos($condition, '<') !== false) {
+                } else {
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
                     if (floatval($weatherData) < floatval($condition)) {
-                        $fulfilled = true;
-                    } else {
-                        $fulfilled = false;
-                        break;
-                    }
-                } else {
-                    // we have a equal condition
-                    $condition = str_replace('=', '', $condition);
-                    if (strtolower($weatherData) == strtolower($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
