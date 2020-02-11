@@ -183,29 +183,41 @@ class MobileAlertsConnector
      * @return array
      * 
      * Retrieves the available data using the official REST API
-     * 
+     * $ids : array of supported device IDs
      * Note: Only a limited set of sensors is available for this kind of data retrieval
      */
-    private function getAllRest()
+    private function getAllRest($ids = [])
     {
-        // TODO: set the base path correctly here
-        $this->basePath = "unknown";
+        // executes a post request containing deviceids + phoneid to the REST API
+        //  curl -d deviceids=XXXXXXXXXXXX -d phoneid=XXXXXXXXXXXX http://www.data199.com:8080/api/pv1/device/lastmeasurement
+        // available for sensors of types ID01, ID08, ID09, ID0B and ID0E 
+
+        $this->basePath = "http://www.data199.com:8080/api/pv1/device/lastmeasurement";
 
         // request parameters
         $data = [
-            'deviceids' => join(',', $this->connectors['mobilealerts']['sensors'])
+            'deviceids' => join(',', $ids),
+            'phoneid' => $this->connectors['mobilealerts']['phoneid'],
         ];
 
         // header
         $headers = [
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/x-www-form-urlencoded',
         ];
 
         // post request
-        $responseJson = $this->browser->post($this->basePath, $headers, json_encode($data))->getContent();
+        $responseJson = $this->browser->post($this->basePath, $headers, http_build_query($data))->getContent();
         $responseArr = json_decode($responseJson, true);
 
-        return $responseArr;
+        // prepare return
+        $assocArr = [];
+        if (array_key_exists('devices', $responseArr)) {
+            foreach ($responseArr['devices'] as $device) {
+                $assocArr[$device['deviceid']] = $device['measurement'];
+            }
+        }
+
+        return $assocArr;
     }
 
     /**
