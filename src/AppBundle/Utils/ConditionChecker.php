@@ -195,10 +195,19 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
-                } else {
+                } elseif (strpos($condition, '<') !== false) {
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
                     if (floatval($weatherData) < floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } else {
+                    // we have a equal condition
+                    $condition = str_replace('=', '', $condition);
+                    if (strtolower($weatherData) == strtolower($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
