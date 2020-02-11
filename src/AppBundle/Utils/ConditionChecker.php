@@ -152,10 +152,11 @@ class ConditionChecker
                 $maData = $this->mobilealerts->getAllLatest();
                 $sensorData = $maData[$condArr[1]][$condArr[2]];
                 // check if > or < should be checked
-                if (strpos($condition, '>') !== false) {
-                    // we have larger than condition
-                    $condition = str_replace('>', '', $condition);
-                    if (floatval($sensorData['value']) > floatval($condition)) {
+                if (strpos($condition, 'rain') !== false) {
+                    // we check for rain (more than x)
+                    $condition = str_replace('rain>', '', $condition);
+                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast15Min($condArr[1]);
+                    if ($rain > strtolower($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
@@ -170,11 +171,10 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
-                } elseif (strpos($condition, 'rain') !== false) {
-                    // we check for rain (more than x)
-                    $condition = str_replace('rain>', '', $condition);
-                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast15Min($condArr[1]);
-                    if ($rain > strtolower($condition)) {
+                } elseif (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    $condition = str_replace('>', '', $condition);
+                    if (floatval($sensorData['value']) > floatval($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
