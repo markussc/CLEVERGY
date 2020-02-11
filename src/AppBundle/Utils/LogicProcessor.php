@@ -783,6 +783,8 @@ class LogicProcessor
                 $alarmSetting->setMode(0);
             }
             if ($alarmSetting && $alarmSetting->getMode() == 1) {
+                $alarmSetting->setMode(0);
+                $this->em->flush();
                 $alarmMsg = $this->translator->trans("label.alarm.active");
                 foreach ($alarms as $alarm) {
                     $alarmMsg .= "\n" . $alarm['name'] . ": " . $this->translator->trans($alarm['state']);
@@ -790,8 +792,6 @@ class LogicProcessor
                 foreach ($this->connectors['threema']['alarm'] as $alarmRecipient) {
                     $this->threema->sendMessage($alarmRecipient, $alarmMsg);
                 }
-                $alarmSetting->setMode(0);
-                $this->em->flush();
             }
         }
     }
