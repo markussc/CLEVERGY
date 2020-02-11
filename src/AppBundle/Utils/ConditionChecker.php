@@ -175,7 +175,6 @@ class ConditionChecker
                     $condition = str_replace('rain>', '', $condition);
                     $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast15Min($condArr[1]);
                     if ($rain > strtolower($condition)) {
-                        dump("true");
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
