@@ -132,38 +132,7 @@ class MobileAlertsConnector
                     ];
                 } else {
                     // next measurement
-                    if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
-                        $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
-                    }
-                    if (array_key_exists(3, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][3] === "dashboard") {
-                        $dashboard = true;
-                    } else {
-                        $dashboard = false;
-                    }
-                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter])) {
-                        $usage = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4];
-                    } else {
-                        $usage = false;
-                    }
-                    if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
-                        if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][5] !== 'inverted') {
-                            $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
-                            $value = str_replace('Offen', 'label.device.status.open', $value);
-                        } else {
-                            $value = str_replace('Geschlossen', 'label.device.status.open', $value);
-                            $value = str_replace('Offen', 'label.device.status.closed', $value);
-                        }
-                    } else {
-                        $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
-                        $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
-                    }
-                    $data[$currentSensor][] = [
-                        'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
-                        'value' => $value,
-                        'unit' => $unit,
-                        'dashboard' => $dashboard,
-                        'usage' => $usage,
-                    ];
+                    $data[$currentSensor][] = $this->createStorageData($currentSensor, measurementCounter, $value);
                     $measurementCounter++;
                 }
             }
@@ -176,6 +145,44 @@ class MobileAlertsConnector
     {    
         $d = \DateTime::createFromFormat($format, $date);    
         return $d && $d->format($format) == $date; 
+    }
+
+    private function createStorageData($currentSensor, $measurementCounter, $value)
+    {
+        if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
+            $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
+        }
+        if (array_key_exists(3, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][3] === "dashboard") {
+            $dashboard = true;
+        } else {
+            $dashboard = false;
+        }
+        if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter])) {
+            $usage = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4];
+        } else {
+            $usage = false;
+        }
+        if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
+            if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][5] !== 'inverted') {
+                $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
+                $value = str_replace('Offen', 'label.device.status.open', $value);
+            } else {
+                $value = str_replace('Geschlossen', 'label.device.status.open', $value);
+                $value = str_replace('Offen', 'label.device.status.closed', $value);
+            }
+        } else {
+            $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
+            $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
+        }
+        $data[$currentSensor][] = [
+            'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
+            'value' => $value,
+            'unit' => $unit,
+            'dashboard' => $dashboard,
+            'usage' => $usage,
+        ];
+
+        return $data;
     }
 
     /**
@@ -214,6 +221,7 @@ class MobileAlertsConnector
         if (array_key_exists('devices', $responseArr)) {
             foreach ($responseArr['devices'] as $device) {
                 $assocArr[$device['deviceid']] = $device['measurement'];
+                // TODO: use the nwe function createStorageData to create the array backwards compatible
             }
         }
 
