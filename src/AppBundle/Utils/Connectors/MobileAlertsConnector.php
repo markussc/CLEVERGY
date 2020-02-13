@@ -121,7 +121,6 @@ class MobileAlertsConnector
             $cr = new Crawler($sensorComponent);
             $label = $cr->filter('h5')->text();
             $value = $cr->filter('h4')->text();
-            $unit = '';
             if ($label == 'ID') {
                 // next sensor
                 $currentSensor = $value;
@@ -171,6 +170,7 @@ class MobileAlertsConnector
 
     private function createStorageData($currentSensor, $measurementCounter, $value)
     {
+        $unit = '';
         if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
             $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
         }
