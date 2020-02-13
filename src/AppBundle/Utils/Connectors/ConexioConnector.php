@@ -22,10 +22,11 @@ class ConexioConnector
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
+        $this->ip = null;
+        $this->basePath = '';
         if (array_key_exists('conexio', $connectors)) {
-            $this->basePath = 'http://' . $connectors['conexio']['ip'];
-        } else {
-            $this->basePath = '';
+            $this->ip = $connectors['conexio']['ip'];
+            $this->basePath = 'http://' . $this->ip;
         }
     }
 
@@ -77,7 +78,7 @@ class ConexioConnector
 
     public function getIp()
     {
-        return $this->connectors['conexio']['ip'];
+        return $this->ip;
     }
 
     private function extractData($xmlData)
