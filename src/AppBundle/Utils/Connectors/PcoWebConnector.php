@@ -27,6 +27,7 @@ class PcoWebConnector
     {
         $this->em = $em;
         $this->browser = $browser;
+        $this->browser->getClient()->setTimeout(10);
         $this->ip = null;
         if (array_key_exists('pcoweb', $connectors)) {
             $this->ip = $connectors['pcoweb']['ip'];
