@@ -136,7 +136,7 @@ class MobileAlertsConnector
                     ];
                 } else {
                     // next measurement
-                    $data[$currentSensor][] = $this->createStorageData($currentSensor, measurementCounter, $value);
+                    $data[$currentSensor][] = $this->createStorageData($currentSensor, $measurementCounter, $value);
                     $measurementCounter++;
                 }
             }
