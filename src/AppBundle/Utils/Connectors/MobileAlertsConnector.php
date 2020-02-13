@@ -102,14 +102,13 @@ class MobileAlertsConnector
     public function getAllWeb()
     {
         $data = [];
-        $requestHeaders = ['Content-Length:0'];
         $this->basePath = 'http://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
+        $this->browser->getClient()->setTimeout(20);
         try {
-            $response = $this->browser->post($this->basePath . $this->connectors['mobilealerts']['phoneid'], $requestHeaders);
+            $response = $this->browser->get($this->basePath . $this->connectors['mobilealerts']['phoneid']);
         } catch (\Exception $e) {
             return $data;
         }
-
         $crawler = new Crawler();
         $crawler->addContent($response->getContent());
         $sensorComponents = $crawler->filter('.sensor-component');
