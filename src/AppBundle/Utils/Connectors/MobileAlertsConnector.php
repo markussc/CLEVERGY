@@ -253,6 +253,10 @@ class MobileAlertsConnector
         if (array_key_exists('devices', $responseArr)) {
             foreach ($responseArr['devices'] as $device) {
                 $id = $device['deviceid'];
+                if (!array_key_exists('measurement', $device)) {
+                    // no new measurement data available, we do not want to store the entry
+                    continue;
+                }
                 $datetime = new \DateTime('@'.$device['measurement']['ts']);
                 $assocArr[$id][] =  [
                     'label' => 'timestamp',
