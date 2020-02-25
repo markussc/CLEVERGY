@@ -155,7 +155,7 @@ class ConditionChecker
                 if (strpos($condition, 'rain') !== false) {
                     // we check for rain (more than x)
                     $condition = floatval(str_replace('rain>', '', $condition));
-                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast15Min($condArr[1]);
+                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast60Min($condArr[1]);
                     if ($rain > strtolower($condition)) {
                         $fulfilled = true;
                     } else {
