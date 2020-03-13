@@ -625,7 +625,7 @@ class LogicProcessor
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
                 }
-                if ((!$isSummer || $insideTemp < ($minInsideTemp + 1)&& ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
+                if ((!$isSummer || $insideTemp < ($minInsideTemp + 1) ) && ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND due to high energy rate";
                 }
