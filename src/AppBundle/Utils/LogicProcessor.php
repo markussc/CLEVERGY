@@ -621,11 +621,11 @@ class LogicProcessor
                 $log[] = "high energy rate, set high hwHysteresis (12)";
                 $this->pcoweb->executeCommand('hc1', 25);
                 $log[] = "normalize hc1 (set hc1=25) during high energy rate";
-                if (($isSummer || $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
+                if ((($isSummer && $insideTemp > ($minInsideTemp + 1))|| $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
                 }
-                if (!$isSummer && ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
+                if ((!$isSummer || $insideTemp < ($minInsideTemp + 1)&& ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND due to high energy rate";
                 }
