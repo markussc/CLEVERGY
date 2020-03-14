@@ -91,13 +91,14 @@ class ConexioConnector
         for ($i=0; $i < $size/2; $i++) {
             $value = $this->convertAtoH($str,4);
             $str = substr($str, 4);
+            if($i != 27 && $value > 32767)
+            {
+                $value -= 65536;
+            }
+
             //temps
             if($i < 7)
             {
-                if($value > 32768)
-                {
-                    $value -= 65536;
-                }
                 $idx = 's' . ($i+1);
                 $data[$idx] = $value/10;
             }
@@ -127,8 +128,24 @@ class ConexioConnector
             {
                 $data['sp1_upper_ventil_hours'] = $value;
             }
+            else if($i == 27)
+            {
+                switch($value) {
+                    case $value < 0:
+                        $data['he3'] = 0;
+                        break;
+                    case $value > 30000:
+                        $data['he3'] = 33;
+                        break;
+                    case $value > 20000:
+                        $data['he3'] = 66;
+                        break;
+                    default:
+                        $data['he3'] = intval((65831-$value) / 1000); // we get the percent value
+                }
+            }
         }
-        // add calculated current power (delta between S6 and S7 multiplied by a constant [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
+        // add calculated current power (delta between S6 and S7 multiplied by a constant 335 [defined by Durchfluss and Spez. Wärmekapazität) gives power in Watts
         if (!array_key_exists('s6', $data)) {
             $data['s6'] = 0;
         }
@@ -138,7 +155,12 @@ class ConexioConnector
         if (!array_key_exists('r1', $data)) {
             $data['r1'] = 0;
         }
-        $data['p'] = (int)(($data['s6'] - $data['s7'])*367.3*0.6*$data['r1']/100/2); // unclear why the division by 2 is required
+        if (!array_key_exists('he3', $data)) {
+            $data['he3'] = 0;
+        } elseif ($data['r1'] == 0) {
+            $data['he3'] = 0; // if the pump is not on (230v), the PWM value is irrelevant
+        }
+        $data['p'] = (int)(($data['s6'] - $data['s7'])*340*$data['he3']/100);
 
         if(!array_key_exists('q', $data)) {
             // the retrieved data is incomplete or invalid, we do not want to use it

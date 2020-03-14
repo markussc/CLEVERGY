@@ -60,7 +60,7 @@
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
     <ul>
     {% for idx, sensor in connectors['conexio']['sensors']|default([]) %}
-        <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx] }}{{ sensor[1] }}</li>
+        <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx]|default('--') }}{{ sensor[1] }}</li>
     {% endfor %}
     {% for sensor in connectors['logocontrol']['sensors']|default([]) %}
         {{ sensor[0] }}: {{ currentStat['logoControl'][sensor[0]] }}{{ sensor[1] }}<br/>
