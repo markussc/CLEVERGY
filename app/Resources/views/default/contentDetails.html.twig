@@ -6,6 +6,7 @@
       <select class="select2" id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
+          <option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>
       </select>
       <hr>
       <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
@@ -50,7 +51,7 @@
     </div>
     <div class="chart" style="display:none;">
         <span class="chartId">energyDay</span>
-        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}, {{ currentStat['conexio']['energyToday'] }}]</span>
+        <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}{% if currentStat['conexio']|default(false) %}, {{ currentStat['conexio']['energyToday']|default(0) }}{% endif %}]</span>
     </div>
 </div>
 {% endif %}
@@ -59,7 +60,7 @@
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
     <ul>
     {% for idx, sensor in connectors['conexio']['sensors']|default([]) %}
-        <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx] }}{{ sensor[1] }}</li>
+        <li>{{ sensor[0] }}: {{ currentStat['conexio'][idx]|default('--') }}{{ sensor[1] }}</li>
     {% endfor %}
     {% for sensor in connectors['logocontrol']['sensors']|default([]) %}
         {{ sensor[0] }}: {{ currentStat['logoControl'][sensor[0]] }}{{ sensor[1] }}<br/>
@@ -71,15 +72,18 @@
 <div class="small-12 medium-3 columns refresh" id="pcoWeb">
     <h4>{% trans %}label.heating{% endtrans %}</h4>
     <ul>
-        <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp'] }}°C</li>
-        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|trans }}</li>
-        <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp'] }}°C</li>
-        <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp'] }}°C</li>
-        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|trans }}</a></li>
-        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|trans }}</a></li>
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|trans != currentStat['pcoWeb']['ppStatus']|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|trans }}){% endif %}</li>
-        <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp'] }}°C</li>
-        <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp'] }}°C</li>
+        <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.storage_temp{% endtrans %}: {{ currentStat['pcoWeb']['storTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.cp_status{% endtrans %}: {{ currentStat['pcoWeb']['cpStatus']|default('---')|trans }}</li>
+        <li>{% trans %}label.pco.set_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['setDistrTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.eff_distr_temp{% endtrans %}: {{ currentStat['pcoWeb']['effDistrTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
+        <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</a></li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}</li>
+        <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>
+        <li>{% trans %}label.pco.pp_source_out_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceOut']|default('---') }}°C</li>
     </ul>
 </div>
 {% endif %}
@@ -253,11 +257,11 @@
             {
                 label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
                 backgroundColor: ['yellow']
-            },
+            }{% if currentStat['conexio']|default(false) %},
             {
                 label: '{% trans %}label.conexio.energy_day{% endtrans %}',
                 backgroundColor: ['orange']
-            }
+            }{% endif %}
             ]
         },
         options: {
@@ -394,6 +398,19 @@
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
                         y: {{ pwData.getData()['effDistrTemp']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {
+                label: '{% trans %}label.pco.storage_temp{% endtrans %}',
+                borderColor: ['darkred'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['storTemp']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]

@@ -4,6 +4,7 @@ namespace AppBundle\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
 use AppBundle\Entity\Settings;
+use AppBundle\Entity\ShellyDataStore;
 
 /**
  * Connector to communicate with Shelly devices
@@ -127,7 +128,7 @@ class ShellyConnector
     public function switchOK($deviceId)
     {
         // check if manual mode is set
-        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port']) == Settings::MODE_MANUAL) {
+        if ($this->em->getRepository('AppBundle:Settings')->getMode($this->getId($this->connectors['shelly'][$deviceId])) == Settings::MODE_MANUAL) {
             return false;
         }
 
@@ -166,7 +167,7 @@ class ShellyConnector
         } else {
             $oppositeStatus = ($currentStatus + 1)%2;
         }
-        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->connectors['shelly'][$deviceId]['ip'].'_'.$this->connectors['shelly'][$deviceId]['port'], $oppositeStatus);
+        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus);
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
@@ -268,6 +269,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'on');
         if (!empty($r)) {
+            $this->storeStatus($device, 1);
             return true;
         } else {
             return false;
@@ -278,6 +280,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'off');
         if (!empty($r)) {
+            $this->storeStatus($device, 0);
             return true;
         } else {
             return false;
@@ -288,6 +291,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'open');
         if (!empty($r)) {
+            $this->storeStatus($device, 4);
             return true;
         } else {
             return false;
@@ -298,6 +302,7 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'close');
         if (!empty($r)) {
+            $this->storeStatus($device, 5);
             return true;
         } else {
             return false;
@@ -369,5 +374,21 @@ class ShellyConnector
             }
         }
         return null;
+    }
+
+    private function storeStatus($device, $status)
+    {
+        $connectorId = $this->getId($device);
+        $shellyEntity = new ShellyDataStore();
+        $shellyEntity->setTimestamp(new \DateTime('now'));
+        $shellyEntity->setConnectorId($connectorId);
+        $shellyEntity->setData($status);
+        $this->em->persist($shellyEntity);
+        $this->em->flush();
+    }
+
+    private function getId($device)
+    {
+        return $device['ip'].'_'.$device['port'];
     }
 }

@@ -19,6 +19,7 @@ parameters:
     secret: ThisTokenIsNotSoSecretChangeIt
 
     locale: en
+    host: myserver.com
     session_cookie_path: /myhome
     instancetitle: This Is My Home
     authenticated_ips:
@@ -31,6 +32,7 @@ parameters:
                 - 'my-alarm@somewhere.com'
         smartfox:
             ip: 192.168.1.140
+            version: pro # optional parameter. Only needs to be set for the SmartFox PRO. If not set, the REG 9TE is assumed.
         pcoweb:
             ip: 192.168.178.20
         conexio:
@@ -64,6 +66,7 @@ parameters:
                         - red # color used in charts
                         - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
                         - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity,  contact
+                        - <<extended settings>> # optional; valid choice for contact sensors: inverted (inverts the open / close logic)
                     -
                         - 'Relative humidity inside'
                         - '%'
@@ -77,17 +80,20 @@ parameters:
                         - 'Window XY'
                         - contact # if set to contact, a warning will be shown if open
         edimax:
-            '192.168.55.2':
+            -
                 name: 'Plug 1'
+                ip: '192.168.55.2'
                 username: admin
                 password: 1234
                 nominalPower: 500 # max. expected power in Watt consumed by the device
                 on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>55'
+                        'mobilealerts:XXXXXXXXXXXX:1': 'rain>1.5' # for rain sensors, a condition can be set for "more mm rain than during the last 15 minutes"
                 lowRateOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                        'outsideTemp': '>20' # valid syntax: '>X'  /  '<X'
                         'openweathermap:currentClouds': '<15' # note: if several conditions are set within one conditions set, all of them must be fulfilled
                     -
                         'openweathermap:currentMain': 'rain' # note: several sets of conditions can be defined. if at least one set is fulfilled, the overall condition is fulfilled
@@ -95,13 +101,23 @@ parameters:
                 forceOn:
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>72'
+                    -
+                        'mystrom:192.168.55.6': true # use motion sensors to enable / disable other devices (valid choices are true / false)
+                        'alarm': true # if alarm is set to true, this condition is only true while alarm mode is activated
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
+                minRunTime: 120 # minimal runtime in minutes. If not reached until begin of low energy rate and it is evening (P.M.), the device will be turned on (forceOn)
+                                # note the maximum is given by the time between low rate start and midnight
         mystrom:
-            '192.168.55.3':
+            -
+                ip: '192.168.55.3'
                 nominalPower: 100
                 #other parameters such as lowRateOn and forceOn identical to edimax
+            -
+                ip: '192.168.55.6'
+                name: 'presence'
+                type: 'motion' # valid types are 'relay' (= default) and 'motion' (motion sensors may be used for alarms and as a condition)
         shelly:
             -
                 name: Storen Schlafzimmer
@@ -112,7 +128,7 @@ parameters:
                 minWaitTime: 120 # in minutes
                 autoIntervals: # several intervals for auto control are possible
                     - [08:00,20:00]
-                forceOpen: # other commands: forceClose, forceOn, forceOff
+                forceOpen: # other commands: forceClose, forceOn, forceOff, minRunTime
                     -
                         'mobilealerts:072D1F97F48B:1': '>24'
                         'openweathermap:currentClouds': '<15'

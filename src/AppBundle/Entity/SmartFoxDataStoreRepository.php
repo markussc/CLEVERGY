@@ -98,13 +98,18 @@ class SmartFoxDataStoreRepository extends EntityRepository
 
     public function getEnergyToday($ip)
     {
-        $midnight = new \DateTime('today'); // today at midnight (00:00)
-        $now = new \DateTime('now');
-        return $this->getEnergyInterval($ip, 'PvEnergy', $midnight, $now);
+        return $this->getEnergyInterval($ip, 'PvEnergy');
     }
 
-    public function getEnergyInterval($ip, $parameter, $start, $end)
+    public function getEnergyInterval($ip, $parameter, $start = null, $end = null)
     {
+        if ($start === null) {
+            $start = new \DateTime('today'); // today at midnight (00:00)
+        }
+        if ($end === null) {
+            $end = new \DateTime('now');
+        }
+
         $qbStart = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
             ->andWhere('e.timestamp >= :start')

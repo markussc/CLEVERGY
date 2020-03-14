@@ -15,9 +15,9 @@ class SettingsRepository extends EntityRepository
             ->where('s.connectorId = :connectorId')
             ->setParameter('connectorId', $connectorId)
             ->setMaxResults(1);
-        $settings = $qb->getQuery()->getOneOrNullResult();
-        if ($settings) {
-            return ($settings->getMode());
+        $settings = $qb->getQuery()->getResult();
+        if (count($settings)) {
+            return ($settings[0]->getMode());
         } else {
             return Settings::MODE_AUTO;
         }

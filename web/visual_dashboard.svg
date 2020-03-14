@@ -2,8 +2,8 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generiert durch Microsoft Visio, SVG Export visual_dashboard.svg Zeichenblatt-1 -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
-		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="5.81805in" height="4.99096in"
-		viewBox="0 0 418.9 359.349" xml:space="preserve" color-interpolation-filters="sRGB" class="st23">
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="6.21372in" height="4.99096in"
+		viewBox="0 0 447.388 359.349" xml:space="preserve" color-interpolation-filters="sRGB" class="st23">
 	<v:documentProperties v:langID="1031" v:metric="true" v:viewMarkup="false"/>
 
 	<style type="text/css">
@@ -492,7 +492,7 @@
 			<v:textRect cx="51.9918" cy="347.61" width="103.99" height="23.4788"/>
 			<rect x="0" y="335.871" width="103.984" height="23.4788" class="st12"/>
 			<text x="5.96" y="351.21" class="st13" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>basementhumidity</text>		</g>
-		<g id="shape306-109" v:mID="306" v:groupContext="shape" transform="translate(361.044,-15.4113)">
+		<g id="shape306-109" v:mID="306" v:groupContext="shape" transform="translate(328.972,-57.931)">
 			<title>Tabelle.306</title>
 			<desc>ppstatus</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
@@ -828,5 +828,26 @@
 			<v:textRect cx="42.2383" cy="347.61" width="84.48" height="23.4788"/>
 			<rect x="0" y="335.871" width="84.4766" height="23.4788" class="st12"/>
 			<text x="11.11" y="351.21" class="st13" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>outsidetemp</text>		</g>
+		<g id="shape382-231" v:mID="382" v:groupContext="shape" transform="translate(198.031,-32.5684)">
+			<title>Tabelle.382</title>
+			<desc>midtemp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="28.7402" cy="347.61" width="57.49" height="23.4788"/>
+			<rect x="0" y="335.871" width="57.4805" height="23.4788" class="st12"/>
+			<text x="4" y="351.21" class="st13" v:langID="2055"><v:paragraph/><v:tabList/>midtemp</text>		</g>
+		<g id="shape383-234" v:mID="383" v:groupContext="shape" transform="translate(358.061,-34.4522)">
+			<title>Tabelle.383</title>
+			<desc>sourceintemp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="42.2383" cy="347.61" width="84.48" height="23.4788"/>
+			<rect x="0" y="335.871" width="84.4766" height="23.4788" class="st12"/>
+			<text x="8.49" y="351.21" class="st13" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>sourceintemp</text>		</g>
+		<g id="shape384-237" v:mID="384" v:groupContext="shape" transform="translate(362.536,-10.9733)">
+			<title>Tabelle.384</title>
+			<desc>sourceouttemp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="42.2383" cy="347.61" width="84.48" height="23.4788"/>
+			<rect x="0" y="335.871" width="84.4766" height="23.4788" class="st12"/>
+			<text x="4.69" y="351.21" class="st13" v:langID="2055"><v:paragraph v:horizAlign="1"/><v:tabList/>sourceouttemp</text>		</g>
 	</g>
 </svg>

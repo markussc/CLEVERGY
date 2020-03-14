@@ -35,6 +35,12 @@ services:
         arguments:
             $energyLowRate: "%energy_low_rate%"
 
+    AppBundle\Utils\LogicProcessor:
+        public: true
+        arguments:
+            $energyLowRate: "%energy_low_rate%"
+            $connectors: "%connectors%"
+
     AppBundle\Utils\Connectors\:
         resource: '../../src/AppBundle/Utils/Connectors'
         public: true
@@ -42,3 +48,12 @@ services:
             $em: "@doctrine.orm.entity_manager"
             $browser: "@buzz"
             $connectors: "%connectors%"
+
+    AppBundle\Utils\Connectors\MyStromConnector:
+        public: true
+        arguments:
+            $em: "@doctrine.orm.entity_manager"
+            $browser: "@buzz"
+            $connectors: "%connectors%"
+            $host: "%host%"
+            $session_cookie_path: "%session_cookie_path%"

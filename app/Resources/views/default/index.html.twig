@@ -28,6 +28,8 @@
                     // logged out, we should redirect to the login page now
                     showSpinner();
                     window.location = "{{ path('homepage') }}";
+                } else {
+                    $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
                 }
                 $(data).find('.refresh').each(function(){
                     var divId = $(this).attr('id');

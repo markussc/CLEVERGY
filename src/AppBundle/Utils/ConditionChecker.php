@@ -39,14 +39,17 @@ class ConditionChecker
 
     public function checkCondition($device, $type='forceOn')
     {
+        $deviceClass = "EdiMax";
         $conf = $this->edimax->getConfig($device['ip']);
         if (null === $conf) {
             // there is no edimax device with this IP. We check if there is a mystrom device instead
             $conf = $this->mystrom->getConfig($device['ip']);
+            $deviceClass = "MyStrom";
         }
         if (null === $conf) {
             // there is no edimax and mystrom device with this IP. We check if there is a shelly device instead
             $conf = $this->shelly->getConfig($device['ip'], $device['port']);
+            $deviceClass = "Shelly";
         }
         // check for on condition for all energy rates
         if (isset($conf['on']) && $type == 'on') {
@@ -58,6 +61,26 @@ class ConditionChecker
             // if we check for 'on' condition but this is not set, it is implicitely fulfilled
             return true;
         }
+
+        // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
+        $now = new \DateTime("now");
+        if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
+            $runTime = null;
+            if ($deviceClass == "EdiMax") {
+                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "MyStrom") {
+                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($device['ip']);
+            } elseif($deviceClass == "Shelly") {
+                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($device['ip']);
+            }
+            if ($runTime !== null && $runTime < $conf['minRunTime']) {
+                if ($type !== 'forceOff') {
+                    // in case we check an "activate" condition, we want to return true
+                    return true;
+                }
+            }
+        }
+
         // check for force conditions for all energy rates
         if ($type == 'forceOn' && isset($conf['forceOn'])) {
             if ($this->processConditions($conf['forceOn'])) {
@@ -129,19 +152,29 @@ class ConditionChecker
                 $maData = $this->mobilealerts->getAllLatest();
                 $sensorData = $maData[$condArr[1]][$condArr[2]];
                 // check if > or < should be checked
-                if (strpos($condition, '>') !== false) {
-                    // we have larger than condition
-                    $condition = str_replace('>', '', $condition);
-                    if (floatval($sensorData['value']) > floatval($condition)) {
+                if (strpos($condition, 'rain') !== false) {
+                    // we check for rain (more than x)
+                    $condition = floatval(str_replace('rain>', '', $condition));
+                    $rain = $this->em->getRepository("AppBundle:MobileAlertsDataStore")->getDiffLast60Min($condArr[1]);
+                    if ($rain > strtolower($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
                         break;
                     }
-                } else {
+                } elseif (strpos($condition, '<') !== false){
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
                     if (floatval($sensorData['value']) < floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    $condition = str_replace('>', '', $condition);
+                    if (floatval($sensorData['value']) > floatval($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
@@ -203,6 +236,49 @@ class ConditionChecker
                         $fulfilled = false;
                         break;
                     }
+                }
+            }
+            if (strpos($condArr[0], 'outsideTemp')===0) {
+                $pcoweb = $this->pcoweb->getAllLatest();
+                $outsideTemp = $pcoweb['outsideTemp'];
+                $tempData = str_replace('<', '', str_replace('>', '', $condition));
+                // check if > or < should be checked
+                if (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    if ($outsideTemp > $tempData) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, '<') !== false) {
+                    // we have a smaller than condition
+                    if ($outsideTemp < $tempData) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                }
+            }
+            if ($condArr[0] == 'mystrom') {
+                $status = $this->em->getRepository("AppBundle:MyStromDataStore")->getLatest($condArr[1]);
+                // we only have equal condition (true / false)
+                if ($status == $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
+                }
+            }
+            if ($condArr[0] == 'alarm') {
+                $status = $this->em->getRepository("AppBundle:Settings")->getMode('alarm');
+                // we only have equal condition (true / false)
+                if ($status == $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
                 }
             }
         }

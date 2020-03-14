@@ -27,7 +27,11 @@ class PcoWebConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        $this->ip = $connectors['pcoweb']['ip'];
+        $this->browser->getClient()->setTimeout(10);
+        $this->ip = null;
+        if (array_key_exists('pcoweb', $connectors)) {
+            $this->ip = $connectors['pcoweb']['ip'];
+        }
         $this->basePath = 'http://' . $this->ip;
     }
 
@@ -57,6 +61,10 @@ class PcoWebConnector
             'ppMode' => $this->ppModeToString($responseArr['PCO']['INTEGER']['VARIABLE'][13]['VALUE']),
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
+            'hwHist' => $responseArr['PCO']['INTEGER']['VARIABLE'][43]['VALUE'],
+            'storTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][9]['VALUE'],
+            'ppSourceIn' => $responseArr['PCO']['ANALOG']['VARIABLE'][5]['VALUE'],
+            'ppSourceOut' => $responseArr['PCO']['ANALOG']['VARIABLE'][6]['VALUE'],
         ];
         } catch (\Exception $e) {
           return false;
@@ -85,6 +93,9 @@ class PcoWebConnector
                 break;
             case 'hc2':
                 $this->setHeatCircle2($command);
+                break;
+            case 'cpAutoMode':
+                $this->setCpAutoMode($command);
                 break;
         }
         
@@ -142,6 +153,22 @@ class PcoWebConnector
         }
     }
 
+    private function setCpAutoMode($value)
+    {
+        // set mode
+        $data['?script:var(0,1,131,0,1)'] = $value;
+
+        $headers = [
+            'Content-Type' => 'application/x-www-form-urlencoded;',
+        ];
+        // post request
+        try {
+            $response = $this->browser->post($this->basePath . '/http/index/j_settings_pumpcontrol.html', $headers, http_build_query($data))->getContent();
+        } catch (\Exception $e) {
+        // do nothing
+        }
+    }
+
     private function ppModeToString($mode)
     {
         switch ($mode) {
@@ -166,6 +193,8 @@ class PcoWebConnector
                 return 'label.pco.mode.auto';
             case Settings::MODE_MANUAL:
                 return 'label.pco.mode.manual';
+            case Settings::MODE_HOLIDAY:
+                return 'label.pco.mode.holiday';
         }
         return 'undefined';
     }

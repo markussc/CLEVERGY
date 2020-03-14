@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Settings;
+use AppBundle\Utils\LogicProcessor;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -152,6 +153,11 @@ class DefaultController extends Controller
                     } else {
                         $connectorId = $command[2];
                     }
+                    if ($connectorId == 'alarm')
+                    {
+                        // make sure all mystrom PIR devices have their action URL set correctly
+                        $this->get('AppBundle\Utils\Connectors\MyStromConnector')->activateAllPIR();
+                    }
                     $settings = $this->getDoctrine()->getManager()->getRepository('AppBundle:Settings')->findOneByConnectorId($connectorId);
                     if (!$settings) {
                         $settings = new Settings();
@@ -213,6 +219,8 @@ class DefaultController extends Controller
         $today = new \DateTime('today');
         $thisWeek = new \DateTime('monday this week midnight');
         $thisMonth = new \DateTime('first day of this month midnight');
+        $lastYearMonth = new \DateTime('first day of this month midnight');
+        $lastYearMonth = $lastYearMonth->sub(new \DateInterval('P1Y'));
         $thisYear = new \DateTime('first day of january this year midnight');
         $lastYearPart = new \DateTime();
         $lastYearPart = $lastYearPart->sub(new \DateInterval('P1Y'));
@@ -223,6 +231,7 @@ class DefaultController extends Controller
             'yesterday',
             'week',
             'month',
+            'lastYearMonth',
             'year',
             'lastYearPart',
             'lastYear',
@@ -233,6 +242,7 @@ class DefaultController extends Controller
                 'pv_yesterday' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $yesterday, $today),
                 'pv_week' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisWeek, $now),
                 'pv_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisMonth, $now),
+                'pv_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYearMonth, $lastYearPart),
                 'pv_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisYear, $now),
                 'pv_lastYearPart' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $lastYearPart),
                 'pv_lastYear' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $thisYear),
@@ -244,6 +254,8 @@ class DefaultController extends Controller
                 'energy_out_week' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisWeek, $now),
                 'energy_in_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisMonth, $now),
                 'energy_out_month' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisMonth, $now),
+                'energy_in_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYearMonth, $lastYearPart),
+                'energy_out_lastYearMonth' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYearMonth, $lastYearPart),
                 'energy_in_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisYear, $now),
                 'energy_out_year' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisYear, $now),
                 'energy_in_lastYearPart' => $em->getRepository('AppBundle:SmartFoxDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYear, $lastYearPart),
@@ -258,6 +270,7 @@ class DefaultController extends Controller
                 'energy_yesterday' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $yesterday, $today),
                 'energy_week' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisWeek, $now),
                 'energy_month' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisMonth, $now),
+                'energy_lastYearMonth' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYearMonth, $lastYearPart),
                 'energy_year' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $thisYear, $now),
                 'energy_lastYearPart' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $lastYearPart),
                 'energy_lastYear' => $em->getRepository('AppBundle:ConexioDataStore')->getEnergyInterval($this->get('AppBundle\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $thisYear),
@@ -289,9 +302,11 @@ class DefaultController extends Controller
 
         $maValues = [];
         foreach ($currentStat['mobileAlerts'] as $maDevice) {
-            foreach ($maDevice as $maSensor) {
-                if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
-                    $maValues[$maSensor['usage']] = $maSensor['value'];
+            if (is_array($maDevice)) {
+                foreach ($maDevice as $maSensor) {
+                    if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
+                        $maValues[$maSensor['usage']] = $maSensor['value'];
+                    }
                 }
             }
         }
@@ -315,8 +330,8 @@ class DefaultController extends Controller
         } elseif (isset($currentStat['logoControl'])) {
             $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . " °C";
             $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . " °C";
-            $hightemp = "";
-            $lowtemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
+            $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
+            $lowtemp = "";
         } else {
             $solpower = "";
             $soltemp = "";
@@ -355,7 +370,14 @@ class DefaultController extends Controller
         } else {
             $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
         }
-        
+
+        if ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on") {
+            $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']." °C";
+            $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']." °C";
+        } else {
+            $sourceintemp = "";
+            $sourceouttemp = "";
+        }
         // write current values into the svg
         $labels = [
             "pvpower",
@@ -374,7 +396,10 @@ class DefaultController extends Controller
             "basementtemp",
             "basementhumidity",
             "hightemp",
+            "midtemp",
             "lowtemp",
+            "sourceintemp",
+            "sourceouttemp"
         ];
         $values = [
             $pvpower,
@@ -393,7 +418,10 @@ class DefaultController extends Controller
             $basementtemp,
             $basementhumidity,
             $hightemp,
+            $currentStat['pcoWeb']['storTemp']." °C",
             $lowtemp,
+            $sourceintemp,
+            $sourceouttemp,
         ];
 
         $fileContent = str_replace($labels, $values, $fileContent);
@@ -420,7 +448,7 @@ class DefaultController extends Controller
     {
         $currentStat = [];
         if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll(true);
+            $currentStat['smartFox'] = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
             $currentStat['pcoWeb'] = $this->get('AppBundle\Utils\Connectors\PcoWebConnector')->getAllLatest();
@@ -448,5 +476,25 @@ class DefaultController extends Controller
         }
 
         return $currentStat;
+    }
+
+    /**
+     * trigger by external event
+     * @Route("/trigger/{deviceId}", name="trigger")
+     */
+    public function triggerAction(Request $request, LogicProcessor $logic, $deviceId)
+    {
+        // init the mystrom device
+        $logic->initMystrom($deviceId);
+
+        // execute auto actions where reasonable
+        $logic->autoActionsEdimax();
+        $logic->autoActionsMystrom();
+        $logic->autoActionsShelly();
+
+        // trigger the alarms
+        $logic->processAlarms();
+
+        return new JsonResponse(['success' => true]);
     }
 }
