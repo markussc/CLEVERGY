@@ -53,11 +53,11 @@ class MobileAlertsDataStoreRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function getDiffLast15Min($id)
+    public function getDiffLast60Min($id)
     {
         $last = $this->getLatest($id);
         $before = new \DateTime();
-        $interval = new \DateInterval("PT15M");
+        $interval = new \DateInterval("PT60M");
         $interval->invert = 1;
         $before->add($interval);
         $history = $this->getHistory($id, $before, new \DateTime());

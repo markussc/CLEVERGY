@@ -481,7 +481,7 @@ class LogicProcessor
 
             // heat storage is low or net power is not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
             if ($heatStorageMidTemp < 33 || ($avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
-                if (!$smartFoxHighPower && (((!$isSummer || $avgClouds > 25 || \date('G') > 12) && $avgPvPower > 1300) || ($isSummer && $avgPvPower > 3000) )) {
+                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 10) || \date('G') > 12) && $avgPvPower > 1300) || ($isSummer && $avgPvPower > 3000) )) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
                     // - winter, cloudy or later than 12am together with avgPvPower > 1300 W
@@ -621,11 +621,11 @@ class LogicProcessor
                 $log[] = "high energy rate, set high hwHysteresis (12)";
                 $this->pcoweb->executeCommand('hc1', 25);
                 $log[] = "normalize hc1 (set hc1=25) during high energy rate";
-                if (($isSummer || $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
+                if ((($isSummer && $insideTemp > ($minInsideTemp + 1))|| $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate";
                 }
-                if (!$isSummer && ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
+                if ((!$isSummer || $insideTemp < ($minInsideTemp + 1) ) && ($insideTemp < $maxInsideTemp || $ppMode === PcoWebConnector::MODE_HOLIDAY) && $ppMode !== PcoWebConnector::MODE_2ND) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND due to high energy rate";
                 }
