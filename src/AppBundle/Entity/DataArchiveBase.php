@@ -9,11 +9,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Base class for custom field tables
  *
  * @ORM\Entity
- * @ORM\Table(name="data_store", indexes={@ORM\Index(name="timestamp_idx", columns={"timestamp"}),@ORM\Index(name="connector_idx", columns={"connector_id"})})
+ * @ORM\Table(name="data_archive", indexes={@ORM\Index(name="timestamp_idx", columns={"timestamp"}),@ORM\Index(name="connector_idx", columns={"connector_id"})})
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discr_type", type="string")
  */
-abstract class DataStoreBase
+abstract class DataArchiveBase
 {
     /**
      * @var integer
@@ -30,7 +30,7 @@ abstract class DataStoreBase
      * @ORM\Column(type="string", name="connector_id", nullable=false)
      * @Assert\NotBlank()
      */
-    protected $connectorId;
+    private $connectorId;
 
     /**
      * Get id
@@ -72,7 +72,7 @@ abstract class DataStoreBase
      *
      * @ORM\Column(type="datetime")
      */
-    protected $timestamp;
+    private $timestamp;
 
     /**
      * Set the timestamp.
