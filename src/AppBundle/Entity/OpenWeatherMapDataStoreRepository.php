@@ -2,12 +2,10 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * OpenWeatherMapDataStoreRepository
  */
-class OpenWeatherMapDataStoreRepository extends EntityRepository
+class OpenWeatherMapDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($id)
     {

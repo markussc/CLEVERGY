@@ -2,12 +2,10 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * MyStromDataStoreRepository
  */
-class MyStromDataStoreRepository extends EntityRepository
+class MyStromDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($ip, $status = -1)
     {

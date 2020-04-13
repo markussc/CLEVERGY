@@ -5,14 +5,12 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Entity\PcoWebDataStoreRepository")
+ * @ORM\Entity()
  */
-class PcoWebDataStore extends DataStoreBase
+class OpenWeatherMapDataArchive extends DataArchiveBase
 {
-    protected $archiveClass = PcoWebDataArchive::class;
-
     /**
-     * @var array
+     * @var bool
      *
      * @ORM\Column(type="json_array")
      */
@@ -23,7 +21,7 @@ class PcoWebDataStore extends DataStoreBase
      *
      * @param array $data
      *
-     * @return PcoWebDataStorage $this
+     * @return OpenWeatherMapDataStorage $this
      */
     public function setData($data = array())
     {

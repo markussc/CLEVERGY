@@ -2,12 +2,10 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * PcoWebDataStoreRepository
  */
-class PcoWebDataStoreRepository extends EntityRepository
+class PcoWebDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($ip)
     {
@@ -23,45 +21,5 @@ class PcoWebDataStoreRepository extends EntityRepository
         } else {
             return $latest[0]->getData();
         }
-    }
-
-    public function getLatestNotStatus($ip, $notStatus)
-    {
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
-            ->andWhere('e.jsonValue NOT LIKE :status')
-            ->orderBy('e.timestamp', 'desc')
-            ->setParameter('ip', $ip)
-            ->setParameter('status', '%"' . $notStatus . '"%')
-            ->setMaxResults(1);
-        return $qb->getQuery()->getResult();
-    }
-
-    public function getHistoryLast24h($ip)
-    {
-        $start = new \DateTime();
-        $interval = new \DateInterval("PT24H");
-        $interval->invert = 1;
-        $start->add($interval);
-
-        $end = new \DateTime();
-
-        return $this->getHistory($ip, $start, $end);
-    }
-
-    public function getHistory($ip, \DateTime $start, \DateTime $end = null)
-    {
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
-            ->andWhere('e.timestamp >= :start')
-            ->setParameter('start', $start)
-            ->setParameter('ip', $ip)
-            ->orderBy('e.timestamp', 'asc');
-        if ($end) {
-            $qb->andWhere('e.timestamp <= :end')
-                ->setParameter('end', $end);
-        }
-
-        return $qb->getQuery()->getResult();
     }
 }

@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class LogoControlDataStore extends DataStoreBase
 {
+    protected $archiveClass = LogoControlDataArchive::class;
+
     /**
      * @var array
      *

@@ -5,12 +5,10 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Entity\PcoWebDataStoreRepository")
+ * @ORM\Entity()
  */
-class PcoWebDataStore extends DataStoreBase
+class ConexioDataArchive extends DataArchiveBase
 {
-    protected $archiveClass = PcoWebDataArchive::class;
-
     /**
      * @var array
      *
@@ -23,7 +21,7 @@ class PcoWebDataStore extends DataStoreBase
      *
      * @param array $data
      *
-     * @return PcoWebDataStorage $this
+     * @return ConexioDataStorage $this
      */
     public function setData($data = array())
     {

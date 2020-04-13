@@ -2,12 +2,10 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * ShellyDataStoreRepository
  */
-class ShellyDataStoreRepository extends EntityRepository
+class ShellyDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($connectorId, $status = -1)
     {

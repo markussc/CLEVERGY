@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -12,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="data_store", indexes={@ORM\Index(name="timestamp_idx", columns={"timestamp"}),@ORM\Index(name="connector_idx", columns={"connector_id"})})
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discr_type", type="string")
+ * @ORM\HasLifecycleCallbacks
  */
 abstract class DataStoreBase
 {
@@ -31,6 +33,12 @@ abstract class DataStoreBase
      * @Assert\NotBlank()
      */
     protected $connectorId;
+
+    /**
+     *
+     * @var class
+     */
+    protected $archiveClass;
 
     /**
      * Get id
@@ -101,6 +109,42 @@ abstract class DataStoreBase
     public function isEmpty()
     {
         return empty($this->getData());
+    }
+
+    /**
+    * @ORM\PreRemove
+    * Will be invoked when EntityManager::remove is called, 
+    * to persist a copy of the Entity in the archive table. 
+    */
+    public function onPreRemove(LifecycleEventArgs $eventArgs)
+    {
+        $archive = self::createArchive($this);
+        if ($archive) {
+            $eventArgs->getEntityManager()->persist($archive);
+        }
+    }
+
+    /**
+    * Returns an instance of XXXDataArchive with all class properties copied. 
+    * @param XXXDataStore $item - the Item to copy properties from 
+    * @return XXXDataArchive
+    */
+    protected static function createArchive($item)
+    {
+        $archive = null;
+        if (isset($item->archiveClass)) {
+            $archive = new $item->archiveClass;
+            foreach (get_object_vars($item) as $key => $value) {
+                $setter = 'set' . ucfirst($key);
+                if (is_callable([$archive, $setter])) {
+                    $archive->$setter($value);
+                }
+            }
+            // set data
+            $archive->setData($item->getData());
+        }
+
+      return $archive;
     }
 
     /**

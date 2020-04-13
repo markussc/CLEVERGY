@@ -2,12 +2,10 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\EntityRepository;
-
 /**
  * EdiMaxDataStoreRepository
  */
-class EdiMaxDataStoreRepository extends EntityRepository
+class EdiMaxDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($ip, $status = -1)
     {
