@@ -497,4 +497,20 @@ class DefaultController extends Controller
 
         return new JsonResponse(['success' => true]);
     }
+
+    /**
+     * interface for external variable requests
+     * currently only supports requests for netPower
+     * @Route("/stat/{variable}", name="trigger")
+     */
+    public function statAction(Request $request, $variable)
+    {
+        $value = null;
+        if ($variable === 'netPower' && $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getIp()) {
+            $smartFox = $this->get('AppBundle\Utils\Connectors\SmartFoxConnector')->getAll();
+            $value = $smartFox['power_io'];
+        }
+
+        return new JsonResponse($value);
+    }
 }
