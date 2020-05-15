@@ -60,17 +60,22 @@ class ConexioConnector
         $url = $this->basePath . '/medius_val.xml';
         $response = $this->browser->get($url);
         $statusCode = $response->getStatusCode();
-        if ($statusCode == 401) {
-            $response = $this->browser->get($url)->getContent(); // TODO: this does not work correctly if invoked from the command (digest auth not working)
-        } else {
-            $response = $response->getContent();
-        }
+        $data = null;
+        try {
+            if ($statusCode == 401) {
+                $response = $this->browser->get($url)->getContent(); // TODO: this does not work correctly if invoked from the command (digest auth not working)
+            } else {
+                $response = $response->getContent();
+            }
 
-        $data = $this->extractData($response);
+            $data = $this->extractData($response);
 
-        // if requested, add calculated data
-        if ($calculatedData) {
-            $data['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+            // if requested, add calculated data
+            if ($calculatedData) {
+                $data['energyToday'] = $this->em->getRepository('AppBundle:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+            }
+        } catch (\Exception $e) {
+            return false;
         }
 
         return $data;
