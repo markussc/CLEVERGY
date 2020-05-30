@@ -35,21 +35,26 @@ class ConditionChecker
         $this->shelly = $shelly;
         $this->pcoweb = $pcoweb;
         $this->energyLowRate = $energyLowRate;
+        $this->deviceClass = null;
+        $this->ip = null;
+        $this->port = null;
     }
 
     public function checkCondition($device, $type='forceOn')
     {
-        $deviceClass = "EdiMax";
-        $conf = $this->edimax->getConfig($device['ip']);
+        $this->deviceClass = "EdiMax";
+        $this->ip = $device['ip'];
+        $conf = $this->edimax->getConfig($this->ip);
         if (null === $conf) {
             // there is no edimax device with this IP. We check if there is a mystrom device instead
-            $conf = $this->mystrom->getConfig($device['ip']);
-            $deviceClass = "MyStrom";
+            $conf = $this->mystrom->getConfig($this->ip);
+            $this->deviceClass = "MyStrom";
         }
         if (null === $conf) {
             // there is no edimax and mystrom device with this IP. We check if there is a shelly device instead
-            $conf = $this->shelly->getConfig($device['ip'], $device['port']);
-            $deviceClass = "Shelly";
+            $conf = $this->shelly->getConfig($this->ip, $device['port']);
+            $this->port = $device['port'];
+            $this->deviceClass = "Shelly";
         }
         // check for on condition for all energy rates
         if (isset($conf['on']) && $type == 'on') {
@@ -67,11 +72,11 @@ class ConditionChecker
         if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
             $runTime = null;
             if ($deviceClass == "EdiMax") {
-                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($device['ip']);
+                $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($this->ip);
             } elseif($deviceClass == "MyStrom") {
-                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($device['ip']);
+                $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($this->ip);
             } elseif($deviceClass == "Shelly") {
-                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($device['ip']);
+                $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($this->ip);
             }
             if ($runTime !== null && $runTime < $conf['minRunTime']) {
                 if ($type !== 'forceOff') {
@@ -275,6 +280,24 @@ class ConditionChecker
                 $status = $this->em->getRepository("AppBundle:Settings")->getMode('alarm');
                 // we only have equal condition (true / false)
                 if ($status == $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
+                }
+            }
+            if ($condArr[0] == 'runTime') {
+                $runTime = null;
+                if ($this->deviceClass == 'EdiMax') {
+                    $runTime = $this->em->getRepository("AppBundle:EdiMaxDataStore")->getActiveDuration($this->ip);
+                }
+                if ($this->deviceClass == 'MyStrom') {
+                    $runTime = $this->em->getRepository("AppBundle:MyStromDataStore")->getActiveDuration($this->ip);
+                }
+                if ($this->deviceClass == 'Shelly') {
+                    $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($this->ip);
+                }
+                if ($runTime !== null && $runTime > $condition) {
                     $fulfilled = true;
                 } else {
                     $fulfilled = false;

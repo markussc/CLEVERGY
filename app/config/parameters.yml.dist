@@ -107,6 +107,8 @@ parameters:
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
+                    -
+                        'runTime': 120 # value in minutes after which the condition is true (resetted at midnight)
                 minRunTime: 120 # minimal runtime in minutes. If not reached until begin of low energy rate and it is evening (P.M.), the device will be turned on (forceOn)
                                 # note the maximum is given by the time between low rate start and midnight
         mystrom:
