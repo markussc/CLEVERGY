@@ -297,7 +297,7 @@ class ConditionChecker
                 if ($this->deviceClass == 'Shelly') {
                     $runTime = $this->em->getRepository("AppBundle:ShellyDataStore")->getActiveDuration($this->ip);
                 }
-                if ($runTime !== null && $runTime > $condition) {
+                if ($runTime !== null && intval($runTime) > intval($condition)) {
                     $fulfilled = true;
                 } else {
                     $fulfilled = false;
