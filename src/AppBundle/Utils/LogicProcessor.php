@@ -162,8 +162,11 @@ class LogicProcessor
                     }
                     // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
                     if (!$edimax['status']['val'] && $edimax['nominalPower'] < -1*$netPower && $edimax['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($edimax, 'on') && $this->edimax->switchOK($deviceId)) {
-                        $this->edimax->executeCommand($deviceId, 1);
-                        break;
+                        if($this->edimax->executeCommand($deviceId, 1)) {
+                            break;
+                        } else {
+                            continue;
+                        }
                     }
                 }
             }
@@ -254,8 +257,11 @@ class LogicProcessor
                     }
                     // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
                     if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($mystrom, 'on') && $this->mystrom->switchOK($deviceId)) {
-                        $this->mystrom->executeCommand($deviceId, 1);
-                        break;
+                        if($this->mystrom->executeCommand($deviceId, 1)) {
+                            break;
+                        } else {
+                            continue;
+                        }
                     }
                 }
             }
