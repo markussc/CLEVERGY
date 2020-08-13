@@ -38,6 +38,9 @@ class ShellyConnector
         $now = new \DateTime();
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
+                if (!array_key_exists('port', $device)) {
+                    $device['port'] = 0;
+                }
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
                 if (isset($device['nominalPower'])) {
                     $nominalPower = $device['nominalPower'];
@@ -49,16 +52,25 @@ class ShellyConnector
                 } else {
                     $autoIntervals = [];
                 }
+                $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']);
+                if (method_exists($latest, "getData")) {
+                    $status = $latest->getData();
+                    $timestamp = $latest->getTimestamp();
+                } else {
+                    $status = 0;
+                    $timestamp = 0;
+                }
                 $results[] = [
                     'ip' => $device['ip'],
                     'port' => $device['port'],
                     'name' => $device['name'],
                     'type' => $device['type'],
-                    'status' => $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']),
+                    'status' => $status,
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+                    'timestamp' => $timestamp,
                 ];
             }
         }
@@ -73,6 +85,9 @@ class ShellyConnector
         $now = new \DateTime();
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
+                if (!array_key_exists('port', $device)) {
+                    $device['port'] = 0;
+                }
                 $status = $this->getStatus($device);
                 $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
                 if (isset($device['nominalPower'])) {
@@ -95,6 +110,7 @@ class ShellyConnector
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+                    'timestamp' => new \DateTime('now'),
                 ];
             }
         }
@@ -221,6 +237,12 @@ class ShellyConnector
                 return $this->createStatus(1);
             } else {
                 return $this->createStatus(0);
+            }
+        } elseif (!empty($r) && $device['type'] == 'door') {
+            if (array_key_exists('sensor', $r) && $r['sensor']['state'] == "open") {
+                return $this->createStatus(2);
+            } else {
+                return $this->createStatus(3);
             }
         }
     }
@@ -366,10 +388,10 @@ class ShellyConnector
         }
     }
 
-    public function getConfig($ip, $port)
+    public function getConfig($ip, $port = null)
     {
         foreach ($this->connectors['shelly'] as $device) {
-            if ($device['ip'] == $ip && $device['port'] == $port) {
+            if ($device['ip'] == $ip && ($port === null || $device['port'] == $port)) {
                 return $device;
             }
         }
@@ -390,5 +412,46 @@ class ShellyConnector
     private function getId($device)
     {
         return $device['ip'].'_'.$device['port'];
+    }
+
+    public function getAlarms()
+    {
+        $alarms = [];
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $deviceConf) {
+                if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'door') {
+                    $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($deviceConf['ip']);
+                    if (method_exists($latest, "getData")) {
+                        $status = $latest->getData();
+                        $timestamp = $latest->getTimestamp();
+                    } else {
+                        $status = 3; // status = open
+                        $timestamp = 0;
+                    }
+                    $statusObj = $this->createStatus($status);
+                    $alarms[] = [
+                        'name' => $deviceConf['name'],
+                        'state' => $statusObj['label'],
+                        'timestamp' => $timestamp,
+                        'type' => 'door',
+                    ];
+                }
+            }
+        }
+
+        return $alarms;
+    }
+
+    public function doorAvailable()
+    {
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $deviceConf) {
+                if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'door') {
+                    return true;
+                }
+            }
+        }
+
+        return true;
     }
 }

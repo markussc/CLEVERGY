@@ -23,7 +23,7 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
         if (!count($latest)) {
             return 0;
         } else {
-            return $latest[0]->getData();
+            return $latest[0];
         }
     }
 

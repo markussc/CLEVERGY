@@ -328,7 +328,7 @@ class LogicProcessor
                         break;
                     }
                 }
-            } else {
+            } elseif ($shellyConfig['type'] != 'door') {
                 // for switches, check force off and forceOn conditions
                 if($this->conditionchecker->checkCondition($shelly, 'forceOff')) {
                     if ($this->forceOffShelly($deviceId, $shelly)) {
@@ -689,6 +689,9 @@ class LogicProcessor
     public function initShelly()
     {
         foreach ($this->shelly->getAll() as $shelly) {
+            if (!array_key_exists('port', $shelly)) {
+                $shelly['port'] = 0;
+            }
             $shellyEntity = new ShellyDataStore();
             $shellyEntity->setTimestamp(new \DateTime('now'));
             $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
@@ -780,7 +783,8 @@ class LogicProcessor
     {
         $maAlarms = $this->mobilealerts->getAlarms();
         $msAlarms = $this->mystrom->getAlarms();
-        $alarms = array_merge($maAlarms, $msAlarms);
+        $shAlarms = $this->shelly->getAlarms();
+        $alarms = array_merge($maAlarms, $msAlarms, $shAlarms);
         if (count($alarms)) {
             $alarmSetting = $this->em->getRepository('AppBundle:Settings')->findOneByConnectorId('alarm');
             if(!$alarmSetting) {
