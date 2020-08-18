@@ -673,17 +673,25 @@ class LogicProcessor
 
     public function initMystrom($deviceId = null)
     {
-        foreach ($this->mystrom->getAll() as $mystrom) {
-            if ($deviceId && $mystrom['ip'] !== $deviceId) {
-                continue;
+        if ($deviceId !== null) {
+            $device = $this->mystrom->getConfig($deviceId);
+            if ($device) {
+                $mystrom = $this->mystrom->getOne($device);
+                $mystromEntity = new MyStromDataStore();
+                $mystromEntity->setTimestamp(new \DateTime('now'));
+                $mystromEntity->setConnectorId($mystrom['ip']);
+                $mystromEntity->setData($mystrom['status']['val']);
+                $this->em->persist($mystromEntity);
             }
+        }
+        foreach ($this->mystrom->getAll() as $mystrom) {
             $mystromEntity = new MyStromDataStore();
             $mystromEntity->setTimestamp(new \DateTime('now'));
             $mystromEntity->setConnectorId($mystrom['ip']);
             $mystromEntity->setData($mystrom['status']['val']);
             $this->em->persist($mystromEntity);
-            $this->em->flush();
         }
+        $this->em->flush();
     }
 
     public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port
