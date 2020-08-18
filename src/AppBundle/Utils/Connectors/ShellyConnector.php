@@ -18,13 +18,15 @@ class ShellyConnector
     protected $browser;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->browser = $browser;
         $this->connectors = $connectors;
         // set timeout for buzz browser client
         $this->browser->getClient()->setTimeout(3);
+        $this->host = $host;
+        $this->session_cookie_path = $session_cookie_path;
     }
 
     /**
@@ -34,44 +36,10 @@ class ShellyConnector
     public function getAllLatest()
     {
         $results = [];
-        $today = new \DateTime('today');
-        $now = new \DateTime();
+
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
-                if (!array_key_exists('port', $device)) {
-                    $device['port'] = 0;
-                }
-                $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
-                if (isset($device['nominalPower'])) {
-                    $nominalPower = $device['nominalPower'];
-                } else {
-                    $nominalPower = 0;
-                }
-                if (isset($device['autoIntervals'])) {
-                    $autoIntervals = $device['autoIntervals'];
-                } else {
-                    $autoIntervals = [];
-                }
-                $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']);
-                if (method_exists($latest, "getData")) {
-                    $status = $latest->getData();
-                    $timestamp = $latest->getTimestamp();
-                } else {
-                    $status = 0;
-                    $timestamp = 0;
-                }
-                $results[] = [
-                    'ip' => $device['ip'],
-                    'port' => $device['port'],
-                    'name' => $device['name'],
-                    'type' => $device['type'],
-                    'status' => $status,
-                    'nominalPower' => $nominalPower,
-                    'autoIntervals' => $autoIntervals,
-                    'mode' => $mode,
-                    'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
-                    'timestamp' => $timestamp,
-                ];
+                $results[] = $this->getOneLatest($device);
             }
         }
 
@@ -81,46 +49,116 @@ class ShellyConnector
     public function getAll()
     {
         $results = [];
-        $today = new \DateTime('today');
-        $now = new \DateTime();
+
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
-                if (!array_key_exists('port', $device)) {
-                    $device['port'] = 0;
-                }
-                $status = $this->getStatus($device);
-                $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
-                if (isset($device['nominalPower'])) {
-                    $nominalPower = $device['nominalPower'];
+                if ($device['type'] == 'door') {
+                    // we do not have instant access to door sensors
+                    $results[] = $this->getOneLatest($device);
                 } else {
-                    $nominalPower = 0;
+                    $results[] = $this->getOne($device);
                 }
-                if (isset($device['autoIntervals'])) {
-                    $autoIntervals = $device['autoIntervals'];
-                } else {
-                    $autoIntervals = [];
+                if ($device['type'] == 'roller') {
+                    // set configuration for action links
+                    $this->queryShelly($device, 'configureOpen');
+                    $this->queryShelly($device, 'configureClose');
                 }
-                $results[] = [
-                    'ip' => $device['ip'],
-                    'port' => $device['port'],
-                    'name' => $device['name'],
-                    'type' => $device['type'],
-                    'status' => $status,
-                    'nominalPower' => $nominalPower,
-                    'autoIntervals' => $autoIntervals,
-                    'mode' => $mode,
-                    'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
-                    'timestamp' => new \DateTime('now'),
-                ];
             }
         }
 
         return $results;
     }
 
+    public function getOne($device)
+    {
+        $today = new \DateTime('today');
+        $now = new \DateTime();
+
+        if (!array_key_exists('port', $device)) {
+            $device['port'] = 0;
+        }
+        $status = $this->getStatus($device);
+        $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
+        if (isset($device['nominalPower'])) {
+            $nominalPower = $device['nominalPower'];
+        } else {
+            $nominalPower = 0;
+        }
+        if (isset($device['autoIntervals'])) {
+            $autoIntervals = $device['autoIntervals'];
+        } else {
+            $autoIntervals = [];
+        }
+
+        return [
+            'ip' => $device['ip'],
+            'port' => $device['port'],
+            'name' => $device['name'],
+            'type' => $device['type'],
+            'status' => $status,
+            'nominalPower' => $nominalPower,
+            'autoIntervals' => $autoIntervals,
+            'mode' => $mode,
+            'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+            'timestamp' => new \DateTime('now'),
+        ];
+    }
+
+    public function getOneLatest($device)
+    {
+        $today = new \DateTime('today');
+        $now = new \DateTime();
+
+        if (!array_key_exists('port', $device)) {
+            $device['port'] = 0;
+        }
+        $mode = $this->em->getRepository('AppBundle:Settings')->getMode($device['ip'].'_'.$device['port']);
+        if (isset($device['nominalPower'])) {
+            $nominalPower = $device['nominalPower'];
+        } else {
+            $nominalPower = 0;
+        }
+        if (isset($device['autoIntervals'])) {
+            $autoIntervals = $device['autoIntervals'];
+        } else {
+            $autoIntervals = [];
+        }
+        $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']);
+        if (method_exists($latest, "getData")) {
+            $status = $latest->getData();
+            $timestamp = $latest->getTimestamp();
+        } else {
+            $status = 0;
+            $timestamp = 0;
+        }
+        return [
+            'ip' => $device['ip'],
+            'port' => $device['port'],
+            'name' => $device['name'],
+            'type' => $device['type'],
+            'status' => $status,
+            'nominalPower' => $nominalPower,
+            'autoIntervals' => $autoIntervals,
+            'mode' => $mode,
+            'activeMinutes' => $this->em->getRepository('AppBundle:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+            'timestamp' => $timestamp,
+        ];
+    }
+
     public function executeCommand($deviceId, $command)
     {
         switch ($command) {
+            case 'configure':
+                if ($this->connectors['shelly'][$deviceId]['type'] == 'roller') {
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureOpen');
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureClose');
+                } elseif ($this->connectors['shelly'][$deviceId]['type'] == 'door') {
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureDark');
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureTwilight');
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureDaylight');
+                    $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureClose');
+                }
+                return;
             case 1:
                 // turn it on
                 return $this->setOn($this->connectors['shelly'][$deviceId]);
@@ -247,7 +285,7 @@ class ShellyConnector
         }
     }
 
-    private function createStatus($status, $position = 100)
+    public function createStatus($status, $position = 100)
     {
         if ($status == 1) {
             return [
@@ -358,6 +396,14 @@ class ShellyConnector
                 case 'stop':
                     $reqUrl = 'roller/'.$device['port'].'?go=stop';
                     break;
+                case 'configureOpen':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
+                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_open_url='.$triggerUrl.'/4';
+                    break;
+                case 'configureClose':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
+                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_close_url='.$triggerUrl.'/5';
+                    break;
             }
         } elseif ($device['type'] == 'relay') {
             switch ($cmd) {
@@ -371,8 +417,27 @@ class ShellyConnector
                     $reqUrl = 'relay/'.$device['port'].'?turn=off';
                     break;
             }
+        } elseif ($device['type'] == 'door') {
+            switch ($cmd) {
+                case 'configureDark':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $reqUrl = 'settings?dark_url='.$triggerUrl;
+                    break;
+                case 'configureTwilight':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $reqUrl = 'settings?twilight_url='.$triggerUrl;
+                    break;
+                case 'configureDaylight':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $reqUrl = 'settings?open_url='.$triggerUrl;
+                    break;
+                case 'configureClose':
+                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
+                    $reqUrl = 'settings?close_url='.$triggerUrl;
+                    break;
+            }
         }
-    
+
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
             $response = $this->browser->get($url);

@@ -686,19 +686,49 @@ class LogicProcessor
         }
     }
 
-    public function initShelly()
+    public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port
     {
-        foreach ($this->shelly->getAll() as $shelly) {
-            if (!array_key_exists('port', $shelly)) {
-                $shelly['port'] = 0;
+        if ($deviceId !== null) {
+            $port = null;
+            $ip_port = explode("_", $deviceId);
+            $ip = $ip_port[0];
+            if (count($ip_port) > 1) {
+                $port = $ip_port[1];
+            } else {
+                $port = null;
             }
-            $shellyEntity = new ShellyDataStore();
-            $shellyEntity->setTimestamp(new \DateTime('now'));
-            $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
-            $shellyEntity->setData($shelly['status']);
-            $this->em->persist($shellyEntity);
-            $this->em->flush();
+            $device = $this->shelly->getConfig($ip, $port);
+            if ($device) {
+                if ($action !== null) {
+                    $shelly = $device;
+                    $shelly['status'] = $this->shelly->createStatus($action);
+                } else {
+                    $shelly = $this->shelly->getOne($device);
+                }
+                if (!array_key_exists('port', $shelly)) {
+                    $shelly['port'] = 0;
+                }
+                $shellyEntity = new ShellyDataStore();
+                $shellyEntity->setTimestamp(new \DateTime('now'));
+                $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
+                $shellyEntity->setData($shelly['status']);
+                $this->em->persist($shellyEntity);
+            }
         }
+        else {
+            foreach ($this->shelly->getAll() as $shelly) {
+                if (!array_key_exists('port', $shelly)) {
+                    $shelly['port'] = 0;
+                }
+
+                $shellyEntity = new ShellyDataStore();
+                $shellyEntity->setTimestamp(new \DateTime('now'));
+                $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
+                $shellyEntity->setData($shelly['status']);
+                $this->em->persist($shellyEntity);
+            }
+        }
+        $this->em->flush();
     }
 
     public function initSmartfox()
@@ -804,5 +834,11 @@ class LogicProcessor
                 }
             }
         }
+    }
+
+    public function configureDevice($deviceId)
+    {
+        // currently only required and available for Shelly Door-Sensors
+        $this->shelly->executeCommand($deviceId, 'configure');
     }
 }
