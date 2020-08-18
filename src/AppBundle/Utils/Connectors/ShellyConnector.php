@@ -485,21 +485,26 @@ class ShellyConnector
         if (array_key_exists('shelly', $this->connectors)) {
             foreach ($this->connectors['shelly'] as $deviceConf) {
                 if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'door') {
-                    $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($deviceConf['ip']);
+                    if (!array_key_exists('port', $deviceConf)) {
+                        $deviceConf['port'] = 0;
+                    }
+                    $latest = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($deviceConf['ip'].'_'.$deviceConf['port']);
                     if (method_exists($latest, "getData")) {
                         $status = $latest->getData();
                         $timestamp = $latest->getTimestamp();
                     } else {
-                        $status = 3; // status = open
+                        $status = $this->createStatus(2); // status = open
                         $timestamp = 0;
                     }
-                    $statusObj = $this->createStatus($status);
-                    $alarms[] = [
-                        'name' => $deviceConf['name'],
-                        'state' => $statusObj['label'],
-                        'timestamp' => $timestamp,
-                        'type' => 'door',
-                    ];
+                    if ($status['val'] !== 3) {
+                        // status = 3 means closed
+                        $alarms[] = [
+                            'name' => $deviceConf['name'],
+                            'state' => $status['label'],
+                            'timestamp' => $timestamp,
+                            'type' => 'door',
+                        ];
+                    }
                 }
             }
         }
