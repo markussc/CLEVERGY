@@ -148,7 +148,7 @@ class ShellyConnector
     public function executeCommand($deviceId, $command)
     {
         switch ($command) {
-            case 'configure':
+            case 100:
                 if ($this->connectors['shelly'][$deviceId]['type'] == 'roller') {
                     $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureOpen');
                     $this->queryShelly($this->connectors['shelly'][$deviceId], 'configureClose');

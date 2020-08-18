@@ -839,6 +839,6 @@ class LogicProcessor
     public function configureDevice($deviceId)
     {
         // currently only required and available for Shelly Door-Sensors
-        $this->shelly->executeCommand($deviceId, 'configure');
+        $this->shelly->executeCommand($deviceId, 100);
     }
 }
