@@ -397,11 +397,11 @@ class ShellyConnector
                     $reqUrl = 'roller/'.$device['port'].'?go=stop';
                     break;
                 case 'configureOpen':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
                     $reqUrl = 'settings/roller/'.$device['port'].'?roller_open_url='.$triggerUrl.'/4';
                     break;
                 case 'configureClose':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
                     $reqUrl = 'settings/roller/'.$device['port'].'?roller_close_url='.$triggerUrl.'/5';
                     break;
             }
@@ -420,19 +420,19 @@ class ShellyConnector
         } elseif ($device['type'] == 'door') {
             switch ($cmd) {
                 case 'configureDark':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
                     $reqUrl = 'settings?dark_url='.$triggerUrl;
                     break;
                 case 'configureTwilight':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
                     $reqUrl = 'settings?twilight_url='.$triggerUrl;
                     break;
                 case 'configureDaylight':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
                     $reqUrl = 'settings?open_url='.$triggerUrl;
                     break;
                 case 'configureClose':
-                    $triggerUrl = 'https://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
                     $reqUrl = 'settings?close_url='.$triggerUrl;
                     break;
             }
