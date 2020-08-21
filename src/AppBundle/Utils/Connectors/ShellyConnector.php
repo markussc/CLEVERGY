@@ -216,12 +216,14 @@ class ShellyConnector
         $currentStatus = $this->getStatus($this->connectors['shelly'][$deviceId])['val'];
 
         // get latest timestamp with opposite status
+        $roller = false;
         if ($this->connectors['shelly'][$deviceId]['type'] == 'roller') {
-            $oppositeStatus = ($currentStatus + 1)%2 + 2;
+            $oppositeStatus = $currentStatus; // for rollers, we check for any other than the current status
+            $roller = true;
         } else {
             $oppositeStatus = ($currentStatus + 1)%2;
         }
-        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus);
+        $oldStatus = $this->em->getRepository('AppBundle:ShellyDataStore')->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus, $roller );
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
