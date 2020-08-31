@@ -12,6 +12,7 @@
         "friendsofsymfony/user-bundle": "~2.0",
         "sensio/buzz-bundle": "^1.1",
         "sensio/framework-extra-bundle": "^4",
+        "symfony/apache-pack": "^1.0",
         "symfony/config": "3.4.*",
         "symfony/console": "3.4.*",
         "symfony/css-selector": "3.4.*",
