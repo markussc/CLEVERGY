@@ -16,5 +16,6 @@ yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 
 ###> OSHANS configuration ###
+/.env.local.dist
 /config/parameters.yaml
 ###< OSHANS configuration ###
