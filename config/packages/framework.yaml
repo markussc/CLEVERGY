@@ -16,8 +16,6 @@ framework:
         cookie_path: "%session_cookie_path%"
     #esi: true
     fragments: true
-    php_errors:
-        log: true
     templating:
         engines: ['twig']
     default_locale: '%env(LOCALE)%'
