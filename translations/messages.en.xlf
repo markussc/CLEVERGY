@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="file.ext">
+        <body>
+            <trans-unit id="label.default.header">
+                <source>label.default.header</source>
+                <target>Dashboard</target>
+            </trans-unit>
+            <trans-unit id="label.energy">
+                <source>label.energy</source>
+                <target>Energy</target>
+            </trans-unit>
+            <trans-unit id="label.heating">
+                <source>label.heating</source>
+                <target>Heating</target>
+            </trans-unit>
+            <trans-unit id="label.climate">
+                <source>label.climate</source>
+                <target>Climate</target>
+            </trans-unit>
+            <trans-unit id="label.devices">
+                <source>label.devices</source>
+                <target>Devices</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.on">
+                <source>label.device.status.on</source>
+                <target>On</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.off">
+                <source>label.device.status.off</source>
+                <target>Off</target>
+            </trans-unit>
+            <trans-unit id="label.pco.outside_temp">
+                <source>label.pco.outside_temp</source>
+                <target>Outside</target>
+            </trans-unit>
+            <trans-unit id="label.pco.water_temp">
+                <source>label.pco.water_temp</source>
+                <target>Warm Water</target>
+            </trans-unit>
+            <trans-unit id="label.pco.storage_temp">
+                <source>label.pco.storage_temp</source>
+                <target>Storage Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pre_temp">
+                <source>label.pco.pre_temp</source>
+                <target>Pre Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.back_temp">
+                <source>label.pco.back_temp</source>
+                <target>Back Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.pco.pp_mode">
+                <source>label.pco.pp_mode</source>
+                <target>HP Mode</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.summer">
+                <source>label.pco.ppmode.summer</source>
+                <target>Summer</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.auto">
+                <source>label.pco.ppmode.auto</source>
+                <target>Auto</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.holiday">
+                <source>label.pco.ppmode.holiday</source>
+                <target>Holiday</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.party">
+                <source>label.pco.ppmode.party</source>
+                <target>Party</target>
+            </trans-unit>
+            <trans-unit id="label.pco.ppmode.2nd">
+                <source>label.pco.ppmode.2nd</source>
+                <target>Solar</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.net_power">
+                <source>label.smartfox.net_power</source>
+                <target>Net Power</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.pv_power">
+                <source>label.smartfox.pv_power</source>
+                <target>PV Power</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.int_power">
+                <source>label.smartfox.int_power</source>
+                <target>Power Consumption</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_out_day">
+                <source>label.smartfox.energy_out_day</source>
+                <target>Energy out Today</target>
+            </trans-unit>
+            <trans-unit id="label.smartfox.energy_in_day">
+                <source>label.smartfox.energy_in_day</source>
+                <target>Energy in Today</target>
+            </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_current">
+                <source>label.openweathermap.clouds_current</source>
+                <target>Current Cloudiness</target>
+            </trans-unit>
+            <trans-unit id="label.openweathermap.clouds_next_daylight">
+                <source>label.openweathermap.clouds_next_daylight</source>
+                <target>Upcoming Cloudiness</target>
+            </trans-unit>
+            <trans-unit id="label.dashboard.header">
+                <source>label.dashboard.header</source>
+                <target>Dashboard</target>
+            </trans-unit>
+            <trans-unit id="label.history.header">
+                <source>label.history.header</source>
+                <target>History</target>
+            </trans-unit>
+            <trans-unit id="label.edimax.activation_interval_today">
+                <source>label.edimax.activation_interval_today</source>
+                <target>Activation interval today</target>
+            </trans-unit>
+            <trans-unit id="label.details.header">
+                <source>label.details.header</source>
+                <target>Details</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closed">
+                <source>label.device.status.closed</source>
+                <target>Closed</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.open">
+                <source>label.device.status.open</source>
+                <target>Open</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.opening">
+                <source>label.device.status.opening</source>
+                <target>opening</target>
+            </trans-unit>
+            <trans-unit id="label.device.status.closing">
+                <source>label.device.status.closing</source>
+                <target>closing</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

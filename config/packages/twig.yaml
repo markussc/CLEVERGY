@@ -1,0 +1,13 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    debug: '%kernel.debug%'
+    strict_variables: '%kernel.debug%'
+    globals:
+        locale: '%locale%'
+        connectors: '%connectors%'
+        instancetitle: '%instancetitle%'
+        chromecastConnector: '@App\Utils\Connectors\ChromecastConnector'
+        mobilealertsConnector: '@App\Utils\Connectors\MobileAlertsConnector'
+        mystromConnector: '@App\Utils\Connectors\MyStromConnector'
+        shellyConnector: '@App\Utils\Connectors\ShellyConnector'
+

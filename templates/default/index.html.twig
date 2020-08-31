@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+{% if activePage == "overview" %}
+    {% set details = false %}
+{% else %}
+    {% set details = true %}
+{% endif %}
+   
+{% block body %}
+    {% if details == false %}
+        {% include 'default/contentHomepage.html.twig' %}
+    {% else %}
+        {% include 'default/contentDetails.html.twig' %}
+    {% endif %}
+{% endblock %}
+
+{% block javascriptsembedded %}
+    <script>
+        $(function() {
+            $('.select2').select2();
+        });
+
+        (function worker() {
+            $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
+            $.ajax({
+              url: '{{ path('refresh', {'details': details}) }}', 
+              success: function(data) {
+                if ($(data).find('#loginForm').length > 0) {
+                    // logged out, we should redirect to the login page now
+                    showSpinner();
+                    window.location = "{{ path('homepage') }}";
+                } else {
+                    $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
+                }
+                $(data).find('.refresh').each(function(){
+                    var divId = $(this).attr('id');
+                    $("#" + divId).replaceWith($(this));
+                    $(this).find('.chart').each(function() {
+                        updateChartCallback($(this).find('.chartId').html(), $(this).find('.chartData').html(), $(this).find('.chartColor').html());  
+                    });
+                });
+              },
+              complete: function() {
+               // Schedule the next request when the current one's complete
+               setTimeout(worker, 3000);
+              }
+            });
+        })();
+
+        {% if is_granted('ROLE_OWNER') %}
+        function sendCommand(command)
+        {
+            showSpinner();
+
+            // send command
+            var url = "{{ path('command_exec', {'command': 'command_val'}) }}";
+            url = url.replace('command_val', JSON.stringify(command));
+            $.ajax({
+                url: url,
+                complete: function() {
+                    hideSpinner();
+                }
+            });
+        }
+        {% endif %}
+    </script>
+{% endblock %}

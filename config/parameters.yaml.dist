@@ -1,0 +1,148 @@
+# This file is a "template" of what your parameters.yml file should look like
+# Set parameters here that may be different on each deployment target of the app, e.g. development, staging, production.
+# https://symfony.com/doc/current/best_practices/configuration.html#infrastructure-related-configuration
+parameters:
+    authenticated_ips:
+        192.168.1.3: this.isme@mymailserver.org # the user's expected IP and it's email to be authenticated with. BE CAREFUL WITH THIS!
+    connectors:
+        threema:
+            id: '*XYZ1234'
+            secret: 'mysecret'
+            alarm:
+                - 'my-alarm@somewhere.com'
+        smartfox:
+            ip: 192.168.1.140
+            version: pro # optional parameter. Only needs to be set for the SmartFox PRO. If not set, the REG 9TE is assumed.
+        pcoweb:
+            ip: 192.168.178.20
+        conexio:
+            ip: 192.168.1.100
+            username: admin
+            password: 1234
+            sensors:
+                s1:
+                    - Collector # name of the sensor
+                    - °C # unit
+                    - red # color used in charts (optional, if parameter is missing , sensor will not be visible in the chart (but values stored in the DB))
+        logocontrol:
+            ip: 192.168.1.101
+            heatStorageSensor: 'Storage Temp' # This is the name of the sensor which is relevant as storage temperature for heating
+            sensors:
+                3:
+                    - Collector
+                    - °C
+                    - yellow
+                4:
+                    - Storage Temp
+                    - °C
+                    - darkred
+        mobilealerts:
+            phoneid: XXXXXXXXXXXX # the phone id is available in the settings of the Android / iOS app. Used for web-retrieval (currently used)
+            sensors:
+                XXXXXXXXXXXX:
+                    -
+                        - Inside temperature
+                        - °C
+                        - red # color used in charts
+                        - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
+                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity,  contact
+                        - <<extended settings>> # optional; valid choice for contact sensors: inverted (inverts the open / close logic)
+                    -
+                        - 'Relative humidity inside'
+                        - '%'
+                    -
+                        - Outside temperature
+                        - °C
+                    -
+                        - 'Relative humidity outside'
+                        - '%'
+                    -
+                        - 'Window XY'
+                        - contact # if set to contact, a warning will be shown if open
+        edimax:
+            -
+                name: 'Plug 1'
+                ip: '192.168.55.2'
+                username: admin
+                password: 1234
+                nominalPower: 500 # max. expected power in Watt consumed by the device
+                on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>55'
+                        'mobilealerts:XXXXXXXXXXXX:1': 'rain>1.5' # for rain sensors, a condition can be set for "more mm rain than during the last 15 minutes"
+                lowRateOn:
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>68' # valid syntax: '>X'  /  '<X'
+                        'outsideTemp': '>20' # valid syntax: '>X'  /  '<X'
+                        'openweathermap:currentClouds': '<15' # note: if several conditions are set within one conditions set, all of them must be fulfilled
+                    -
+                        'openweathermap:currentMain': 'rain' # note: several sets of conditions can be defined. if at least one set is fulfilled, the overall condition is fulfilled
+                                                             # note: valid choices for currentMain are: clear, rain, snow, drizzle, thunderstorm (check openweathermap documentation for more choices)
+                forceOn:
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>72'
+                    -
+                        'mystrom:192.168.55.6': true # use motion sensors to enable / disable other devices (valid choices are true / false)
+                        'alarm': true # if alarm is set to true, this condition is only true while alarm mode is activated
+                forceOff:
+                    -
+                        'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
+                    -
+                        'runTime': 120 # value in minutes after which the condition is true (resetted at midnight)
+                minRunTime: 120 # minimal runtime in minutes. If not reached until begin of low energy rate and it is evening (P.M.), the device will be turned on (forceOn)
+                                # note the maximum is given by the time between low rate start and midnight
+        mystrom:
+            -
+                ip: '192.168.55.3'
+                nominalPower: 100
+                #other parameters such as lowRateOn and forceOn identical to edimax
+            -
+                ip: '192.168.55.6'
+                name: 'presence'
+                type: 'motion' # valid types are 'relay' (= default) and 'motion' (motion sensors may be used for alarms and as a condition)
+        shelly:
+            -
+                name: Storen Schlafzimmer
+                ip: 10.12.1.71
+                port: 0
+                type: roller # other types are "relay" and "door"
+                nominalPower: 100
+                minWaitTime: 120 # in minutes
+                autoIntervals: # several intervals for auto control are possible
+                    - [08:00,20:00]
+                forceOpen: # other commands: forceClose, forceOn, forceOff, minRunTime
+                    -
+                        'mobilealerts:072D1F97F48B:1': '>24'
+                        'openweathermap:currentClouds': '<15'
+                    -
+                        'time': '>8:30' # < and > are supported. 24h time format # if there are multiple time conditions to be fulfilled, use 'time1', 'time2' etc.
+        openweathermap:
+            api_key: this_is_the_api_key_retrieved_from_openweathermap.org
+            lat: 46.9
+            lon: 6.7
+        chromecast:
+            -
+                name: Wohnzimmer
+                ip: 192.168.2.102
+                edimax:
+                    - 0
+                    - 1
+                streams:
+                    -
+                        name: 'My news channel'
+                        url: 'http://mystream.com/news/mp3_128'
+                        metadata:
+                            title: 'My Favourite News Channel'
+                            subtitle: 'All you need to know'
+                            image: 'http://mystream.com/news/logo.png'
+                    -
+                        name: 'My music channel'
+                        url: 'http://mystream.com/music/mp3_128'
+        command:
+            - 
+                name: Reboot my PC
+                icon: fas fa-desktop
+                cmd: "reboot" # If you want to execute with sudo, use visudo
+    energy_low_rate:
+        start: 21  # hour (24h-format) when the lower energy tariff starts
+        end: 7      # hour (24h format) when the lower energy tariff ends

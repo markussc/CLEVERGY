@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1" />
+        {% block meta %}{% endblock %}
+        <title>{% block title %}OSHANS - {{ instancetitle }}{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/foundation/6.2.4/foundation.min.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css" />
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    </head>
+    <body>
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
+        <script src="https://cdn.jsdelivr.net/foundation/6.2.4/foundation.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment-with-locales.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
+
+        <div class="loading" style="display:none;"></div>
+        <div class="top-bar" id="top-bar">
+            <div class="top-bar-left">
+                <ul class="menu menu-hover-lines">
+                    <li><a href="{{ path('overview') }}"><img src="{{ asset('oshans_icon.svg') }}" style="height:50px;"></a></li>
+                    <li><a href="{{ path('overview') }}"><strong>{{ instancetitle }}</strong></a></li>
+                </ul>
+            </div>
+            {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+            <div class="top-bar-right align-center" style="padding-top:15px;">
+                <ul class="menu menu-hover-lines">
+                    <li {% if activePage == 'overview' %}class="active"{% endif %}><a href="{{ path('overview') }}">{% trans %}label.dashboard.header{% endtrans %}</a></li>
+                    <li {% if activePage == 'details' %}class="active"{% endif %}><a href="{{ path('overview') }}?details=true">{% trans %}label.details.header{% endtrans %}</a></li>
+                    <li class="align-right{% if activePage == 'history' %} active{% endif %}"><a href="{{ path('history') }}">{% trans %}label.history.header{% endtrans %}</a></li>
+                    <li class="align-right"><a href="{{ path('fos_user_security_logout') }}"><i class="fa fa-sign-out-alt fa-lg"></i></a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% block body %}{% endblock %}
+        <div class="footer row">
+            <div class="small-12 columns footer-body">
+                <hr />
+                <span class='footer-text'>OSHANS - Open Smart Home Automation, Notification and Statistics Center</span>
+            </div>
+        </div>
+        <div class="modal"><!-- Place at bottom of page --></div>
+        <script>
+            $(function() {
+                $(document).foundation();
+            });
+            function showSpinner()
+            {
+                $("body").addClass("loading");
+            }
+
+            function hideSpinner()
+            {
+                $("body").removeClass("loading");
+            }
+        </script>
+        {% block javascriptsembedded %}{% endblock %}
+        
+    </body>
+</html>
