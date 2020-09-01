@@ -13,25 +13,24 @@
         "sensio/buzz-bundle": "^1.1",
         "sensio/framework-extra-bundle": "^4",
         "symfony/apache-pack": "^1.0",
-        "symfony/config": "3.4.*",
-        "symfony/console": "3.4.*",
-        "symfony/css-selector": "3.4.*",
-        "symfony/dom-crawler": "3.4.*",
-        "symfony/dotenv": "3.4.*",
+        "symfony/config": "4.4.*",
+        "symfony/console": "4.4.*",
+        "symfony/css-selector": "4.4.*",
+        "symfony/dom-crawler": "4.4.*",
+        "symfony/dotenv": "4.4.*",
         "symfony/flex": "^1.3.1",
-        "symfony/framework-bundle": "3.4.*",
-        "symfony/monolog-bundle": "3.4.*",
-        "symfony/polyfill-apcu": "^1.0",
-        "symfony/security-bundle": "3.4.*",
-        "symfony/swiftmailer-bundle": "^2.6",
+        "symfony/framework-bundle": "4.4.*",
+        "symfony/security-bundle": "4.4.*",
+        "symfony/swiftmailer-bundle": "^3.4",
+        "symfony/translation": "4.4.*",
         "symfony/webpack-encore-bundle": "^1.7",
-        "symfony/yaml": "3.4.*",
+        "symfony/yaml": "4.4.*",
         "twig/twig": "^1.0||^2.0"
     },
     "require-dev": {
-        "symfony/stopwatch": "^3.4",
-        "symfony/twig-bundle": "^3.4",
-        "symfony/web-profiler-bundle": "^3.4"
+        "symfony/stopwatch": "^4.4",
+        "symfony/twig-bundle": "^4.4",
+        "symfony/web-profiler-bundle": "^4.4"
     },
     "config": {
         "preferred-install": {
@@ -76,7 +75,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "3.4.*"
+            "require": "4.4.*"
         }
     }
 }
