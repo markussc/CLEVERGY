@@ -301,11 +301,13 @@ class DefaultController extends Controller
         $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
 
         $maValues = [];
-        foreach ($currentStat['mobileAlerts'] as $maDevice) {
-            if (is_array($maDevice)) {
-                foreach ($maDevice as $maSensor) {
-                    if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
-                        $maValues[$maSensor['usage']] = $maSensor['value'];
+        if (isset($currentStat['mobileAlerts'])) {
+            foreach ($currentStat['mobileAlerts'] as $maDevice) {
+                if (is_array($maDevice)) {
+                    foreach ($maDevice as $maSensor) {
+                        if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
+                            $maValues[$maSensor['usage']] = $maSensor['value'];
+                        }
                     }
                 }
             }
@@ -365,18 +367,31 @@ class DefaultController extends Controller
                 $basementhumidity = $maValues['basementhumidity'] . " %";
             }
         }
-        if($currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
+        if(isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
             $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']." °C";
-        } else {
+        } elseif(isset($currentStat['pcoWeb'])) {
             $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
+        } else {
+            $effDistrTemp = '';
         }
 
-        if ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on") {
+        if (isset($currentStat['pcoWeb']) &&$currentStat['pcoWeb']['ppStatus'] === "label.device.status.on") {
             $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']." °C";
             $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']." °C";
         } else {
             $sourceintemp = "";
             $sourceouttemp = "";
+        }
+        if(isset($currentStat['pcoWeb'])) {
+            $outsideTemp = $currentStat['pcoWeb']['outsideTemp']." °C";
+            $waterTemp = $currentStat['pcoWeb']['waterTemp']." °C";
+            $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
+            $storTemp = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
+        } else {
+            $outsideTemp = '';
+            $waterTemp = '';
+            $ppStatus = '';
+            $storTemp = '';
         }
         // write current values into the svg
         $labels = [
@@ -407,9 +422,9 @@ class DefaultController extends Controller
             $intpower,
             $solpower,
             $soltemp,
-            $currentStat['pcoWeb']['outsideTemp']." °C",
-            $currentStat['pcoWeb']['waterTemp']." °C",
-            $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']),
+            $outsideTemp,
+            $waterTemp,
+            $ppStatus,
             $effDistrTemp,
             $insidetemp,
             $firstfloortemp,
@@ -418,7 +433,7 @@ class DefaultController extends Controller
             $basementtemp,
             $basementhumidity,
             $hightemp,
-            $currentStat['pcoWeb']['storTemp']." °C",
+            $storTemp,
             $lowtemp,
             $sourceintemp,
             $sourceouttemp,

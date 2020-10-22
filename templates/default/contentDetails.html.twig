@@ -136,7 +136,7 @@
     </ul>
 </div>
 {% endif %}
-{% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
+{% if mobilealertsConnector.contactAvailable()|default(false) or false  %}
 <div class="small-12 medium-3 columns refresh" id="alarm">
     <h4>{% trans %}label.alarm{% endtrans %}</h4>
     <ul>
