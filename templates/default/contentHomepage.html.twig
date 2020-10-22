@@ -84,7 +84,7 @@
         </div>
     {% endif %}
     {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 or currentStat['shelly']|default([])|length > 0 %}
-        {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable|default(false) or shellyConnector.doorAvailable()|default(false) %}
+        {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
         <h4><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></h4>
         {% if connectors['threema']|default([])|length > 0 %}
