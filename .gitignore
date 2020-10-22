@@ -19,4 +19,4 @@ yarn-error.log
 /.env.local.dist
 /config/parameters.yaml
 ###< OSHANS configuration ###
-/nbproject/private/
+/nbproject/
