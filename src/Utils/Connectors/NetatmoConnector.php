@@ -23,16 +23,70 @@ class NetatmoConnector
     public function __construct(EntityManager $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
-        $this->config = $connectors['netatmo'];
-        $this->client = $client;
-        $this->baseUrl = 'https://api.netatmo.com';
-        $this->tokenEndpoint = $this->baseUrl.'/oauth2/token';
-        $this->clientId = $this->config['clientId'];
-        $this->clientSecret = $this->config['clientSecret'];
-        $this->username = $this->config['username'];
-        $this->password = $this->config['password'];
-        $this->setToken();
+        $this->connectors = $connectors;
+        if ($this->getAvailable()) {
+            $this->config = $connectors['netatmo'];
+            $this->client = $client;
+            $this->baseUrl = 'https://api.netatmo.com';
+            $this->tokenEndpoint = $this->baseUrl.'/oauth2/token';
+            $this->clientId = $this->config['clientid'];
+            $this->clientSecret = $this->config['clientsecret'];
+            $this->username = $this->config['username'];
+            $this->password = $this->config['password'];
+            $this->setToken();
+        }
+    }
+
+    public function getAvailable()
+    {
+        if (array_key_exists('netatmo', $this->connectors)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getId()
+    {
+        $id = null;
+        if ($this->getAvailable()) {
+            $id = $this->config['deviceid'];
+        }
+
+        return $id;
+    }
+
+    public function getAllLatest()
+    {
+        return $this->em->getRepository('App:NetatmoDataStore')->getLatest($this->config['deviceid']);
+    }
+
+    public function getAll()
+    {
+        $result = $this->getStationsData($this->config['deviceid']);
+
+        return $result;
+    }
+
+    public function getLatestByLocation($location)
+    {
+        $latest = $this->getAllLatest();
+        $latestLocation = null;
+        // check station
+        if (array_key_exists('location', $this->config) && $this->config['location'] == $location) {
+            $latestLocation = $latest->getStationData();
+        }
+
+        // check modules
+        if (!$latestLocation && array_key_exists('modules', $this->config)) {
+            foreach ($this->config['modules'] as $module) {
+                if (array_key_exists('location', $module) && $module['location'] == $location) {
+                    $latestLocation = $latest->getModuleData($module['deviceid']);
+                }
+            }
+        }
+
+        return $latestLocation;
     }
 
     /*
@@ -42,7 +96,7 @@ class NetatmoConnector
      */
     public function getStationsData($deviceId)
     {
-        $url = $this->baseUrl.'/getstationsdata?device_id='.$deviceId;
+        $url = $this->baseUrl.'/api/getstationsdata?device_id='.$deviceId;
 
         try {
             $response = $this->client->request(
@@ -70,13 +124,12 @@ class NetatmoConnector
                 $this->tokenEndpoint,
                 [
                     'body' => [
-                        'grant_type' => 'client_credentials',
+                        'grant_type' => 'password',
                         'client_id' => $this->clientId,
                         'client_secret' => $this->clientSecret,
                         'username' => $this->username,
                         'password' => $this->password,
-                        'scope' => 'read station read_thremostat'
-                    ],
+                    ]
                 ]
             );
             if ($response->getStatusCode() === Response::HTTP_OK) {

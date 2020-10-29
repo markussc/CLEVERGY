@@ -11,6 +11,7 @@ use App\Entity\PcoWebDataStore;
 use App\Entity\SmartFoxDataStore;
 use App\Entity\MobileAlertsDataStore;
 use App\Entity\ShellyDataStore;
+use App\Entity\NetatmoDataStore;
 use App\Entity\CommandLog;
 use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
@@ -22,6 +23,7 @@ use App\Utils\Connectors\LogoControlConnector;
 use App\Utils\Connectors\ThreemaConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\ConexioConnector;
+use App\Utils\Connectors\NetatmoConnector;
 use App\Utils\ConditionChecker;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -42,12 +44,13 @@ class LogicProcessor
     protected $pcoweb;
     protected $conexio;
     protected $logo;
+    protected $netatmo;
     protected $conditionchecker;
     protected $translator;
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, ConexioConnector $conexio, LogoControlConnector $logo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, Array $connectors)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, Array $connectors)
     {
         $this->em = $em;
         $this->edimax = $edimax;
@@ -59,6 +62,7 @@ class LogicProcessor
         $this->pcoweb = $pcoweb;
         $this->conexio = $conexio;
         $this->logo = $logo;
+        $this->netatmo = $netatmo;
         $this->threema = $threema;
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
@@ -91,6 +95,9 @@ class LogicProcessor
 
         // mobilealerts
         $this->initMobilealerts();
+
+        // netatmo
+        $this->initNetAtmo();
 
         // write to database
         $this->em->flush();
@@ -813,6 +820,19 @@ class LogicProcessor
                 $mobilealertsEntity->setData($sensorData);
                 $this->em->persist($mobilealertsEntity);
             }
+            $this->em->flush();
+        }
+    }
+
+    public function initNetatmo()
+    {
+        if ($this->netatmo->getAvailable()) {
+            $sensorData = $this->netatmo->getAll();
+            $netatmoEntity = new NetatmoDataStore();
+            $netatmoEntity->setTimestamp(new \DateTime('now'));
+            $netatmoEntity->setConnectorId($this->netatmo->getId());
+            $netatmoEntity->setData($sensorData);
+            $this->em->persist($netatmoEntity);
             $this->em->flush();
         }
     }

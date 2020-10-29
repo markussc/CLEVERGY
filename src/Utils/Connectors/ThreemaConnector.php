@@ -18,8 +18,20 @@ class ThreemaConnector
     {
         $this->em = $em;
         $this->browser = $browser;
-        $this->config = $connectors['threema'];
+        $this->connectors = $connectors;
+        if ($this->getAvailable()) {
+            $this->config = $connectors['threema'];
+        }
         $this->apiSendSimple = 'https://msgapi.threema.ch/send_simple';
+    }
+
+    public function getAvailable()
+    {
+        if (array_key_exists('threema', $this->connectors)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function sendMessage($email, $msg)

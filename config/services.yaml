@@ -74,3 +74,8 @@ services:
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
 
+    App\Utils\Connectors\NetatmoConnector:
+        public: true
+        arguments:
+            $em: "@doctrine.orm.entity_manager"
+            $connectors: "%connectors%"

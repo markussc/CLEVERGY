@@ -79,6 +79,9 @@ class DefaultController extends Controller
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
                 $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAllLatest();
             }
+            if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
+                $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();
+            }
 
             // get history
             if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
@@ -108,6 +111,7 @@ class DefaultController extends Controller
                 'pcoweb' => true,
                 'openweathermap' => true,
                 'mobilealerts' => true,
+                'netatmo' => true,
             ]);
         }     
 
@@ -296,20 +300,44 @@ class DefaultController extends Controller
             'pcoweb' => true,
             'conexio' => true,
             'logocontrol' => true,
+            'netatmo' => true,
         ]);
 
         $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
 
-        $maValues = [];
+        $climateValues = [];
         if (isset($currentStat['mobileAlerts'])) {
             foreach ($currentStat['mobileAlerts'] as $maDevice) {
                 if (is_array($maDevice)) {
                     foreach ($maDevice as $maSensor) {
                         if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
-                            $maValues[$maSensor['usage']] = $maSensor['value'];
+                            $climateValues[$maSensor['usage']] = $maSensor['value'];
                         }
                     }
                 }
+            }
+        }
+
+        if (isset($currentStat['netatmo'])) {
+            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('inside')) {
+                $climateValues['insidetemp'] = $netatmoValues['temp'];
+                $climateValues['insidehumidity'] = $netatmoValues['humidity'];
+            }
+            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('firstfloor')) {
+                $climateValues['firstfloortemp'] = $netatmoValues['temp'];
+                $climateValues['firstfloorhumidity'] = $netatmoValues['humidity'];
+            }
+            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('secondfloor')) {
+                $climateValues['secondfloortemp'] = $netatmoValues['temp'];
+                $climateValues['secondfloorhumidity'] = $netatmoInside['humidity'];
+            }
+            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('basement')) {
+                $climateValues['basementtemp'] = $netatmoValues['temp'];
+                $climateValues['basementhumidity'] = $netatmoValues['humidity'];
+            }
+            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('outside')) {
+                $climateValues['outsidetemp'] = $netatmoValues['temp'];
+                $climateValues['outsidehumidity'] = $netatmoValues['humidity']; // currently not displaied
             }
         }
 
@@ -347,26 +375,29 @@ class DefaultController extends Controller
         $insidehumidity = "";
         $basementtemp = "";
         $basementhumidity = "";
-        if (isset($currentStat['mobileAlerts'])) {
-            if (isset($maValues['insidetemp'])) {
-                $insidetemp = $maValues['insidetemp'] . " °C";
-            }
-            if (isset($maValues['firstfloortemp'])) {
-                $firstfloortemp = $maValues['firstfloortemp'] . " °C";
-            }
-            if (isset($maValues['secondfloortemp'])) {
-                $secondfloortemp = $maValues['secondfloortemp']. " °C";
-            }
-            if (isset($maValues['insidehumidity'])) {
-                $insidehumidity = $maValues['insidehumidity'] . " %";
-            }
-            if (isset($maValues['basementtemp'])) {
-                $basementtemp = $maValues['basementtemp'] . " °C";
-            }
-            if (isset($maValues['basementhumidity'])) {
-                $basementhumidity = $maValues['basementhumidity'] . " %";
-            }
+        $outsideTemp = "";
+        if (isset($climateValues['insidetemp'])) {
+            $insidetemp = $climateValues['insidetemp'] . " °C";
         }
+        if (isset($climateValues['firstfloortemp'])) {
+            $firstfloortemp = $climateValues['firstfloortemp'] . " °C";
+        }
+        if (isset($climateValues['secondfloortemp'])) {
+            $secondfloortemp = $climateValues['secondfloortemp']. " °C";
+        }
+        if (isset($climateValues['insidehumidity'])) {
+            $insidehumidity = $climateValues['insidehumidity'] . " %";
+        }
+        if (isset($climateValues['basementtemp'])) {
+            $basementtemp = $climateValues['basementtemp'] . " °C";
+        }
+        if (isset($climateValues['basementhumidity'])) {
+            $basementhumidity = $climateValues['basementhumidity'] . " %";
+        }
+        if (isset($climateValues['outsidetemp'])) {
+            $outsideTemp = $climateValues['outsidetemp'] . " °C";
+        }
+
         if(isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
             $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']." °C";
         } elseif(isset($currentStat['pcoWeb'])) {
@@ -387,8 +418,7 @@ class DefaultController extends Controller
             $waterTemp = $currentStat['pcoWeb']['waterTemp']." °C";
             $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
             $storTemp = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
-        } else {
-            $outsideTemp = '';
+        } else {;
             $waterTemp = '';
             $ppStatus = '';
             $storTemp = '';
@@ -488,6 +518,9 @@ class DefaultController extends Controller
         }
         if (($fullSet === true || isset($fullSet['logocontrol'])) && array_key_exists('logocontrol', $this->getParameter('connectors'))) {
             $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAll(true);
+        }
+        if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
+            $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAll();
         }
 
         return $currentStat;
