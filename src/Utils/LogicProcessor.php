@@ -828,12 +828,14 @@ class LogicProcessor
     {
         if ($this->netatmo->getAvailable()) {
             $sensorData = $this->netatmo->getAll();
-            $netatmoEntity = new NetatmoDataStore();
-            $netatmoEntity->setTimestamp(new \DateTime('now'));
-            $netatmoEntity->setConnectorId($this->netatmo->getId());
-            $netatmoEntity->setData($sensorData);
-            $this->em->persist($netatmoEntity);
-            $this->em->flush();
+            if ($sensorData != null) {
+                $netatmoEntity = new NetatmoDataStore();
+                $netatmoEntity->setTimestamp(new \DateTime('now'));
+                $netatmoEntity->setConnectorId($this->netatmo->getId());
+                $netatmoEntity->setData($sensorData);
+                $this->em->persist($netatmoEntity);
+                $this->em->flush();
+            }
         }
     }
 
