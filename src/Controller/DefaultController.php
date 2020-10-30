@@ -520,7 +520,7 @@ class DefaultController extends Controller
             $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAll(true);
         }
         if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
-            $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAll();
+            $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();
         }
 
         return $currentStat;
