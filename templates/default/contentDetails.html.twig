@@ -87,7 +87,7 @@
     </ul>
 </div>
 {% endif %}
-{% if currentStat['mobileAlerts']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['openweathermap']|default(false) %}
+{% if currentStat['netatmo']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['openweathermap']|default(false) %}
 <div class="small-12 medium-3 columns refresh" id="mobileAlerts">
     <h4>{% trans %}label.climate{% endtrans %}</h4>
     <ul>
@@ -105,6 +105,12 @@
             {% endif %}
         {% endfor %}
     {% endfor %}
+    {%  if currentStat['netatmo']|default(false) %}
+        <li>{{ currentStat['netatmo'].getStationData()['name'] }}: {{ currentStat['netatmo'].getStationData()['temp'] }}°C, {{ currentStat['netatmo'].getStationData()['humidity'] }}%</li>
+        {%  for moduleData in currentStat['netatmo'].getModulesData() %}
+            <li>{{ moduleData['name'] }}: {{ moduleData['temp'] }}°C, {{ moduleData['humidity'] }}%</li>
+        {% endfor %}
+    {% endif %}
     </ul>
 </div>
 {% endif %}
