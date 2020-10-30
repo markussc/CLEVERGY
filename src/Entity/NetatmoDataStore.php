@@ -75,4 +75,9 @@ class NetatmoDataStore extends DataStoreBase
 
         return $modulesData;
     }
+
+    public function getAllData()
+    {
+        return array_merge($this->getStationData(), $this->getModulesData());
+    }
 }

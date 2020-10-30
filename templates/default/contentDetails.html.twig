@@ -172,8 +172,8 @@
     </div>
 </div>
 {% endif %}
-{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
-<div class="row">
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+    <div class="row">
     <div class="small-12 columns refresh">
         <canvas id="twentyFourPowerCanvas" ></canvas>
     </div>
@@ -355,13 +355,15 @@
         }
     });
     {% endif %}
-    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
     // 24hTemperatures
     charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
         type: 'line',
         data: { 
             datasets: [
+            {% set firstDataset24 = true %}
             {% if currentStat['pcoWeb']|default(false) %}
+            {% set firstDataset24 = false %}
             {
                 label: '{% trans %}label.pco.water_temp{% endtrans %}',
                 borderColor: ['blue'],
@@ -442,7 +444,9 @@
             }
             {% endif %}
             {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
-            ,{
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
                 label: '{{ history['mobileAlerts'][idx][history['mobileAlerts'][idx]|length-1].getData()[dataSetKey+1]['label']|default('unknown') }}',
                 borderColor: '{{ dataSet[2] }}',
                 fill: false,
@@ -455,8 +459,68 @@
                 {% endfor %}
                 ]
             }{% endfor %}{% endfor %}
-            {% for idx, sensor in connectors['conexio']['sensors']|default([]) if sensor[2] is defined %}
+            {% if connectors['netatmo']['deviceid']|default(false) %}
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
+                label: '{{ history['netatmo'][0].getStationData()['name']|default('undefined') }} {% trans %}label.temperature{% endtrans%}',
+                borderColor: ['red'],
+                fill: false,
+                data: [
+                    {% for naData in history['netatmo'] %}
+                    {
+                        x: new Date("{{ naData.timestamp|date("c") }}"),
+                        y: {{ naData.getStationData()['temp']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+            }
             ,{
+                label: '{{ history['netatmo'][0].getStationData()['name']|default('undefined') }} {% trans %}label.humidity{% endtrans%}',
+                borderColor: ['blue'],
+                fill: false,
+                data: [
+                    {% for naData in history['netatmo'] %}
+                    {
+                        x: new Date("{{ naData.timestamp|date("c") }}"),
+                        y: {{ naData.getStationData()['humidity']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+            }
+            {% for module in connectors['netatmo']['modules'] %}
+            ,{
+                label: '{{ history['netatmo'][0].getModuleData(module['deviceid'])['name']|default('undefined') }} {% trans %}label.temperature{% endtrans%}',
+                borderColor: ['#ff5733'],
+                fill: false,
+                data: [
+                    {% for naData in history['netatmo'] %}
+                    {
+                        x: new Date("{{ naData.timestamp|date("c") }}"),
+                        y: {{ naData.getModuleData(module['deviceid'])['temp']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+            }
+            ,{
+                label: '{{ history['netatmo'][0].getModuleData(module['deviceid'])['name']|default('undefined') }} {% trans %}label.humidity{% endtrans%}',
+                borderColor: ['#33e9ff'],
+                fill: false,
+                data: [
+                    {% for naData in history['netatmo'] %}
+                    {
+                        x: new Date("{{ naData.timestamp|date("c") }}"),
+                        y: {{ naData.getModuleData(module['deviceid'])['humidity']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+            }
+            {% endfor %}
+            {% endif %}
+            {% for idx, sensor in connectors['conexio']['sensors']|default([]) if sensor[2] is defined %}
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
                 label: '{{ sensor[0] }}',
                 borderColor: ['{{ sensor[2] }}'],
                 fill: false,
@@ -477,7 +541,9 @@
             }
             {% endfor %}
             {% for idx, sensor in connectors['logocontrol']['sensors']|default([]) if sensor[2] is defined %}
-            ,{
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
                 label: '{{ sensor[0] }}',
                 borderColor: ['{{ sensor[2] }}'],
                 fill: false,
@@ -511,7 +577,7 @@
                         },
                         scaleLabel:{
                             display: true,
-                            labelString: '°C',
+                            labelString: '°C, %',
                             fontColor: "#546372"
                         }
                     },

@@ -91,6 +91,9 @@ class DefaultController extends Controller
                 }
                 $history['mobileAlerts'] = $mobileAlertsHistory;
             }
+            if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
+                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\NetatmoConnector')->getId());
+            }
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
                 $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp());
             }

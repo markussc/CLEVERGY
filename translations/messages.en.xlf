@@ -134,6 +134,14 @@
                 <source>label.device.status.closing</source>
                 <target>closing</target>
             </trans-unit>
+            <trans-unit id="label.temperature">
+                <source>label.temperature</source>
+                <target>Temperature</target>
+            </trans-unit>
+            <trans-unit id="label.humidity">
+                <source>label.humidity</source>
+                <target>Humidity</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
