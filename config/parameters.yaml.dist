@@ -59,6 +59,17 @@ parameters:
                     -
                         - 'Window XY'
                         - contact # if set to contact, a warning will be shown if open
+        netatmo:
+            clientid: abcdefg123
+            clientsecret: xyz9876
+            username: myuser@mymail.com
+            password: mypassword
+            deviceid: '00:11:22:33:44:55'
+            location: 'inside' #inside, outside, firstfloor, secondfloor
+            modules:
+                -
+                    deviceid: '99:88:77:66:55:44'
+                    location: 'outside' # inside, outside, firstfloor, secondfloor
         edimax:
             -
                 name: 'Plug 1'

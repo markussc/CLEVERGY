@@ -36,6 +36,7 @@ class DataArchiveCommand extends Command
             \App\Entity\ConexioDataStore::class,
             \App\Entity\LogoControlDataStore::class,
             \App\Entity\OpenWeatherMapDataStore::class,
+            \App\Entity\NetatmoDataStore::class,
             // without archive functionality
             \App\Entity\EdiMaxDataStore::class,
             \App\Entity\MyStromDataStore::class,

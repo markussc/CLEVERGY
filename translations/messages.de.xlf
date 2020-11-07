@@ -294,6 +294,14 @@
                 <source>label.alarm.notification</source>
                 <target>Alarmmeldung</target>
             </trans-unit>
+            <trans-unit id="label.temperature">
+                <source>label.temperature</source>
+                <target>Temperatur</target>
+            </trans-unit>
+            <trans-unit id="label.humidity">
+                <source>label.humidity</source>
+                <target>Luftfeuchtigkeit</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
