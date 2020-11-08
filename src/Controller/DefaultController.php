@@ -420,7 +420,7 @@ class DefaultController extends Controller
             $outsideTemp = $currentStat['pcoWeb']['outsideTemp']." °C";
             $waterTemp = $currentStat['pcoWeb']['waterTemp']." °C";
             $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
-            $storTemp = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
+            $storTemp = $this->get('translator')->trans($currentStat['pcoWeb']['storTemp']);
         } else {;
             $waterTemp = '';
             $ppStatus = '';
