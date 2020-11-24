@@ -1,307 +1,310 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="de" datatype="plaintext" original="file.ext">
-        <body>
-            <trans-unit id="label.default.header">
-                <source>label.default.header</source>
-                <target>Übersicht</target>
-            </trans-unit>
-            <trans-unit id="label.energy">
-                <source>label.energy</source>
-                <target>Energie</target>
-            </trans-unit>
-            <trans-unit id="label.heating">
-                <source>label.heating</source>
-                <target>Heizung</target>
-            </trans-unit>
-            <trans-unit id="label.climate">
-                <source>label.climate</source>
-                <target>Klima</target>
-            </trans-unit>
-            <trans-unit id="label.devices">
-                <source>label.devices</source>
-                <target>Geräte</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.on">
-                <source>label.device.status.on</source>
-                <target>Ein</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.off">
-                <source>label.device.status.off</source>
-                <target>Aus</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.motion_detected">
-                <source>label.device.status.motion_detected</source>
-                <target>Anwesenheit erkannt</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.contact_detected">
-                <source>label.device.status.contact_detected</source>
-                <target>Offene Türen/Fenster</target>
-            </trans-unit>
-            <trans-unit id="label.pco.outside_temp">
-                <source>label.pco.outside_temp</source>
-                <target>Aussentemperatur</target>
-            </trans-unit>
-            <trans-unit id="label.pco.water_temp">
-                <source>label.pco.water_temp</source>
-                <target>Warmwasser</target>
-            </trans-unit>
-            <trans-unit id="label.pco.storage_temp">
-                <source>label.pco.storage_temp</source>
-                <target>Speichertemperatur</target>
-            </trans-unit>
-            <trans-unit id="label.pco.pre_temp">
-                <source>label.pco.pre_temp</source>
-                <target>Vorlauftemperatur WP</target>
-            </trans-unit>
-            <trans-unit id="label.pco.back_temp">
-                <source>label.pco.back_temp</source>
-                <target>Rücklauftemperatur WP</target>
-            </trans-unit>
-            <trans-unit id="label.pco.pp_source_in_temp">
-                <source>label.pco.pp_source_in_temp</source>
-                <target>Quelle Vorlauf</target>
-            </trans-unit>
-            <trans-unit id="label.pco.pp_source_out_temp">
-                <source>label.pco.pp_source_out_temp</source>
-                <target>Quelle Rücklauf</target>
-            </trans-unit>
-            <trans-unit id="label.pco.set_distr_temp">
-                <source>label.pco.set_distr_temp</source>
-                <target>Solltemp. Verteilung</target>
-            </trans-unit>
-            <trans-unit id="label.pco.eff_distr_temp">
-                <source>label.pco.eff_distr_temp</source>
-                <target>Effektivtemp. Verteilung</target>
-            </trans-unit>
-            <trans-unit id="label.pco.cp_status">
-                <source>label.pco.cp_status</source>
-                <target>Umwälzpumpe</target>
-            </trans-unit>
-            <trans-unit id="label.pco.pp_status">
-                <source>label.pco.pp_status</source>
-                <target>Erdsonde</target>
-            </trans-unit>
-            <trans-unit id="label.pco.pp_mode">
-                <source>label.pco.pp_mode</source>
-                <target>Modus Wärmepumpe</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.summer">
-                <source>label.pco.ppmode.summer</source>
-                <target>Sommer</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.auto">
-                <source>label.pco.ppmode.auto</source>
-                <target>Auto</target>
-            </trans-unit>
-            <trans-unit id="label.pco.select_pp_mode_lead">
-                <source>label.pco.select_pp_mode_lead</source>
-                <target>Betriebsmodus auswählen</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.save">
-                <source>label.pco.ppmode.save</source>
-                <target>Aktivieren</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.holiday">
-                <source>label.pco.ppmode.holiday</source>
-                <target>Ferien</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.party">
-                <source>label.pco.ppmode.party</source>
-                <target>Party</target>
-            </trans-unit>
-            <trans-unit id="label.pco.ppmode.2nd">
-                <source>label.pco.ppmode.2nd</source>
-                <target>Solar</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.net_power">
-                <source>label.smartfox.net_power</source>
-                <target>Netz</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.pv_power">
-                <source>label.smartfox.pv_power</source>
-                <target>PV</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.int_power">
-                <source>label.smartfox.int_power</source>
-                <target>Leistungsbedarf</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.energy_out_day">
-                <source>label.smartfox.energy_out_day</source>
-                <target>Energieliefung heute</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.energy_in_day">
-                <source>label.smartfox.energy_in_day</source>
-                <target>Energiebezug heute</target>
-            </trans-unit>
-            <trans-unit id="label.openweathermap.clouds_current">
-                <source>label.openweathermap.clouds_current</source>
-                <target>Aktuelle Bewölkung</target>
-            </trans-unit>
-            <trans-unit id="label.openweathermap.clouds_next_daylight">
-                <source>label.openweathermap.clouds_next_daylight</source>
-                <target>Kommende Bewölkung</target>
-            </trans-unit>
-            <trans-unit id="label.solarheat">
-                <source>label.solarheat</source>
-                <target>Solarthermie</target>
-            </trans-unit>
-            <trans-unit id="label.conexio.energy_day">
-                <source>label.conexio.energy_day</source>
-                <target>Ertrag Solarthermie heute</target>
-            </trans-unit>
-            <trans-unit id="label.pco.mode">
-                <source>label.pco.mode</source>
-                <target>Modus Heizungssteuerung</target>
-            </trans-unit>
-            <trans-unit id="label.pco.mode.auto">
-                <source>label.pco.mode.auto</source>
-                <target>Auto</target>
-            </trans-unit>
-            <trans-unit id="label.pco.mode.manual">
-                <source>label.pco.mode.manual</source>
-                <target>Manuell</target>
-            </trans-unit>
-            <trans-unit id="label.pco.mode.holiday">
-                <source>label.pco.mode.holiday</source>
-                <target>Ferien</target>
-            </trans-unit>
-            <trans-unit id="label.pco.mode.save">
-                <source>label.pco.mode.save</source>
-                <target>Aktivieren</target>
-            </trans-unit>
-            <trans-unit id="label.pco.select_pcoweb_mode_lead">
-                <source>label.pco.select_pcoweb_mode_lead</source>
-                <target>Steuerungsmodus wählen</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.energy_pv_day">
-                <source>label.smartfox.energy_pv_day</source>
-                <target>Ertrag Photovoltaik heute</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.self_usage_today">
-                <source>label.smartfox.self_usage_today</source>
-                <target>Eigenverbrauch heute</target>
-            </trans-unit>
-            <trans-unit id="label.dashboard.header">
-                <source>label.dashboard.header</source>
-                <target>Übersicht</target>
-            </trans-unit>
-            <trans-unit id="label.history.header">
-                <source>label.history.header</source>
-                <target>Historie</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.pv">
-                <source>label.smartfox.pv</source>
-                <target>PV Produktion</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.in">
-                <source>label.smartfox.in</source>
-                <target>Energiebezug</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.out">
-                <source>label.smartfox.out</source>
-                <target>Energielieferung</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.usage">
-                <source>label.smartfox.usage</source>
-                <target>Verbrauch</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.self_usage">
-                <source>label.smartfox.self_usage</source>
-                <target>Eigenverbrauch</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.net">
-                <source>label.smartfox.net</source>
-                <target>Energiebilanz</target>
-            </trans-unit>
-            <trans-unit id="label.today">
-                <source>label.today</source>
-                <target>Heute</target>
-            </trans-unit>
-            <trans-unit id="label.yesterday">
-                <source>label.yesterday</source>
-                <target>Gestern</target>
-            </trans-unit>
-            <trans-unit id="label.week">
-                <source>label.week</source>
-                <target>Woche</target>
-            </trans-unit>
-            <trans-unit id="label.month">
-                <source>label.month</source>
-                <target>Monat</target>
-            </trans-unit>
-            <trans-unit id="label.year">
-                <source>label.year</source>
-                <target>Jahr</target>
-            </trans-unit>
-            <trans-unit id="label.lastYearMonth">
-                <source>label.lastYearMonth</source>
-                <target>Vorjahresmonat</target>
-            </trans-unit>
-            <trans-unit id="label.lastYearPart">
-                <source>label.lastYearPart</source>
-                <target>Vorjahreszeitraum</target>
-            </trans-unit>
-            <trans-unit id="label.lastYear">
-                <source>label.lastYear</source>
-                <target>Letzes Jahr</target>
-            </trans-unit>
-            <trans-unit id="label.solarheat.production">
-                <source>label.solarheat.production</source>
-                <target>Solarthermische Produktion</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.self_suff_degree">
-                <source>label.smartfox.self_suff_degree</source>
-                <target>Autarkie</target>
-            </trans-unit>
-            <trans-unit id="label.smartfox.self_suff_degree_today">
-                <source>label.smartfox.self_suff_degree_today</source>
-                <target>Autarkie heute</target>
-            </trans-unit>
-            <trans-unit id="label.edimax.activation_interval_today">
-                <source>label.edimax.activation_interval_today</source>
-                <target>Aktivierungszeitraum heute</target>
-            </trans-unit>
-            <trans-unit id="label.details.header">
-                <source>label.details.header</source>
-                <target>Details</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.closed">
-                <source>label.device.status.closed</source>
-                <target>Geschlossen</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.open">
-                <source>label.device.status.open</source>
-                <target>Offen</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.opening">
-                <source>label.device.status.opening</source>
-                <target>öffnet</target>
-            </trans-unit>
-            <trans-unit id="label.device.status.closing">
-                <source>label.device.status.closing</source>
-                <target>schliesst</target>
-            </trans-unit>
-            <trans-unit id="label.alarm">
-                <source>label.alarm</source>
-                <target>Alarmanlage</target>
-            </trans-unit>
-            <trans-unit id="label.alarm.active">
-                <source>label.alarm.active</source>
-                <target>Alarm aktiv</target>
-            </trans-unit>
-            <trans-unit id="label.alarm.notification">
-                <source>label.alarm.notification</source>
-                <target>Alarmmeldung</target>
-            </trans-unit>
-            <trans-unit id="label.temperature">
-                <source>label.temperature</source>
-                <target>Temperatur</target>
-            </trans-unit>
-            <trans-unit id="label.humidity">
-                <source>label.humidity</source>
-                <target>Luftfeuchtigkeit</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="de" target-language="de" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="PsAglBq" resname="label.default.header">
+        <source>label.default.header</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="nlg4nm7" resname="label.energy">
+        <source>label.energy</source>
+        <target>Energie</target>
+      </trans-unit>
+      <trans-unit id="BBO79k0" resname="label.heating">
+        <source>label.heating</source>
+        <target>Heizung</target>
+      </trans-unit>
+      <trans-unit id="55cEXfn" resname="label.climate">
+        <source>label.climate</source>
+        <target>Klima</target>
+      </trans-unit>
+      <trans-unit id="hzWY9gm" resname="label.devices">
+        <source>label.devices</source>
+        <target>Geräte</target>
+      </trans-unit>
+      <trans-unit id="LJ5mpwQ" resname="label.device.status.on">
+        <source>label.device.status.on</source>
+        <target>Ein</target>
+      </trans-unit>
+      <trans-unit id="Ov7CVLi" resname="label.device.status.off">
+        <source>label.device.status.off</source>
+        <target>Aus</target>
+      </trans-unit>
+      <trans-unit id="9Z2wym1" resname="label.device.status.motion_detected">
+        <source>label.device.status.motion_detected</source>
+        <target>Anwesenheit erkannt</target>
+      </trans-unit>
+      <trans-unit id="uANQbd." resname="label.device.status.contact_detected">
+        <source>label.device.status.contact_detected</source>
+        <target>Offene Türen/Fenster</target>
+      </trans-unit>
+      <trans-unit id="RuJeX7X" resname="label.pco.outside_temp">
+        <source>label.pco.outside_temp</source>
+        <target>Aussentemperatur</target>
+      </trans-unit>
+      <trans-unit id="iDeui_W" resname="label.pco.water_temp">
+        <source>label.pco.water_temp</source>
+        <target>Warmwasser</target>
+      </trans-unit>
+      <trans-unit id="EVLAm5X" resname="label.pco.storage_temp">
+        <source>label.pco.storage_temp</source>
+        <target>Speichertemperatur</target>
+      </trans-unit>
+      <trans-unit id="Gwh8fD1" resname="label.pco.pre_temp">
+        <source>label.pco.pre_temp</source>
+        <target>Vorlauftemperatur WP</target>
+      </trans-unit>
+      <trans-unit id="JpxETPi" resname="label.pco.back_temp">
+        <source>label.pco.back_temp</source>
+        <target>Rücklauftemperatur WP</target>
+      </trans-unit>
+      <trans-unit id="DK9JtoI" resname="label.pco.pp_source_in_temp">
+        <source>label.pco.pp_source_in_temp</source>
+        <target>Quelle Vorlauf</target>
+      </trans-unit>
+      <trans-unit id="ojC_2hd" resname="label.pco.pp_source_out_temp">
+        <source>label.pco.pp_source_out_temp</source>
+        <target>Quelle Rücklauf</target>
+      </trans-unit>
+      <trans-unit id="3RtbMuO" resname="label.pco.set_distr_temp">
+        <source>label.pco.set_distr_temp</source>
+        <target>Solltemp. Verteilung</target>
+      </trans-unit>
+      <trans-unit id="1.zGA8r" resname="label.pco.eff_distr_temp">
+        <source>label.pco.eff_distr_temp</source>
+        <target>Effektivtemp. Verteilung</target>
+      </trans-unit>
+      <trans-unit id="ifJwMGK" resname="label.pco.cp_status">
+        <source>label.pco.cp_status</source>
+        <target>Umwälzpumpe</target>
+      </trans-unit>
+      <trans-unit id="3Ompyr8" resname="label.pco.pp_status">
+        <source>label.pco.pp_status</source>
+        <target>Erdsonde</target>
+      </trans-unit>
+      <trans-unit id="jRKe1QV" resname="label.pco.pp_mode">
+        <source>label.pco.pp_mode</source>
+        <target>Modus Wärmepumpe</target>
+      </trans-unit>
+      <trans-unit id="1nMiSrk" resname="label.pco.ppmode.summer">
+        <source>label.pco.ppmode.summer</source>
+        <target>Sommer</target>
+      </trans-unit>
+      <trans-unit id="pcw36rs" resname="label.pco.ppmode.auto">
+        <source>label.pco.ppmode.auto</source>
+        <target>Auto</target>
+      </trans-unit>
+      <trans-unit id="WMB3zTN" resname="label.pco.select_pp_mode_lead">
+        <source>label.pco.select_pp_mode_lead</source>
+        <target>Betriebsmodus auswählen</target>
+      </trans-unit>
+      <trans-unit id="jNLeUQk" resname="label.pco.ppmode.save">
+        <source>label.pco.ppmode.save</source>
+        <target>Aktivieren</target>
+      </trans-unit>
+      <trans-unit id="EmSVqGd" resname="label.pco.ppmode.holiday">
+        <source>label.pco.ppmode.holiday</source>
+        <target>Ferien</target>
+      </trans-unit>
+      <trans-unit id="YT4maAu" resname="label.pco.ppmode.party">
+        <source>label.pco.ppmode.party</source>
+        <target>Party</target>
+      </trans-unit>
+      <trans-unit id="A9i8hsN" resname="label.pco.ppmode.2nd">
+        <source>label.pco.ppmode.2nd</source>
+        <target>Solar</target>
+      </trans-unit>
+      <trans-unit id="sbAAwq9" resname="label.smartfox.net_power">
+        <source>label.smartfox.net_power</source>
+        <target>Netz</target>
+      </trans-unit>
+      <trans-unit id="x_YVlZm" resname="label.smartfox.pv_power">
+        <source>label.smartfox.pv_power</source>
+        <target>PV</target>
+      </trans-unit>
+      <trans-unit id="G4xf.Cl" resname="label.smartfox.int_power">
+        <source>label.smartfox.int_power</source>
+        <target>Leistungsbedarf</target>
+      </trans-unit>
+      <trans-unit id="CPvOPrR" resname="label.smartfox.energy_out_day">
+        <source>label.smartfox.energy_out_day</source>
+        <target>Energieliefung heute</target>
+      </trans-unit>
+      <trans-unit id="qj7RD4m" resname="label.smartfox.energy_in_day">
+        <source>label.smartfox.energy_in_day</source>
+        <target>Energiebezug heute</target>
+      </trans-unit>
+      <trans-unit id="ViGBvyG" resname="label.openweathermap.clouds_current">
+        <source>label.openweathermap.clouds_current</source>
+        <target>Aktuelle Bewölkung</target>
+      </trans-unit>
+      <trans-unit id="eB8Pd4x" resname="label.openweathermap.clouds_next_daylight">
+        <source>label.openweathermap.clouds_next_daylight</source>
+        <target>Kommende Bewölkung</target>
+      </trans-unit>
+      <trans-unit id="KmtXfCv" resname="label.solarheat">
+        <source>label.solarheat</source>
+        <target>Solarthermie</target>
+      </trans-unit>
+      <trans-unit id="5RV0qbz" resname="label.conexio.energy_day">
+        <source>label.conexio.energy_day</source>
+        <target>Ertrag Solarthermie heute</target>
+      </trans-unit>
+      <trans-unit id="FlFmtcP" resname="label.pco.mode">
+        <source>label.pco.mode</source>
+        <target>Modus Heizungssteuerung</target>
+      </trans-unit>
+      <trans-unit id="KzyzqsS" resname="label.pco.mode.auto">
+        <source>label.pco.mode.auto</source>
+        <target>Auto</target>
+      </trans-unit>
+      <trans-unit id="9ng1BCL" resname="label.pco.mode.manual">
+        <source>label.pco.mode.manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="SpMLide" resname="label.pco.mode.holiday">
+        <source>label.pco.mode.holiday</source>
+        <target>Ferien</target>
+      </trans-unit>
+      <trans-unit id="Gkg0V6L" resname="label.pco.mode.save">
+        <source>label.pco.mode.save</source>
+        <target>Aktivieren</target>
+      </trans-unit>
+      <trans-unit id="c.FuuyC" resname="label.pco.select_pcoweb_mode_lead">
+        <source>label.pco.select_pcoweb_mode_lead</source>
+        <target>Steuerungsmodus wählen</target>
+      </trans-unit>
+      <trans-unit id="o3YNEkW" resname="label.smartfox.energy_pv_day">
+        <source>label.smartfox.energy_pv_day</source>
+        <target>Ertrag Photovoltaik heute</target>
+      </trans-unit>
+      <trans-unit id="wFi8EUf" resname="label.smartfox.self_usage_today">
+        <source>label.smartfox.self_usage_today</source>
+        <target>Eigenverbrauch heute</target>
+      </trans-unit>
+      <trans-unit id="4AsgYZY" resname="label.dashboard.header">
+        <source>label.dashboard.header</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="yXzmKkP" resname="label.history.header">
+        <source>label.history.header</source>
+        <target>Historie</target>
+      </trans-unit>
+      <trans-unit id="1uIpbpq" resname="label.smartfox.pv">
+        <source>label.smartfox.pv</source>
+        <target>PV Produktion</target>
+      </trans-unit>
+      <trans-unit id="f4yrDD5" resname="label.smartfox.in">
+        <source>label.smartfox.in</source>
+        <target>Energiebezug</target>
+      </trans-unit>
+      <trans-unit id="wR9w45p" resname="label.smartfox.out">
+        <source>label.smartfox.out</source>
+        <target>Energielieferung</target>
+      </trans-unit>
+      <trans-unit id="t0mms4y" resname="label.smartfox.usage">
+        <source>label.smartfox.usage</source>
+        <target>Verbrauch</target>
+      </trans-unit>
+      <trans-unit id="gvd6LpW" resname="label.smartfox.self_usage">
+        <source>label.smartfox.self_usage</source>
+        <target>Eigenverbrauch</target>
+      </trans-unit>
+      <trans-unit id="qeSCEpG" resname="label.smartfox.net">
+        <source>label.smartfox.net</source>
+        <target>Energiebilanz</target>
+      </trans-unit>
+      <trans-unit id=".xK.qxY" resname="label.today">
+        <source>label.today</source>
+        <target>Heute</target>
+      </trans-unit>
+      <trans-unit id="UzfSldH" resname="label.yesterday">
+        <source>label.yesterday</source>
+        <target>Gestern</target>
+      </trans-unit>
+      <trans-unit id="pa4vJvU" resname="label.week">
+        <source>label.week</source>
+        <target>Woche</target>
+      </trans-unit>
+      <trans-unit id="ausiIp4" resname="label.month">
+        <source>label.month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="u2_FJj1" resname="label.year">
+        <source>label.year</source>
+        <target>Jahr</target>
+      </trans-unit>
+      <trans-unit id="q.yye_4" resname="label.lastYearMonth">
+        <source>label.lastYearMonth</source>
+        <target>Vorjahresmonat</target>
+      </trans-unit>
+      <trans-unit id="qp3RnVg" resname="label.lastYearPart">
+        <source>label.lastYearPart</source>
+        <target>Vorjahreszeitraum</target>
+      </trans-unit>
+      <trans-unit id="t4KjXwg" resname="label.lastYear">
+        <source>label.lastYear</source>
+        <target>Letzes Jahr</target>
+      </trans-unit>
+      <trans-unit id="b0TAQ3d" resname="label.solarheat.production">
+        <source>label.solarheat.production</source>
+        <target>Solarthermische Produktion</target>
+      </trans-unit>
+      <trans-unit id="2AniGnM" resname="label.smartfox.self_suff_degree">
+        <source>label.smartfox.self_suff_degree</source>
+        <target>Autarkie</target>
+      </trans-unit>
+      <trans-unit id="REn28a9" resname="label.smartfox.self_suff_degree_today">
+        <source>label.smartfox.self_suff_degree_today</source>
+        <target>Autarkie heute</target>
+      </trans-unit>
+      <trans-unit id="aVBh3q5" resname="label.edimax.activation_interval_today">
+        <source>label.edimax.activation_interval_today</source>
+        <target>Aktivierungszeitraum heute</target>
+      </trans-unit>
+      <trans-unit id="9M8adh." resname="label.details.header">
+        <source>label.details.header</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="5CI0xjd" resname="label.device.status.closed">
+        <source>label.device.status.closed</source>
+        <target>Geschlossen</target>
+      </trans-unit>
+      <trans-unit id="faL87Sq" resname="label.device.status.open">
+        <source>label.device.status.open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="x5hL1QP" resname="label.device.status.opening">
+        <source>label.device.status.opening</source>
+        <target>öffnet</target>
+      </trans-unit>
+      <trans-unit id="9dDVpu5" resname="label.device.status.closing">
+        <source>label.device.status.closing</source>
+        <target>schliesst</target>
+      </trans-unit>
+      <trans-unit id="o8zXNh9" resname="label.alarm">
+        <source>label.alarm</source>
+        <target>Alarmanlage</target>
+      </trans-unit>
+      <trans-unit id="VRblNbn" resname="label.alarm.active">
+        <source>label.alarm.active</source>
+        <target>Alarm aktiv</target>
+      </trans-unit>
+      <trans-unit id="y_jrHl3" resname="label.alarm.notification">
+        <source>label.alarm.notification</source>
+        <target>Alarmmeldung</target>
+      </trans-unit>
+      <trans-unit id="XA6yhxj" resname="label.temperature">
+        <source>label.temperature</source>
+        <target>Temperatur</target>
+      </trans-unit>
+      <trans-unit id="Kq1Z6R2" resname="label.humidity">
+        <source>label.humidity</source>
+        <target>Luftfeuchtigkeit</target>
+      </trans-unit>
+    </body>
+  </file>
 </xliff>
