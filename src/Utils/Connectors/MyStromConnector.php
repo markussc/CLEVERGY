@@ -370,7 +370,7 @@ class MyStromConnector
                     $startTime = date_create($config['startTime']['date']);
                     $activeDuration = $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($connectorId, $startTime, $now); // in minutes since started
                     $activePercentage = 100;
-                    if ($activeDuration > 0) {
+                    if ($config['activeTime'] > 0) {
                         $activePercentage = intval(100/$config['activeTime']*$activeDuration/60);
                     }
                     $timerData = [
