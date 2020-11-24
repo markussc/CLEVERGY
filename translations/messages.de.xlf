@@ -305,6 +305,18 @@
         <source>label.humidity</source>
         <target>Luftfeuchtigkeit</target>
       </trans-unit>
+      <trans-unit id="giwtYa9" resname="label.mystrom.timer">
+        <source>label.mystrom.timer</source>
+        <target>Timer</target>
+      </trans-unit>
+      <trans-unit id="a15_T8H" resname="label.mystrom.select_mystrom_timer_lead">
+        <source>label.mystrom.select_mystrom_timer_lead</source>
+        <target>Die gewünschte Ladezeit auswählen und "Starten" drücken.</target>
+      </trans-unit>
+      <trans-unit id="AXIvXXZ" resname="label.mystrom.timer.start">
+        <source>label.mystrom.timer.start</source>
+        <target>Starten</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

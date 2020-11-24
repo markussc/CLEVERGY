@@ -110,7 +110,7 @@ parameters:
             -
                 ip: '192.168.55.6'
                 name: 'presence'
-                type: 'motion' # valid types are 'relay' (= default) and 'motion' (motion sensors may be used for alarms and as a condition)
+                type: 'motion' # valid types are 'relay' (= default), 'motion' (motion sensors may be used for alarms and as a condition) and 'battery' (battery switches will prevent overloading by limiting the max active time)
         shelly:
             -
                 name: Storen Schlafzimmer

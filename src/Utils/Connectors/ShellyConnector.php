@@ -78,7 +78,8 @@ class ShellyConnector
             $device['port'] = 0;
         }
         $status = $this->getStatus($device);
-        $mode = $this->em->getRepository('App:Settings')->getMode($device['ip'].'_'.$device['port']);
+        $connectorId = $device['ip'].'_'.$device['port'];
+        $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
         if (isset($device['nominalPower'])) {
             $nominalPower = $device['nominalPower'];
         } else {
@@ -99,7 +100,7 @@ class ShellyConnector
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
-            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
             'timestamp' => new \DateTime('now'),
         ];
     }
@@ -112,7 +113,8 @@ class ShellyConnector
         if (!array_key_exists('port', $device)) {
             $device['port'] = 0;
         }
-        $mode = $this->em->getRepository('App:Settings')->getMode($device['ip'].'_'.$device['port']);
+        $connectorId = $device['ip'].'_'.$device['port'];
+        $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
         if (isset($device['nominalPower'])) {
             $nominalPower = $device['nominalPower'];
         } else {
@@ -123,7 +125,7 @@ class ShellyConnector
         } else {
             $autoIntervals = [];
         }
-        $latest = $this->em->getRepository('App:ShellyDataStore')->getLatest($device['ip'].'_'.$device['port']);
+        $latest = $this->em->getRepository('App:ShellyDataStore')->getLatest($connectorId);
         if (method_exists($latest, "getData")) {
             $status = $latest->getData();
             $timestamp = $latest->getTimestamp();
@@ -140,7 +142,7 @@ class ShellyConnector
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
-            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($device['ip'].'_'.$device['port'], $today, $now),
+            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
             'timestamp' => $timestamp,
         ];
     }

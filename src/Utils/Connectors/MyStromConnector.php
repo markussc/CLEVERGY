@@ -98,6 +98,7 @@ class MyStromConnector
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
+                    'timerData' => $this->getTimerData($device),
                 ];
             }
         }
@@ -150,6 +151,7 @@ class MyStromConnector
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
             'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
+            'timerData' => $this->getTimerData($device),
         ];
     }
 
@@ -166,6 +168,12 @@ class MyStromConnector
 
     public function executeCommand($deviceId, $command)
     {
+        if (strpos(strval($command), 'timer') === 0) {
+            $timer = explode('timer_', $command);
+            if (count($timer) == 2) {
+                return $this->startTimer($this->connectors['mystrom'][$deviceId], $timer[1]);
+            }
+        }
         switch ($command) {
             case 1:
                 // turn it on
@@ -347,5 +355,44 @@ class MyStromConnector
             }
         }
         return null;
+    }
+
+    private function getTimerData($device)
+    {
+        $timerData =  [];
+        if (array_key_exists('type', $device) && $device['type'] == 'battery') {
+            $connectorId = $device['ip'];
+            $now = new \DateTime();
+            $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
+            if ($device) {
+                $config = $device->getConfig();
+                if (is_array($config) && array_key_exists('startTime', $config)) {
+                    $startTime = date_create($config['startTime']['date']);
+                    $activeDuration = $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($connectorId, $startTime, $now); // in minutes since started
+                    $activePercentage = 100;
+                    if ($activeDuration > 0) {
+                        $activePercentage = intval(100/$config['activeTime']*$activeDuration/60);
+                    }
+                    $timerData = [
+                        'startTime' => $startTime,
+                        'activeTime' => $config['activeTime'],
+                        'activeDuration' => $activeDuration,
+                        'activePercentage' =>  $activePercentage,
+                    ];
+                }
+            }
+        }
+
+        return $timerData;
+    }
+
+    private function startTimer($deviceConf, $activeTime)
+    {
+        $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($deviceConf['ip']);
+        $config = $device->getConfig();
+        $config['activeTime'] = intval($activeTime);
+        $config['startTime'] = new \DateTime('now');
+        $device->setConfig($config);
+        $this->em->flush($device);
     }
 }

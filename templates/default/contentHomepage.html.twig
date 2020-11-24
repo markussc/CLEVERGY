@@ -4,6 +4,25 @@
 {% if shellyConnector.getAlarms()|length > 0 %}{% set contactActive = true %}{% endif %}
 {% if mystromConnector.getAlarms()|length > 0 %}{% set motionActive = true %}{% endif %}
 
+{% if is_granted('ROLE_OWNER') %}
+    <div id="mystromTimerModal" class="reveal" data-reveal>
+      <h4 id="mystromTimerModalTitle">{% trans %}label.mystrom.timer{% endtrans %}</h4>
+      <p class="lead">{% trans %}label.mystrom.select_mystrom_timer_lead{% endtrans %}</p>
+      <select class="select2" id="mystromTimer">
+          <option value="timer_0">---</option>
+          <option value="timer_4">4h</option>
+          <option value="timer_8">8h</option>
+          <option value="timer_12">12h</option>
+          <option value="timer_16">16h</option>
+      </select>
+      <hr>
+      <button type="button" onclick="sendCommand(['mystrom', selectedMystrom, $('#mystromTimer').val()])">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
+      <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+      <script>var selectedMystrom;</script>
+{% endif %}
 <div class="row">
     <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
@@ -57,7 +76,23 @@
         {% for key, device in currentStat['mystrom']|default([]) %}
             {% if device['type']|default('') != 'motion' %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
-                <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+                {% if device['type'] != 'battery' %}<a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+                {% else %}
+                    {% if device.timerData.activePercentage|default(100) < 25 %}
+                        {% set timerColor =  'red' %}
+                        {% set timerClass = 'empty' %}
+                    {% elseif device.timerData.activePercentage|default(100) < 75 %}
+                        {% set timerColor =  'orange' %}
+                        {% set timerClass = 'half' %}
+                    {% elseif device.timerData.activePercentage|default(100) < 90 %}
+                        {% set timerColor =  'yellow' %}
+                        {% set timerClass = 'three-quarters' %}
+                    {% else %}
+                        {% set timerColor =  'green' %}
+                        {% set timerClass = 'full' %}
+                    {% endif %}
+                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}"' class="button tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
+                {% endif %}
                 {{ device['name']}}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
             {% endif %}
