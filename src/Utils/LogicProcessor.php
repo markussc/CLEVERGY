@@ -50,7 +50,7 @@ class LogicProcessor
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, Array $connectors)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->edimax = $edimax;
@@ -66,6 +66,7 @@ class LogicProcessor
         $this->threema = $threema;
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
+        $this->minInsideTemp = $minInsideTemp;
         $this->connectors = $connectors;
         $this->translator = $translator;
     }
@@ -123,6 +124,8 @@ class LogicProcessor
 
         // process alarms
         $this->processAlarms();
+
+        return 0;
     }
 
     /**
@@ -429,9 +432,9 @@ class LogicProcessor
         // set the emergency temperature levels
             // we are on low energy rate
             $minWaterTemp = 38;
-            $minInsideTemp = 19.5+$tempOffset/5;
+            $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = 21.7+$tempOffset;
+            $maxInsideTemp = $this->minInsideTemp+1.7+$tempOffset;
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $mobilealerts = $this->mobilealerts->getAllLatest();

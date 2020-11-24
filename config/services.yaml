@@ -46,6 +46,7 @@ services:
         public: true
         arguments:
             $energyLowRate: "%energy_low_rate%"
+            $minInsideTemp: "%min_inside_temp%"
             $connectors: "%connectors%"
 
     App\Utils\Connectors\:
