@@ -64,6 +64,29 @@ class MobileAlertsConnector
         return $this->em->getRepository('App:Settings')->getMode('alarm');
     }
 
+    public function getCurrentMinInsideTemp()
+    {
+        $latest = $this->getAllLatest();
+        $tmp = [];
+        foreach  ($latest as $device) {
+            foreach ($device as $sensor) {
+                if (array_key_exists("usage", $sensor) &&
+                        (   $sensor['usage'] == "insidetemp" ||
+                            $sensor['usage'] == "firstfloortemp" ||
+                            $sensor['usage'] == "secondfloortemp")) {
+                    $tmp[] = floatval($sensor['value']);
+                }
+            }
+        }
+        if (count($tmp) > 0) {
+            $insideTemp = min($tmp);
+        } else {
+            $insideTemp = 20;
+        }
+
+        return $insideTemp;
+    }
+
     /**
      * Reads the latest available data from the database
      * @return array

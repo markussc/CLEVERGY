@@ -437,9 +437,7 @@ class LogicProcessor
             $maxInsideTemp = $this->minInsideTemp+1.7+$tempOffset;
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
-            $mobilealerts = $this->mobilealerts->getAllLatest();
-            $mobilealerts = $mobilealerts[$this->mobilealerts->getId(0)];
-            $insideTemp = $mobilealerts[1]['value']; // this is assumed to be the first value of the first mobilealerts sensor
+            $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
         } else {
             // if no inside sensor is available, we assume 20°C
             $insideTemp = 20;
