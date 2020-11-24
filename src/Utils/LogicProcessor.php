@@ -438,6 +438,8 @@ class LogicProcessor
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
+        } elseif ($this->netatmo->getAvailable()) {
+            $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
         } else {
             // if no inside sensor is available, we assume 20°C
             $insideTemp = 20;

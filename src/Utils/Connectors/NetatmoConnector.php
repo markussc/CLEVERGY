@@ -56,6 +56,34 @@ class NetatmoConnector
         return $id;
     }
 
+    public function getCurrentMinInsideTemp()
+    {
+        $tmp = [];
+        if (($sensor = $this->getLatestByLocation("inside")) !== null) {
+            if (array_key_exists("temp", $sensor)) {
+                $tmp[] = $sensor["temp"];
+            }
+        }
+        if (($sensor = $this->getLatestByLocation("firstfloor")) !== null) {
+            if (array_key_exists("temp", $sensor)) {
+                $tmp[] = $sensor["temp"];
+            }
+        }
+        if (($sensor = $this->getLatestByLocation("secondfloor")) !== null) {
+            if (array_key_exists("temp", $sensor)) {
+                $tmp[] = $sensor["temp"];
+            }
+        }
+
+        if (count($tmp) > 0) {
+            $insideTemp = min($tmp);
+        } else {
+            $insideTemp = 20;
+        }
+
+        return $insideTemp;
+    }
+
     public function getAllLatest()
     {
         return $this->em->getRepository('App:NetatmoDataStore')->getLatest($this->config['deviceid']);
