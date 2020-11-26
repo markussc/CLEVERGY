@@ -59,7 +59,7 @@ class MyStromConnector
             }
         }
 
-        return true;
+        return false;
     }
 
     /**
