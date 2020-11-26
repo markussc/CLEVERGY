@@ -526,6 +526,6 @@ class ShellyConnector
             }
         }
 
-        return true;
+        return false;
     }
 }
