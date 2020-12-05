@@ -528,4 +528,17 @@ class ShellyConnector
 
         return false;
     }
+
+    public function rollerRelayAvailable()
+    {
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $deviceConf) {
+                if (array_key_exists('type', $deviceConf) && ($deviceConf['type'] == 'roller') || $deviceConf['type'] == 'relay') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
