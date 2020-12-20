@@ -8,6 +8,7 @@ use App\Entity\MyStromDataStore;
 use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
 use App\Entity\PcoWebDataStore;
+use App\Entity\WemDataStore;
 use App\Entity\SmartFoxDataStore;
 use App\Entity\MobileAlertsDataStore;
 use App\Entity\ShellyDataStore;
@@ -19,6 +20,7 @@ use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\PcoWebConnector;
+use App\Utils\Connectors\WemConnector;
 use App\Utils\Connectors\LogoControlConnector;
 use App\Utils\Connectors\ThreemaConnector;
 use App\Utils\Connectors\SmartFoxConnector;
@@ -42,6 +44,7 @@ class LogicProcessor
     protected $shelly;
     protected $smartfox;
     protected $pcoweb;
+    protected $wem;
     protected $conexio;
     protected $logo;
     protected $netatmo;
@@ -50,7 +53,7 @@ class LogicProcessor
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->edimax = $edimax;
@@ -60,6 +63,7 @@ class LogicProcessor
         $this->shelly = $shelly;
         $this->smartfox = $smartfox;
         $this->pcoweb = $pcoweb;
+        $this->wem = $wem;
         $this->conexio = $conexio;
         $this->logo = $logo;
         $this->netatmo = $netatmo;
@@ -93,6 +97,9 @@ class LogicProcessor
 
         // pcoweb
         $this->initPcoweb();
+
+        // wem
+        $this->initWem();
 
         // mobilealerts
         $this->initMobilealerts();
@@ -809,6 +816,19 @@ class LogicProcessor
             $pcowebEntity->setConnectorId($this->pcoweb->getIp());
             $pcowebEntity->setData($pcoweb);
             $this->em->persist($pcowebEntity);
+            $this->em->flush();
+        }
+    }
+
+    public function initWem()
+    {
+        if ($this->wem->getUsername()) {
+            $wem = $this->wem->getAll();
+            $wemEntity = new WemDataStore();
+            $wemEntity->setTimestamp(new \DateTime('now'));
+            $wemEntity->setConnectorId($this->wem->getUsername());
+            $wemEntity->setData($wem);
+            $this->em->persist($wemEntity);
             $this->em->flush();
         }
     }

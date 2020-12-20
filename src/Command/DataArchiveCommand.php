@@ -32,6 +32,7 @@ class DataArchiveCommand extends Command
             // with archive functionality
             \App\Entity\SmartFoxDataStore::class,
             \App\Entity\PcoWebDataStore::class,
+            \App\Entity\WemDataStore::class,
             \App\Entity\MobileAlertsDataStore::class,
             \App\Entity\ConexioDataStore::class,
             \App\Entity\LogoControlDataStore::class,

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Utils\Connectors\WemConnector;
 use App\Entity\Settings;
 use App\Utils\LogicProcessor;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -57,6 +58,8 @@ class DefaultController extends Controller
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
                 $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\PcoWebConnector')->getAllLatest();
+            } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
+                $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\WemConnector')->getAllLatest(); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
                 $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAllLatest();
@@ -99,6 +102,8 @@ class DefaultController extends Controller
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
                 $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\PcoWebConnector')->getIp());
+            } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
+                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\WemConnector')->getIp()); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
                 $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\ConexioConnector')->getIp());
@@ -112,6 +117,7 @@ class DefaultController extends Controller
                 'mystrom' => true,
                 'shelly' => true,
                 'pcoweb' => true,
+                'wem' => true,
                 'openweathermap' => true,
                 'mobilealerts' => true,
                 'netatmo' => true,
@@ -301,6 +307,7 @@ class DefaultController extends Controller
             'smartfox' => true,
             'mobilealerts' => true,
             'pcoweb' => true,
+            'wem' => true,
             'conexio' => true,
             'logocontrol' => true,
             'netatmo' => true,
@@ -500,6 +507,8 @@ class DefaultController extends Controller
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
             $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\PcoWebConnector')->getAllLatest();
+        } elseif (($fullSet === true || isset($fullSet['wem'])) && array_key_exists('wem', $this->getParameter('connectors'))) {
+            $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\WemConnector')->getAllLatest();  // we store the wem data to the pcoWeb data structure for simplicity
         }
         if (($fullSet === true || isset($fullSet['conexio'])) && array_key_exists('conexio', $this->getParameter('connectors'))) {
             $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAll(true);
