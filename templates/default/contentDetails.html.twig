@@ -82,9 +82,9 @@
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</a></li>
         {% endif %}
         <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>
-        {% if pcowebConnector.getIp() %}
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
+        {% if pcowebConnector.getIp() %}
         <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>
         <li>{% trans %}label.pco.pp_source_out_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceOut']|default('---') }}°C</li>
         {% endif %}
