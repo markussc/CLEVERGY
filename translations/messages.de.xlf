@@ -83,7 +83,7 @@
       </trans-unit>
       <trans-unit id="3Ompyr8" resname="label.pco.pp_status">
         <source>label.pco.pp_status</source>
-        <target>Erdsonde</target>
+        <target>Wärmepumpe</target>
       </trans-unit>
       <trans-unit id="jRKe1QV" resname="label.pco.pp_mode">
         <source>label.pco.pp_mode</source>

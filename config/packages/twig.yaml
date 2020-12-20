@@ -10,4 +10,5 @@ twig:
         mobilealertsConnector: '@App\Utils\Connectors\MobileAlertsConnector'
         mystromConnector: '@App\Utils\Connectors\MyStromConnector'
         shellyConnector: '@App\Utils\Connectors\ShellyConnector'
+        pcowebConnector: '@App\Utils\Connectors\PcoWebConnector'
 
