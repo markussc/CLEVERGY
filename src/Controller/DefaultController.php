@@ -103,7 +103,7 @@ class DefaultController extends Controller
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
                 $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\PcoWebConnector')->getIp());
             } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\WemConnector')->getIp()); // we store the wem data to the pcoWeb data structure for simplicity
+                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\WemConnector')->getIp()); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
                 $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\ConexioConnector')->getIp());
