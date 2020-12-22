@@ -241,11 +241,21 @@ class LogicProcessor
         $smartfox = $this->smartfox->getAllLatest();
         $netPower = $smartfox['power_io'];
 
+        // get  mystrom values
+        $mystromDevices = $this->mystrom->getAllLatest();
+
+        // if device is of type battery, calculate the remaining required total runtime and store temporarily as "forceOff --> runTime" condition). It will then turn off if the accumulated activeDuration (over several days) has reached the requested activeTime
+        foreach ($mystromDevices as $deviceId => $mystrom) {
+            if ($mystrom['type'] == 'battery') {
+                $mystromDevices[$deviceId]['forceOff']['runTime'] = $mystrom['timerData']['activeTime']*60 - $mystrom['timerData']['activeDuration'];
+            }
+        }
+
         // auto actions for devices which have a nominalPower
         if ($netPower > 0) {
             if ($avgPower > 0) {
                 // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
-                foreach ($this->mystrom->getAllLatest() as $deviceId => $mystrom) {
+                foreach ($mystromDevices as $deviceId => $mystrom) {
                     if ($mystrom['nominalPower'] > 0) {
                         // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
                         if ($this->forceOnMystrom($deviceId, $mystrom)) {
@@ -261,7 +271,7 @@ class LogicProcessor
             }
         } else {
             // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
-            foreach ($this->mystrom->getAllLatest() as $deviceId => $mystrom) {
+            foreach ($mystromDevices as $deviceId => $mystrom) {
                 if ($mystrom['nominalPower'] > 0) {
                     // check for "forceOff" conditions (if true, try to turn it off and skip
                     if ($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
@@ -285,7 +295,7 @@ class LogicProcessor
         }
 
         // auto actions for devices without nominal power
-        foreach ($this->mystrom->getAllLatest() as $deviceId => $mystrom) {
+        foreach ($mystromDevices as $deviceId => $mystrom) {
             if ($mystrom['nominalPower'] == 0) {
                 if($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
                     if ($this->forceOffMystrom($deviceId, $mystrom)) {
