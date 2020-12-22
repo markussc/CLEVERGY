@@ -29,12 +29,17 @@ class WemConnector
 
     public function __construct(EntityManager $em, HttpClientInterface $client, Array $connectors, $browser)
     {
-        $this->em = $em;
-        $this->client = $client;
-        $this->basePath = "https://www.wemportal.com/Web/";
-        $this->username = $connectors['wem']['username'];
-        $this->password = $connectors['wem']['password'];
-        $this->authenticate();
+        if (array_key_exists('wem', $connectors)) {
+            $this->em = $em;
+            $this->client = $client;
+            $this->basePath = "https://www.wemportal.com/Web/";
+            $this->username = $connectors['wem']['username'];
+            $this->password = $connectors['wem']['password'];
+            $this->authenticate();
+        } else {
+            $this->username = null;
+            $this->password = null;
+        }
     }
 
     public function getAllLatest()
