@@ -8,6 +8,7 @@ use HeadlessChromium\BrowserFactory;
 
 /**
  * Connector to retrieve data from the WEM Portal (Weishaupt Energy Manager)
+ * Note: requires chromium browser installed on the system. Ubuntu: sudo snap install chromium
  *
  * @author Markus Schafroth
  */
