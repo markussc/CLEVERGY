@@ -247,7 +247,7 @@ class LogicProcessor
         // if device is of type battery, calculate the remaining required total runtime and store temporarily as "forceOff --> runTime" condition). It will then turn off if the accumulated activeDuration (over several days) has reached the requested activeTime
         foreach ($mystromDevices as $deviceId => $mystrom) {
             if ($mystrom['type'] == 'battery') {
-                $mystromDevices[$deviceId]['forceOff']['runTime'] = $mystrom['timerData']['activeTime']*60 - $mystrom['timerData']['activeDuration'];
+                $mystromDevices[$deviceId]['forceOff'][]['runTime'] = $mystrom['timerData']['activeTime']*60 - $mystrom['timerData']['activeDuration'];
             }
         }
 

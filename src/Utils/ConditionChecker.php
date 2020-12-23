@@ -48,6 +48,9 @@ class ConditionChecker
         if (null === $conf) {
             // there is no edimax device with this IP. We check if there is a mystrom device instead
             $conf = $this->mystrom->getConfig($this->ip);
+            if (array_key_exists('forceOff', $device)) {
+                $conf['forceOff'] = $device['forceOff'];
+            }
             $this->deviceClass = "MyStrom";
         }
         if (null === $conf) {
