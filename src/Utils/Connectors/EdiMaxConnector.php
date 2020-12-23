@@ -244,9 +244,11 @@ class EdiMaxConnector
 
     public function getConfig($ip)
     {
-        foreach ($this->connectors['edimax'] as $device) {
-            if ($device['ip'] == $ip) {
-                return $device;
+        if (array_key_exists('edimax', $this->connectors)) {
+            foreach ($this->connectors['edimax'] as $device) {
+                if ($device['ip'] == $ip) {
+                    return $device;
+                }
             }
         }
         return null;
