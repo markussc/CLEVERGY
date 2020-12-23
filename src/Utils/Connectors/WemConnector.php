@@ -2,11 +2,9 @@
 
 namespace App\Utils\Connectors;
 
-use App\Entity\Settings;
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+use HeadlessChromium\BrowserFactory;
 
 /**
  * Connector to retrieve data from the WEM Portal (Weishaupt Energy Manager)
@@ -15,30 +13,19 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class WemConnector
 {
-    const MODE_SUMMER = 0;
-    const MODE_AUTO = 1;
-    const MODE_HOLIDAY = 2;
-    const MODE_PARTY = 3;
-    const MODE_2ND = 4;
     protected $em;
     private $basePath;
-    private $client;
-    private $cookies;
+    private $page;
     private $username;
     private $password;
 
-    public function __construct(EntityManager $em, HttpClientInterface $client, Array $connectors, $browser)
+    public function __construct(EntityManager $em, Array $connectors)
     {
         if (array_key_exists('wem', $connectors)) {
             $this->em = $em;
-            $this->client = $client;
             $this->basePath = "https://www.wemportal.com/Web/";
             $this->username = $connectors['wem']['username'];
             $this->password = $connectors['wem']['password'];
-            $this->authenticate();
-        } else {
-            $this->username = null;
-            $this->password = null;
         }
     }
 
@@ -72,79 +59,47 @@ class WemConnector
         }
     }
 
+    /*
+     * authenticates with user credentials and reloads data from the device
+     */
     private function authenticate()
     {
-        try {
-            $response = $this->client->request('GET', $this->basePath . 'Login.aspx?AspxAutoDetectCookieSupport=1');
+        // initialize
+        $browserFactory = new BrowserFactory('chromium-browser');
+        $this->page = $browserFactory->createBrowser(['noSandbox' => true])->createPage();
 
-            if ($response->getStatusCode() === Response::HTTP_OK) {
-                $formFields = $this->parseLoginForm($response->getContent());
-                $formFields['ctl00$content$tbxUserName'] = $this->username;
-                $formFields['ctl00$content$tbxPassword'] = $this->password;
-                $formFields['ctl00$content$btnLogin'] = 'Anmelden';
-                $cookies = $response->getHeaders()['set-cookie'];
-                $responseAuth = $this->client->request(
-                    'POST',
-                    $this->basePath . 'Login.aspx',
-                    [
-                        'headers' => ['Cookie' => $cookies],
-                        'body' => $formFields,
-                        'max_redirects' => 0,
-                    ]
-                );
+        // authenticate
+        $this->page->navigate($this->basePath . 'Login.aspx')->waitForNavigation();
+        $this->page->evaluate(
+            '(() => {
+                    document.querySelector("#ctl00_content_tbxUserName").value = "' . $this->username.'";
+                    document.querySelector("#ctl00_content_tbxPassword").value = "' . $this->password.'";
+                    document.querySelector("#ctl00_content_btnLogin").click();
+                })()'
+        )->waitForPageReload();
 
-                if ($responseAuth->getStatusCode() === Response::HTTP_OK || $responseAuth->getStatusCode() === Response::HTTP_FOUND) {
-                    foreach ($responseAuth->getInfo('response_headers') as $header) {
-                        $splitHeader = explode('Set-Cookie: ', $header);
-                        if (count($splitHeader) >  1) {
-                            $cookies[] = $splitHeader[1];
-                            break;
-                        }
-                    }
-                    foreach ($cookies as $key=>$val) {
-                        $cookies[$key] = explode(';', $val)[0];
-                    }
-                    array_unshift($cookies, 'AspxAutoDetectCookieSupport=1');
-                    $this->cookies = join('; ', $cookies);
-                }
-            }
-        } catch (\Exception $e) {
-            $this->cookies = null;
-        }
-    }
+        // click first navigation button (info)
+        $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a").click();');
 
-    private function parseLoginForm($html)
-    {
-        $formFields = [];
-        $crawler = new Crawler($html);
-        foreach ($crawler->filter('input') as $inputElement) {
-            $formFields[$inputElement->getAttribute('id')] = $inputElement->getAttribute('value');
-        }
-
-        return $formFields;
+        // click update button
+        $this->page->evaluate('document.querySelector("#ctl00_DeviceContextControl1_RefreshDeviceDataButton").click();');
     }
 
     private function getDefault()
     {
-        $response = $this->client->request(
-            'GET',
-            $this->basePath . 'Default.aspx',
-            [
-                'headers' => ['Cookie' => $this->cookies],
-            ]
-        );
-
+        if ($this->page === null) {
+           $this->authenticate();
+        }
         $data = [];
-        $crawler = new Crawler($response->getContent());
-        $data['waterTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue')->text())[0];
-        $data['storTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue')->text())[0];
-        $data['outsideTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue')->text())[0];
-        $data['setDistrTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl4_ctl00_lblValue')->text())[0];
-        $data['effDistrTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue')->text())[0];
-        $data['preTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue')->text())[0];
-        $data['backTemp'] = explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue')->text())[0];
-        $data['cpStatus'] = $this->statusToString(explode(' ', $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue')->text())[0]);
-        $data['ppStatus'] = $crawler->filter('#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl1_ctl00_lblValue')->text();
+        $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['outsideTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['setDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl4_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['effDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['preTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['backTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
+        $data['cpStatus'] = $this->statusToString(explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML')->getReturnValue())[0]);
+        $data['ppStatus'] = $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl1_ctl00_lblValue").innerHTML')->getReturnValue();
 
         return $data;
     }

@@ -6,6 +6,7 @@
         "php": ">=7.0.8",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "chrome-php/chrome": "^0.9.0",
         "doctrine/doctrine-bundle": "^1",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.7",
