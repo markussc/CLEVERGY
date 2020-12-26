@@ -834,12 +834,14 @@ class LogicProcessor
     {
         if ($this->wem->getUsername()) {
             $wem = $this->wem->getAll();
-            $wemEntity = new WemDataStore();
-            $wemEntity->setTimestamp(new \DateTime('now'));
-            $wemEntity->setConnectorId($this->wem->getUsername());
-            $wemEntity->setData($wem);
-            $this->em->persist($wemEntity);
-            $this->em->flush();
+            if ($wem !== false) {
+                $wemEntity = new WemDataStore();
+                $wemEntity->setTimestamp(new \DateTime('now'));
+                $wemEntity->setConnectorId($this->wem->getUsername());
+                $wemEntity->setData($wem);
+                $this->em->persist($wemEntity);
+                $this->em->flush();
+            }
         }
     }
 
