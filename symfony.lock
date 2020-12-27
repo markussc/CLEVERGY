@@ -1,9 +1,6 @@
 {
-    "apix/log": {
-        "version": "1.2.1"
-    },
-    "chrome-php/chrome": {
-        "version": "v0.9.0"
+    "clue/socket-raw": {
+        "version": "v1.5.0"
     },
     "doctrine/annotations": {
         "version": "1.0",
@@ -87,9 +84,6 @@
     "egulias/email-validator": {
         "version": "2.1.19"
     },
-    "evenement/evenement": {
-        "version": "v3.0.1"
-    },
     "friendsofsymfony/user-bundle": {
         "version": "v2.1.2"
     },
@@ -107,6 +101,12 @@
             "version": "1.0",
             "ref": "1da7c9584a9face8cc2a9ee42a04ae33c284bea8"
         }
+    },
+    "nesk/puphpeteer": {
+        "version": "1.6.0"
+    },
+    "nesk/rialto": {
+        "version": "1.4.0"
     },
     "ocramius/package-versions": {
         "version": "1.4.2"
@@ -441,8 +441,8 @@
     "twig/twig": {
         "version": "v2.13.1"
     },
-    "wrench/wrench": {
-        "version": "v2.0.11"
+    "vierbergenlars/php-semver": {
+        "version": "3.0.2"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"

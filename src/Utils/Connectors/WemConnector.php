@@ -5,10 +5,11 @@ namespace App\Utils\Connectors;
 use Doctrine\ORM\EntityManager;
 
 use HeadlessChromium\BrowserFactory;
+use Nesk\Puphpeteer\Puppeteer;
 
 /**
  * Connector to retrieve data from the WEM Portal (Weishaupt Energy Manager)
- * Note: requires chromium browser installed on the system. Ubuntu: sudo apt install chromium-browser; sudo snap install chromium
+ * Note: requires the following prerequisites installed on the system. Ubuntu: <code>composer require nesk/puphpeteer; npm install @nesk/puphpeteer</code>
  *
  * @author Markus Schafroth
  */
@@ -40,7 +41,8 @@ class WemConnector
         // get analog, digital and integer values
         try {
             $defaultData = $this->getDefault();
-            return array_merge($defaultData); // prepared for further separate queries to detail pages
+            $systemData = $this->getSystemMode();
+            return array_merge($defaultData, $systemData); // prepared for further separate queries to detail pages
         } catch (\Exception $e) {
           return false;
         }
@@ -60,30 +62,49 @@ class WemConnector
         }
     }
 
+    private function ppModeToString($mode)
+    {
+        switch ($mode) {
+            case 'Sommer':
+                return 'label.pco.ppmode.summer';
+            case 'Heizen':
+                return 'label.pco.ppmode.auto';
+            case 'Standby':
+                return 'label.pco.ppmode.holiday';
+            case '2. WEZ':
+                return 'label.pco.ppmode.2nd';
+        }
+    }
+
     /*
      * authenticates with user credentials and reloads data from the device
      */
     private function authenticate()
     {
         // initialize
-        $browserFactory = new BrowserFactory('chromium-browser');
-        $this->page = $browserFactory->createBrowser(['noSandbox' => true])->createPage();
+        $puppeteer = new Puppeteer;
+        $browser = $puppeteer->launch();
+        $this->page = $browser->newPage();
 
         // authenticate
-        $this->page->navigate($this->basePath . 'Login.aspx')->waitForNavigation();
+        $this->page->goto($this->basePath . 'Login.aspx');
+
+
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_content_tbxUserName").value = "' . $this->username.'";
                     document.querySelector("#ctl00_content_tbxPassword").value = "' . $this->password.'";
-                    document.querySelector("#ctl00_content_btnLogin").click();
                 })()'
-        )->waitForPageReload();
+        );
+        $this->page->click("#ctl00_content_btnLogin");
+        $this->page->waitForNavigation();
 
         // click first navigation button (info)
-        $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a").click();');
+        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a")[0];
 
         // click update button
-        $this->page->evaluate('document.querySelector("#ctl00_DeviceContextControl1_RefreshDeviceDataButton").click();');
+        $this->page->waitForSelector("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
+        $this->page->click("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
     }
 
     private function getDefault()
@@ -92,15 +113,30 @@ class WemConnector
            $this->authenticate();
         }
         $data = [];
-        $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['outsideTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['setDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl4_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['effDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['preTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['backTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML')->getReturnValue())[0];
-        $data['cpStatus'] = $this->statusToString(explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML')->getReturnValue())[0]);
-        $data['ppStatus'] = $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl1_ctl00_lblValue").innerHTML')->getReturnValue();
+        $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
+        $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML'))[0];
+        $data['outsideTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
+        $data['setDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl4_ctl00_lblValue").innerHTML'))[0];
+        $data['effDistrTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML'))[0];
+        $data['preTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML'))[0];
+        $data['backTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl2_ctl00_lblValue").innerHTML'))[0];
+        $data['cpStatus'] = $this->statusToString(explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML'))[0]);
+        $data['ppStatus'] = $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl1_ctl00_lblValue").innerHTML');
+
+        return $data;
+    }
+
+    private function getSystemMode()
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $data = [];
+        // click second navigation button (Betriebsart)
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
+        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_imgbtnEdit");
+        $data['ppMode'] = $this->ppModeToString($this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'));
 
         return $data;
     }
