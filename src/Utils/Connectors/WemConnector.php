@@ -17,6 +17,7 @@ class WemConnector
 {
     protected $em;
     private $basePath;
+    private $browser;
     private $page;
     private $username;
     private $password;
@@ -42,6 +43,8 @@ class WemConnector
         try {
             $defaultData = $this->getDefault();
             $systemData = $this->getSystemMode();
+            $this->browser->close();
+            $this->browser = null;
             return array_merge($defaultData, $systemData); // prepared for further separate queries to detail pages
         } catch (\Exception $e) {
           return false;
@@ -83,8 +86,8 @@ class WemConnector
     {
         // initialize
         $puppeteer = new Puppeteer;
-        $browser = $puppeteer->launch();
-        $this->page = $browser->newPage();
+        $this->browser = $puppeteer->launch();
+        $this->page = $this->browser->newPage();
 
         // authenticate
         $this->page->goto($this->basePath . 'Login.aspx');
@@ -109,7 +112,7 @@ class WemConnector
 
     private function getDefault()
     {
-        if ($this->page === null) {
+        if ($this->browser === null) {
            $this->authenticate();
         }
         $data = [];
