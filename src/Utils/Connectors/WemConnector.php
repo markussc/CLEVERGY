@@ -43,9 +43,10 @@ class WemConnector
         try {
             $defaultData = $this->getDefault();
             $systemData = $this->getSystemMode();
+            $specialistDefaultData = $this->getSpecialistDefault();
             $this->browser->close();
             $this->browser = null;
-            return array_merge($defaultData, $systemData); // prepared for further separate queries to detail pages
+            return array_merge($defaultData, $systemData, $specialistDefaultData); // prepared for further separate queries to detail pages
         } catch (\Exception $e) {
           return false;
         }
@@ -140,6 +141,24 @@ class WemConnector
         $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_imgbtnEdit");
         $data['ppMode'] = $this->ppModeToString($this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'));
+
+        return $data;
+    }
+
+    private function getSpecialistDefault()
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $data = [];
+        // click "Anlagen" button in top navigation
+        $this->page->click("#ctl00_RMTopMenu a.rmLink");
+        $this->page->waitForSelector("#ctl00_SubMenuControl1_subMenu");
+        // click "Fachmann" in sub navigation
+        $this->page->click("#ctl00_SubMenuControl1_subMenu li:nth-of-type(4)>a");
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl15_ctl00_lblValue");
+        $data['ppSourceIn'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl15_ctl00_lblValue").innerHTML'))[0];
+        $data['ppSourceOut'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl23_ctl00_lblValue").innerHTML'))[0];
 
         return $data;
     }
