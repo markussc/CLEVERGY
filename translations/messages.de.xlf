@@ -317,6 +317,10 @@
         <source>label.mystrom.timer.start</source>
         <target>Starten</target>
       </trans-unit>
+      <trans-unit id="OkLt2st" resname="label.highrate">
+        <source>label.highrate</source>
+        <target>Hochtarif</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

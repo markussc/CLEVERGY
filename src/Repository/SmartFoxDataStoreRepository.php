@@ -96,4 +96,54 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
             return $endEnergy[0]->getData()[$parameter] - $startEnergy[0]->getData()[$parameter];
         }
     }
+
+    /*
+     * lowRate = [start, end, days]   :  energy_low_rate parameter according to configuration. If set, only the low rate energy is calculated
+     */
+    public function getEnergyIntervalHighRate($ip, $parameter, $lowRate, $start = null, $end = null)
+    {
+        if ($start === null) {
+            $start = new \DateTime('today'); // today at midnight (00:00)
+        }
+        if ($end === null) {
+            $end = new \DateTime('now');
+        }
+        if (!isset($lowRate['days'])) {
+            $lowRate['days'] = [];
+        }
+
+        if ($start->format('dmY') == $end->format('dmY')) {
+            // within one day
+            if (in_array($start->format('N'), $lowRate['days'])) {
+                // within one low rate day
+                return 0;
+            }
+            $startHour = $lowRate['end'];
+            $startMinute = '00';
+            if ($start->format('G') > $startHour) {
+                $startHour = $start->format('G');
+                $startMinute = $start->format('i');
+            }
+            $endHour = $lowRate['start'];
+            $endMinute = '00';
+            if ($end->format('G') < $endHour) {
+                $endHour = $end->format('G');
+                $endMinute = $end->format('i');
+            }
+            $start = \DateTime::createFromFormat('d-m-Y G:i', $start->format('d-m-Y').' '.$startHour.':'.$startMinute);
+            $end = \DateTime::createFromFormat('d-m-Y G:i', $end->format('d-m-Y').' '.$endHour.':'.$endMinute);
+            return $this->getEnergyInterval($ip, $parameter, $start, $end);
+        } else {
+            // over multiple days
+            $energyCount = 0;
+            $currentStart = $start;
+            while ($currentStart < $end) {
+                $currentEnd = min(\DateTime::createFromFormat('d-m-Y H:i', $currentStart->format('d-m-Y 23:59')), $end);
+                $energyCount += $this->getEnergyIntervalHighRate($ip, $parameter, $lowRate, $currentStart, $currentEnd);
+                $currentStart->modify('+ 1 day');
+                $currentStart = \DateTime::createFromFormat('d-m-Y H:i', $currentStart->format('d-m-Y 00:00'));
+            }
+            return $energyCount;
+        }
+    }
 }
