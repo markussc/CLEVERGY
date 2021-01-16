@@ -136,6 +136,7 @@ class WemConnector
            $this->authenticate();
         }
         $data = [];
+        $this->page->goto($this->basePath . 'Default.aspx');
         // click second navigation button (Betriebsart)
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
@@ -151,6 +152,7 @@ class WemConnector
            $this->authenticate();
         }
         $data = [];
+        $this->page->goto($this->basePath . 'Default.aspx');
         // click "Anlagen" button in top navigation
         $this->page->click("#ctl00_RMTopMenu a.rmLink");
         $this->page->waitForSelector("#ctl00_SubMenuControl1_subMenu");
@@ -161,5 +163,23 @@ class WemConnector
         $data['ppSourceOut'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl23_ctl00_lblValue").innerHTML'))[0];
 
         return $data;
+    }
+
+    /*
+     * $value: 0 - 150 in steps of 5; default: 75
+     */
+    private function setHeatCircle1($value = 75)
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
+        $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->page->evaluate(
+            '(() => {
+                    document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
+                })()'
+        );
+        $this->page->click("#ctl00_DialogContent_BtnSave");
     }
 }
