@@ -733,7 +733,7 @@ class LogicProcessor
 
         if ($smartFoxHighPower) {
             $this->wem->executeCommand('hc1', 100);
-                $log[] = "set hc1 to 90 due to high PV power";
+                $log[] = "set hc1 to 100 due to high PV power";
         } elseif (!$energyLowRate) {
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
