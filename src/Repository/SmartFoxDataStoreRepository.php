@@ -115,8 +115,16 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         if ($start->format('dmY') == $end->format('dmY')) {
             // within one day
             if (in_array($start->format('N'), $lowRate['days'])) {
-                // within one low rate day
+                // within one full-low rate day
                 return 0;
+            }
+            foreach ($lowRate['days'] as $lowRateDay) {
+                // check if for the current lowRateDay a separate start hour is specified
+                $lowRateDayConfig = explode(",", $lowRateDay);
+                if (count($lowRateDayConfig) > 1 && $start->format('N') == $lowRateDayConfig[0]) {
+                    //  set start hour to the one specified for this day
+                    $lowRate['start'] = $lowRateDayConfig[1];
+                }
             }
             $startHour = $lowRate['end'];
             $startMinute = '00';
