@@ -129,6 +129,12 @@ class LogicProcessor
             $this->autoActionsPcoWeb($pcoMode);
         }
 
+        // execute auto actions for wem WEM heating, if we are not in manual mode
+        $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
+        if (Settings::MODE_MANUAL != $wemMode) {
+            $this->autoActionsWem();
+        }
+
         // process alarms
         $this->processAlarms();
 
@@ -680,6 +686,87 @@ class LogicProcessor
         }
         $pcowebNew = $this->pcoweb->getAll();
         $commandLog->setPpMode($pcowebNew['ppMode']);
+        $commandLog->setLog($log);
+        $commandLog->setTimestamp(new \DateTime());
+        $this->em->persist($commandLog);
+        $this->em->flush();
+    }
+
+    public function autoActionsWem()
+    {
+        $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
+        $wem = $this->wem->getAllLatest();
+        $outsideTemp = $wem['outsideTemp'];
+        $smartfox = $this->smartfox->getAllLatest();
+        $smartFoxHighPower = $smartfox['digital'][1]['state'];
+        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+        $avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+        // readout weather forecast (currently the cloudiness for the next mid-day hours period)
+        $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
+        // readout current temperature values
+        if ($this->mobilealerts->getAvailable()) {
+            $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
+        } elseif ($this->netatmo->getAvailable()) {
+            $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
+        } else {
+            // if no inside sensor is available, we assume 20°C
+            $insideTemp = 20;
+        }
+
+        $waterTemp = $wem['waterTemp'];
+        if ($waterTemp === null) {
+            // if waterTemp could not be read out, the values can not be trusted. Skip any further processing.
+            return;
+        }
+
+        // write values to command log
+        $commandLog = new CommandLog();
+        $commandLog->setHighPvPower($smartFoxHighPower);
+        $commandLog->setAvgPvPower($avgPvPower);
+        $commandLog->setAvgPower($avgPower);
+        $commandLog->setWaterTemp($waterTemp);
+        $commandLog->setHeatStorageMidTemp($wem['storTemp']);
+        $commandLog->setAvgClouds($avgClouds);
+        $commandLog->setPpMode($wem['ppMode']);
+        $commandLog->setInsideTemp($insideTemp);
+        $log = [];
+
+        if ($smartFoxHighPower) {
+            $this->wem->executeCommand('hc1', 100);
+                $log[] = "set hc1 to 90 due to high PV power";
+        } elseif (!$energyLowRate) {
+            // readout temperature forecast for the coming night
+            $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
+            if ($minTempNight < $outsideTemp - 5) {
+                // night will be cold compared to current temp
+                $this->wem->executeCommand('hc1', 75);
+                $log[] = "set hc1 to 75 as night will be cold compared to current temp";
+            } elseif ($minTempNight < $outsideTemp - 10) {
+                // night will be extremely cold compared to current temp
+                $this->wem->executeCommand('hc1', 90);
+                $log[] = "set hc1 to 90 as night will be extremely cold compared to current temp";
+            } else {
+                // night will not be cold compared to current temp
+                $this->wem->executeCommand('hc1', 50);
+                $log[] = "set hc1 to 50 as night will not be cold compared to current temp";
+            }
+        } else {
+            // readout temperature forecast for the coming day
+            $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
+            if ($maxTempDay > $outsideTemp + 5) {
+                // day will be warm compared to current temp
+                $this->wem->executeCommand('hc1', 50);
+                $log[] = "set hc1 to 50 as day will be warm compared to current temp";
+            } elseif ($maxTempDay > $outsideTemp + 10) {
+                // day will be extremely warm compared to current temp
+                $this->wem->executeCommand('hc1', 40);
+                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp";
+            } else {
+                // day will not be warm compared to current temp
+                $this->wem->executeCommand('hc1', 75);
+                $log[] = "set hc1 to 75 as day will not be warm compared to current temp";
+            }
+        }
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);

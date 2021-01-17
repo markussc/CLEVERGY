@@ -6,10 +6,10 @@
       <select class="select2" id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
-          <option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>
+          {% if pcowebConnector.getIp() %}<option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>{% endif %}
       </select>
       <hr>
-      <button type="button" onclick="sendCommand(['settings', 'mode', 'pcoweb', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
+      <button type="button" onclick="sendCommand(['settings', 'mode', '{% if pcowebConnector.getIp() %}pcoweb{% else %}wem{% endif %}', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
       <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
       </button>
@@ -81,6 +81,7 @@
         <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: <a href="#" data-open="ppModeModal">{{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</a></li>
         {% else %}
+        <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: {{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</li>
         {% endif %}
         <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>

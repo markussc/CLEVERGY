@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 
 use HeadlessChromium\BrowserFactory;
 use Nesk\Puphpeteer\Puppeteer;
+use App\Entity\Settings;
 
 /**
  * Connector to retrieve data from the WEM Portal (Weishaupt Energy Manager)
@@ -44,9 +45,10 @@ class WemConnector
             $defaultData = $this->getDefault();
             $systemData = $this->getSystemMode();
             $specialistDefaultData = $this->getSpecialistDefault();
+            $modeData = ['mode' => $this->wemModeToString($this->em->getRepository('App:Settings')->getMode($this->getUsername()))];
             $this->browser->close();
             $this->browser = null;
-            return array_merge($defaultData, $systemData, $specialistDefaultData); // prepared for further separate queries to detail pages
+            return array_merge($defaultData, $systemData, $specialistDefaultData, $modeData);
         } catch (\Exception $e) {
           return false;
         }
@@ -55,6 +57,15 @@ class WemConnector
     public function getUsername()
     {
         return $this->username;
+    }
+
+    public function executeCommand($type, $command)
+    {
+        switch ($type) {
+            case 'hc1':
+                $this->setHeatCircle1($command);
+                break;
+        }
     }
 
     private function statusToString($status)
@@ -78,6 +89,19 @@ class WemConnector
             case '2. WEZ':
                 return 'label.pco.ppmode.2nd';
         }
+    }
+
+    private function wemModeToString($mode)
+    {
+        switch ($mode) {
+            case Settings::MODE_AUTO:
+                return 'label.pco.mode.auto';
+            case Settings::MODE_MANUAL:
+                return 'label.pco.mode.manual';
+            case Settings::MODE_HOLIDAY:
+                return 'label.pco.mode.holiday';
+        }
+        return 'undefined';
     }
 
     /*
@@ -173,6 +197,7 @@ class WemConnector
         if ($this->page === null) {
            $this->authenticate();
         }
+        $this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
