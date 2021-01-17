@@ -91,7 +91,12 @@ class SmartFoxConnector
             "energy_in" => $data["u5827-41"],
             "energy_out" => $data["u5824-41"],
             "power_io" => $data["u5790-41"],
-            "digital" => ["0" => ["state" => $data["u5674-41"]]],
+            "digital" => [
+                "0" => ["state" => $data["u5674-41"]],
+                "1" => ["state" => $data["u5704-41"]],
+                "2" => ["state" => $data["u5710-41"]],
+                "3" => ["state" => $data["u5707-41"]],
+            ],
             "PvPower" => ["0" => $data["u5272-41"]],
             "PvEnergy" => ["0" => $data["u7015"]],
             "day_energy_in" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in'),
