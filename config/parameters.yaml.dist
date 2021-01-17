@@ -161,6 +161,6 @@ parameters:
         start: 21  # hour (24h-format) when the lower energy tariff starts
         end: 7     # hour (24h format) when the lower energy tariff ends
         days:      # days where low rate is active around the clock (according to ISO-8601 [date('N')]: 1: monday, 7: sunday)
-            - 6
+            - 6,12 # first integer after the comma specifies a special start hour of the low rate for this week day (example: start of low rate at 12AM on saturdays)
             - 7
     min_inside_temp: 20 # minimum inside temperature to be adjusted for
