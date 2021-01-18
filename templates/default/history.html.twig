@@ -19,10 +19,13 @@
         </thead>
         <tbody>
             {% for interval in history['intervals'] %}
+            {% set highRateInAbs = (history['smartfox']['energy_in_' ~ interval ~ '_highrate']/1000)|round(1) %}
+            {% set totalIn = (history['smartfox']['energy_in_' ~ interval]/1000)|round(1) %}
+            {% set highRateInPercentage = 100/totalIn*highRateInAbs %}
             <tr>
                 <th>{{ ('label.' ~ interval) |trans }}</th>
                 <td>{{ (history['smartfox']['pv_' ~ interval]/1000)|round(1) }} kWh</td>
-                <td>{{ (history['smartfox']['energy_in_' ~ interval]/1000)|round(1) }} kWh{% if history['smartfox']['energy_in_' ~ interval ~ '_highrate']|default(false) %} ({% trans %}label.highrate{% endtrans %}: {{ (history['smartfox']['energy_in_' ~ interval ~ '_highrate']/1000)|round(1) }} kWh){% endif %}</td>
+                <td>{{ totalIn }} kWh{% if history['smartfox']['energy_in_' ~ interval ~ '_highrate']|default(false) %} ({% trans %}label.highrate{% endtrans %}: {{ highRateInAbs }} kWh = {{ highRateInPercentage|round }}%){% endif %}</td>
                 <td>{{ (history['smartfox']['energy_out_' ~ interval]/1000)|round(1) }} kWh</td>
                 <td>{{ ((history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
                 <td>{% if history['smartfox']['pv_' ~ interval] and history['smartfox']['pv_' ~ interval] >= history['smartfox']['energy_out_' ~ interval] %}{{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval]) / history['smartfox']['pv_' ~ interval] * 100) |round }} % ( = {{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh){% else %}---{% endif %}</td>
