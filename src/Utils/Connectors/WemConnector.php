@@ -218,11 +218,12 @@ class WemConnector
      */
     private function setHeatCircle1Hyseteresis($value = 3)
     {
+        $value *= $value;
         if ($this->page === null) {
            $this->authenticate();
         }
         $this->getDefault();
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=False');
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
