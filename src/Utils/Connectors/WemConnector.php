@@ -65,6 +65,9 @@ class WemConnector
             case 'hc1':
                 $this->setHeatCircle1($command);
                 break;
+            case 'hc1hysteresis':
+                $this->setHeatCircle1Hyseteresis($command);
+                break;
         }
     }
 
@@ -140,6 +143,8 @@ class WemConnector
         if ($this->browser === null) {
            $this->authenticate();
         }
+        $this->page->goto($this->basePath . 'Default.aspx');
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         $data = [];
         $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
         $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML'))[0];
@@ -199,6 +204,25 @@ class WemConnector
         }
         $this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
+        $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->page->evaluate(
+            '(() => {
+                    document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
+                })()'
+        );
+        $this->page->click("#ctl00_DialogContent_BtnSave");
+    }
+
+    /*
+     * $value: value in Kelvin
+     */
+    private function setHeatCircle1Hyseteresis($value = 3)
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $this->getDefault();
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
