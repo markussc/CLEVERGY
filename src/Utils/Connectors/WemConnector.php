@@ -218,7 +218,7 @@ class WemConnector
      */
     private function setHeatCircle1Hyseteresis($value = 3)
     {
-        $value = 10 * value;
+        $value = 10 * $value;
         if ($this->page === null) {
            $this->authenticate();
         }
