@@ -25,8 +25,8 @@ class WemConnector
 
     public function __construct(EntityManager $em, Array $connectors)
     {
+        $this->em = $em;
         if (array_key_exists('wem', $connectors)) {
-            $this->em = $em;
             $this->basePath = "https://www.wemportal.com/Web/";
             $this->username = $connectors['wem']['username'];
             $this->password = $connectors['wem']['password'];
@@ -67,6 +67,9 @@ class WemConnector
                 break;
             case 'hc1hysteresis':
                 $this->setHeatCircle1Hyseteresis($command);
+                break;
+            case 'hc2':
+                $this->setHeatCircle2($command);
                 break;
         }
     }
@@ -224,6 +227,25 @@ class WemConnector
         }
         $this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=True');
+        $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->page->evaluate(
+            '(() => {
+                    document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
+                })()'
+        );
+        $this->page->click("#ctl00_DialogContent_BtnSave");
+    }
+
+    /*
+     * $value: 0 - 150 in steps of 5; default: 75
+     */
+    private function setHeatCircle2($value = 75)
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $this->getDefault();
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {

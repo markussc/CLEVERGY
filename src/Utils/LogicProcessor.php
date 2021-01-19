@@ -730,6 +730,14 @@ class LogicProcessor
             // if no inside sensor is available, we assume 20°C
             $insideTemp = 20;
         }
+        // set the temperature offset for low outside temp
+        $tempOffset = 0;
+        if ($outsideTemp < 2) {
+            $tempOffset = (1 +(0-$outsideTemp)/10);
+        }
+
+        // we are on low energy rate
+        $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
 
         $waterTemp = $wem['waterTemp'];
         if ($waterTemp === null) {
@@ -748,6 +756,8 @@ class LogicProcessor
         $commandLog->setPpMode($wem['ppMode']);
         $commandLog->setInsideTemp($insideTemp);
         $log = [];
+
+        // adjust hc1
         if ($outsideTemp < 0) {
             // it's really cold, limit hc1 to max. 60
             $hc1Limit = 60;
@@ -805,6 +815,38 @@ class LogicProcessor
                 $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to default";
             }
         }
+
+        // adjust hc2
+        if ($insideTemp > $minInsideTemp + 1) {
+            // little warm inside
+            $this->wem->executeCommand('hc2', 45);
+            $log[] =  'little warm inside, set hc2 = 45';
+        } elseif ($insideTemp > $minInsideTemp + 2) {
+            // warm inside
+            $this->wem->executeCommand('hc2', 40);
+            $log[] =  'warm inside, set hc2 = 40';
+        } elseif ($insideTemp > $minInsideTemp + 3) {
+            // too hot inside
+            $this->wem->executeCommand('hc2', 10);
+            $log[] =  'too hot inside, set hc2 = 10';
+        } elseif ($insideTemp < $minInsideTemp - 2) {
+            // extremely cold inside
+            $this->wem->executeCommand('hc2', 75);
+            $log[] =  'extremely cold inside, set hc2 = 75';
+        } elseif ($insideTemp < $minInsideTemp - 1) {
+            // cold inside
+            $this->wem->executeCommand('hc2', 65);
+            $log[] =  'cold inside, set hc2 = 65';
+        } elseif ($insideTemp < $minInsideTemp) {
+            // little cold inside
+            $this->wem->executeCommand('hc2', 55);
+            $log[] =  'little cold inside, set hc2 = 55';
+        } else {
+            // perfect temperature inside
+            $this->wem->executeCommand('hc2', 50);
+            $log[] =  'perfect temperature inside set hc2 = 50';
+        }
+
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);
