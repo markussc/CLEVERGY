@@ -801,12 +801,12 @@ class LogicProcessor
                 $this->wem->executeCommand('hc1', $hc1);
                 $this->wem->executeCommand('hc1hysteresis', 8);
                 $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 8";
-            } elseif ($maxTempDay > $outsideTemp + 8) {
+            } elseif ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
                 // day will be extremely warm compared to current temp
                 $hc1 = min($hc1Limit, 40);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 8);
-                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 8";
+                $this->wem->executeCommand('hc1hysteresis', 3);
+                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 3";
             } else {
                 // day will not be warm compared to current temp
                 $hc1 = min($hc1Limit, 60);
