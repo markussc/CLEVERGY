@@ -765,6 +765,7 @@ class LogicProcessor
             // it's not extremely cold, do not limit hc1
             $hc1Limit = 100;
         }
+        $hc1hysteresis = 3;
         if ($smartFoxHighPower) {
             $hc1 = min($hc1Limit, 100);
             $this->wem->executeCommand('hc1', $hc1);
@@ -777,19 +778,19 @@ class LogicProcessor
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 75);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 5);
+                $hc1hysteresis = 5;
                 $log[] = "set hc1 to 75 as night will be cold compared to current temp; set hc1hysteresis to 5";
             } elseif ($minTempNight < $outsideTemp - 8) {
                 // night will be extremely cold compared to current temp
                 $hc1 = min($hc1Limit, 90);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 3);
-                $log[] = "set hc1 to 90 as night will be extremely cold compared to current temp; set hc1hysteresis to default";
+                $hc1hysteresis = 3;
+                $log[] = "set hc1 to 90 as night will be extremely cold compared to current temp; set hc1hysteresis to 3";
             } else {
                 // night will not be cold compared to current temp
                 $hc1 = min($hc1Limit, 50);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 8);
+                $hc1hysteresis = 8;
                 $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 8";
             }
         } else {
@@ -799,20 +800,27 @@ class LogicProcessor
                 // day will be warm compared to current temp
                 $hc1 = min($hc1Limit, 50);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 8);
+                $hc1hysteresis = 8;
                 $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 8";
             } elseif ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
                 // day will be extremely warm compared to current temp
                 $hc1 = min($hc1Limit, 40);
                 $this->wem->executeCommand('hc1', $hc1);
-                $this->wem->executeCommand('hc1hysteresis', 3);
+                $hc1hysteresis = 3;
                 $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 3";
             } else {
                 // day will not be warm compared to current temp
                 $hc1 = min($hc1Limit, 60);
                 $this->wem->executeCommand('hc1', $hc1);
+                $hc1hysteresis = 3;
+                $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to 3";
+            }
+            // set hc1Hysteresis
+            if ($insideTemp < $minInsideTemp) {
                 $this->wem->executeCommand('hc1hysteresis', 3);
-                $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to default";
+                $log[] = "overwrite hc1hysteresis to 3 due to low inside temperature";
+            } else {
+                $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
             }
         }
 
