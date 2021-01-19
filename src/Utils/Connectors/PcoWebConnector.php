@@ -97,8 +97,10 @@ class PcoWebConnector
             case 'cpAutoMode':
                 $this->setCpAutoMode($command);
                 break;
+            case 'waterTemp':
+                $this->setWaterTemp($command);
+                break;
         }
-        
     }
 
     private function setMode($mode)
@@ -164,6 +166,22 @@ class PcoWebConnector
         // post request
         try {
             $response = $this->browser->post($this->basePath . '/http/index/j_settings_pumpcontrol.html', $headers, http_build_query($data))->getContent();
+        } catch (\Exception $e) {
+        // do nothing
+        }
+    }
+
+    private function setWaterTemp($value)
+    {
+        // set mode
+        $data['?script:var(0,3,46,30,85)'] = $value;
+
+        $headers = [
+            'Content-Type' => 'application/x-www-form-urlencoded;',
+        ];
+        // post request
+        try {
+            $response = $this->browser->post($this->basePath . '/http/index/j_hotwater.html', $headers, http_build_query($data))->getContent();
         } catch (\Exception $e) {
         // do nothing
         }
