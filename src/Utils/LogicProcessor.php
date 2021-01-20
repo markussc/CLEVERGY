@@ -766,9 +766,9 @@ class LogicProcessor
             $hc1Limit = 100;
         }
         $hc1hysteresis = 3;
+        $hc1 = 75;
         if ($smartFoxHighPower) {
             $hc1 = min($hc1Limit, 100);
-            $this->wem->executeCommand('hc1', $hc1);
             $this->wem->executeCommand('hc1hysteresis', 2);
             $log[] = "set hc1 to 100 due to high PV power and set hc1hysteresis to 2";
         } elseif (!$energyLowRate) {
@@ -777,21 +777,23 @@ class LogicProcessor
             if ($minTempNight < $outsideTemp - 5) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 75);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 5;
                 $log[] = "set hc1 to 75 as night will be cold compared to current temp; set hc1hysteresis to 5";
             } elseif ($minTempNight < $outsideTemp - 8) {
                 // night will be extremely cold compared to current temp
                 $hc1 = min($hc1Limit, 90);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 3;
                 $log[] = "set hc1 to 90 as night will be extremely cold compared to current temp; set hc1hysteresis to 3";
             } else {
                 // night will not be cold compared to current temp
                 $hc1 = min($hc1Limit, 50);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 8;
                 $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 8";
+            }
+            // adjust hc1 for high energy rate
+            if ($avgPower < -1500 || ($avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+                $this->wem->executeCommand('hc1', $hc1+20);
+                $log[] = "increase hc1+20 due to negative energy during high energy rate";
             }
         } else {
             // readout temperature forecast for the coming day
@@ -799,21 +801,23 @@ class LogicProcessor
             if ($maxTempDay > $outsideTemp + 5) {
                 // day will be warm compared to current temp
                 $hc1 = min($hc1Limit, 50);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 8;
                 $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 8";
             } elseif ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
                 // day will be extremely warm compared to current temp
                 $hc1 = min($hc1Limit, 40);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 3;
                 $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 3";
             } else {
                 // day will not be warm compared to current temp
                 $hc1 = min($hc1Limit, 60);
-                $this->wem->executeCommand('hc1', $hc1);
                 $hc1hysteresis = 3;
                 $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to 3";
+            }
+            // adjust hc1 for low energy rate
+            if ($avgPower < -500 || ($avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
+                $this->wem->executeCommand('hc1', $hc1+20);
+                $log[] = "increase hc1+20 due to negative energy during low energy rate";
             }
             // set hc1Hysteresis
             if ($insideTemp < $minInsideTemp) {
@@ -822,6 +826,8 @@ class LogicProcessor
             } else {
                 $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
             }
+            // set hc1
+            $this->wem->executeCommand('hc1', $hc1);
         }
 
         // adjust hc2
