@@ -791,7 +791,7 @@ class LogicProcessor
                 $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 8";
             }
             // adjust hc1 for high energy rate
-            if ($avgPower < -1500 || ($avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+            if ($avgPower < -1500 || ($avgPvPower > 1500 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $this->wem->executeCommand('hc1', $hc1+20);
                 $log[] = "increase hc1+20 due to negative energy during high energy rate";
             }
@@ -815,7 +815,7 @@ class LogicProcessor
                 $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to 3";
             }
             // adjust hc1 for low energy rate
-            if ($avgPower < -500 || ($avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
+            if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $this->wem->executeCommand('hc1', $hc1+20);
                 $log[] = "increase hc1+20 due to negative energy during low energy rate";
             }
