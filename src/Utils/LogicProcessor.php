@@ -792,7 +792,7 @@ class LogicProcessor
             }
             // adjust hc1 for high energy rate
             if ($avgPower < -1500 || ($avgPvPower > 1500 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
-                $this->wem->executeCommand('hc1', $hc1+20);
+                $hc1 = $hc1+20;
                 $log[] = "increase hc1+20 due to negative energy during high energy rate";
             }
         } else {
@@ -816,19 +816,19 @@ class LogicProcessor
             }
             // adjust hc1 for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
-                $this->wem->executeCommand('hc1', $hc1+20);
+                $hc1 = $hc1+20;
                 $log[] = "increase hc1+20 due to negative energy during low energy rate";
             }
-            // set hc1Hysteresis
-            if ($insideTemp < $minInsideTemp) {
-                $this->wem->executeCommand('hc1hysteresis', 3);
-                $log[] = "overwrite hc1hysteresis to 3 due to low inside temperature";
-            } else {
-                $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
-            }
-            // set hc1
-            $this->wem->executeCommand('hc1', $hc1);
         }
+        // set hc1Hysteresis
+        if ($insideTemp < $minInsideTemp) {
+            $this->wem->executeCommand('hc1hysteresis', 3);
+            $log[] = "overwrite hc1hysteresis to 3 due to low inside temperature";
+        } else {
+            $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
+        }
+        // set hc1
+        $this->wem->executeCommand('hc1', $hc1);
 
         // adjust hc2
         if ($insideTemp > $minInsideTemp + 1) {
