@@ -76,7 +76,7 @@ class NetatmoConnector
         }
 
         if (count($tmp) > 0) {
-            $insideTemp = min($tmp);
+            $insideTemp = array_sum($tmp)/count($tmp);
         } else {
             $insideTemp = 20;
         }
