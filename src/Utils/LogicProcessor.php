@@ -777,13 +777,8 @@ class LogicProcessor
             if ($minTempNight < $outsideTemp - 5) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 60);
-                $hc1hysteresis = 5;
-                $log[] = "set hc1 to 60 as night will be cold compared to current temp; set hc1hysteresis to 5";
-            } elseif ($minTempNight < $outsideTemp - 8 && $outsideTemp > 5) {
-                // night will be extremely cold compared to current temp
-                $hc1 = min($hc1Limit, 75);
                 $hc1hysteresis = 3;
-                $log[] = "set hc1 to 75 as night will be extremely cold compared to current temp; set hc1hysteresis to 3";
+                $log[] = "set hc1 to 60 as night will be cold compared to current temp; set hc1hysteresis to 3";
             } else {
                 // night will not be cold compared to current temp
                 $hc1 = min($hc1Limit, 50);
@@ -798,21 +793,21 @@ class LogicProcessor
         } else {
             // readout temperature forecast for the coming day
             $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
-            if ($maxTempDay > $outsideTemp + 5) {
-                // day will be warm compared to current temp
-                $hc1 = min($hc1Limit, 50);
-                $hc1hysteresis = 8;
-                $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 8";
-            } elseif ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
+            if ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
                 // day will be extremely warm compared to current temp
                 $hc1 = min($hc1Limit, 40);
                 $hc1hysteresis = 3;
                 $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 3";
+            } elseif ($maxTempDay > $outsideTemp + 5) {
+                // day will be warm compared to current temp
+                $hc1 = min($hc1Limit, 50);
+                $hc1hysteresis = 5;
+                $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 5";
             } else {
                 // day will not be warm compared to current temp
                 $hc1 = min($hc1Limit, 60);
                 $hc1hysteresis = 3;
-                $log[] = "set hc1 to 75 as day will not be warm compared to current temp; set hc1hysteresis to 3";
+                $log[] = "set hc1 to 60 as day will not be warm compared to current temp; set hc1hysteresis to 3";
             }
             // adjust hc1 for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
