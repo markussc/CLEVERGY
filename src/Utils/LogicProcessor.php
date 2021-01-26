@@ -793,11 +793,11 @@ class LogicProcessor
         } else {
             // readout temperature forecast for the coming day
             $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
-            if ($insideTemp > $minInsideTemp && $maxTempDay > $outsideTemp + 8) {
-                // day will be extremely warm compared to current temp
+            if ($insideTemp > $minInsideTemp && ($maxTempDay > $outsideTemp + 8 || $avgClouds < 30)) {
+                // day will be extremely warm compared to current temp or it will be sunny
                 $hc1 = min($hc1Limit, 40);
                 $hc1hysteresis = 3;
-                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp; set hc1hysteresis to 3";
+                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp or it will be sunny; set hc1hysteresis to 3";
             } elseif ($maxTempDay > $outsideTemp + 5) {
                 // day will be warm compared to current temp
                 $hc1 = min($hc1Limit, 50);
