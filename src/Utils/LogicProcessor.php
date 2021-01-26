@@ -758,7 +758,7 @@ class LogicProcessor
         $log = [];
 
         // adjust hc1
-        if ($outsideTemp < 0) {
+        if ($outsideTemp < 1) {
             // it's really cold, limit hc1 to max. 60
             $hc1Limit = 60;
         } else {
@@ -776,19 +776,19 @@ class LogicProcessor
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
             if ($minTempNight < $outsideTemp - 5) {
                 // night will be cold compared to current temp
-                $hc1 = min($hc1Limit, 75);
+                $hc1 = min($hc1Limit, 60);
                 $hc1hysteresis = 5;
-                $log[] = "set hc1 to 75 as night will be cold compared to current temp; set hc1hysteresis to 5";
-            } elseif ($minTempNight < $outsideTemp - 8) {
+                $log[] = "set hc1 to 60 as night will be cold compared to current temp; set hc1hysteresis to 5";
+            } elseif ($minTempNight < $outsideTemp - 8 && $outsideTemp > 5) {
                 // night will be extremely cold compared to current temp
-                $hc1 = min($hc1Limit, 90);
+                $hc1 = min($hc1Limit, 75);
                 $hc1hysteresis = 3;
-                $log[] = "set hc1 to 90 as night will be extremely cold compared to current temp; set hc1hysteresis to 3";
+                $log[] = "set hc1 to 75 as night will be extremely cold compared to current temp; set hc1hysteresis to 3";
             } else {
                 // night will not be cold compared to current temp
                 $hc1 = min($hc1Limit, 50);
-                $hc1hysteresis = 8;
-                $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 8";
+                $hc1hysteresis = 5;
+                $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 5";
             }
             // adjust hc1 for high energy rate
             if ($avgPower < -1500 || ($avgPvPower > 1500 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
