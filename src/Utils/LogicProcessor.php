@@ -844,8 +844,12 @@ class LogicProcessor
         } else {
             $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
         }
+
         // set hc1
         $this->wem->executeCommand('hc1', $hc1);
+
+        // set ppPower
+        $this->wem->executeCommand('ppPower', $ppPower);
 
         // adjust hc2
         if ($insideTemp > $minInsideTemp + 1) {
@@ -877,8 +881,6 @@ class LogicProcessor
             $this->wem->executeCommand('hc2', 50);
             $log[] =  'perfect temperature inside set hc2 = 50';
         }
-        // set ppPower
-        $this->wem->executeCommand('ppPower', $ppPower);
 
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
