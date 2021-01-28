@@ -795,12 +795,12 @@ class LogicProcessor
                 $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
             }
             // adjust hc1 for high energy rate
-            if ($avgPower < -1500 || ($avgPvPower > 1500 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+            if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 if ($avgPower < 0) {
                     $ppPower = $ppLevel + 5;
                 } else {
-                    $ppPower = $ppLevel - 5;
+                    $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
             }
@@ -832,7 +832,7 @@ class LogicProcessor
                 if ($avgPower < 0) {
                     $ppPower = $ppLevel + 5;
                 } else {
-                    $ppPower = $ppLevel - 5;
+                    $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
             }
