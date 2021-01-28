@@ -741,6 +741,9 @@ class LogicProcessor
         if ($wem['ppStatus'] != 'Aus' && $wem['ppStatus'] != '--') {
             $ppLevel = str_replace(' %', '', $wem['ppStatus']);
         }
+        // temp diff between setDistrTemp and effDistrTemp
+        $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
+
         // we are on low energy rate
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
 
@@ -794,6 +797,15 @@ class LogicProcessor
                 $ppPower = 30;
                 $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
             }
+            if ($hc2TempDiff < 1) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 1";
+            }
+            if ($hc2TempDiff < 0.5) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
+            }
+
             // adjust hc1 for high energy rate
             if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
@@ -827,6 +839,10 @@ class LogicProcessor
                 $hc1hysteresis = 3;
                 $ppPower = 30;
                 $log[] = "set hc1 to 60 as day will not be warm compared to current temp; set hc1hysteresis to 3; set ppPower to 30%";
+            }
+            if ($hc2TempDiff < 0.5) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
             // adjust hc1 for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
