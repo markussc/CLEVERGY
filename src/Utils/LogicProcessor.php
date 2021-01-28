@@ -798,8 +798,10 @@ class LogicProcessor
             if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 if ($avgPower < 0) {
-                    $ppPower = $ppLevel + 5;
-                } else {
+                    if ($ppPower <= 95) {
+                        $ppPower = $ppLevel + 5;
+                    }
+                } elseif ($ppPower > 10) {
                     $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
@@ -830,8 +832,10 @@ class LogicProcessor
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 if ($avgPower < 0) {
-                    $ppPower = $ppLevel + 5;
-                } else {
+                    if ($ppPower <= 95) {
+                        $ppPower = $ppLevel + 5;
+                    }
+                } elseif ($ppPower > 10) {
                     $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
