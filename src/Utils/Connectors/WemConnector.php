@@ -71,6 +71,9 @@ class WemConnector
             case 'hc2':
                 $this->setHeatCircle2($command);
                 break;
+            case 'ppPower':
+                $this->setPpPower($command);
+                break;
         }
     }
 
@@ -246,6 +249,25 @@ class WemConnector
         }
         $this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=False');
+        $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->page->evaluate(
+            '(() => {
+                    document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
+                })()'
+        );
+        $this->page->click("#ctl00_DialogContent_BtnSave");
+    }
+
+    /*
+     * $value: 1 - 100 in steps of 1; default: 100
+     */
+    private function setPpPower($value = 100)
+    {
+        if ($this->page === null) {
+           $this->authenticate();
+        }
+        $this->getDefault();
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001205000000001D400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
