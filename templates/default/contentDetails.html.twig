@@ -32,7 +32,7 @@
     </div>
 {% endif %}
 <div class="row">
-{% if currentStat['smartFox'] is defined %}
+{% if currentStat['smartFox'] is defined and currentStat['smartFox'] != 0 %}
 <div class="small-12 medium-3 columns refresh" id="smartfoxOuter">
     <div id="smartfox">
     <h4>{% trans %}label.energy{% endtrans %}</h4>
@@ -137,7 +137,7 @@
             <a title="{% trans %}label.edimax.activation_interval_today{% endtrans %}"><i class="fa fa-clock-o"></i> {{ (device['activeMinutes']/60)|round(0, 'floor') }}h {{ device['activeMinutes']%60 }}m</a>
         </li>
     {% endfor %}
-    {% for key, device in currentStat['shelly']|default([]) %}
+    {% for key, device in currentStat['shelly']|default([]) if device['status'] != 0 %}
         <li>
             {{ device['name']}}: <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') and device['status']['val'] < 2 %}onclick="sendCommand(['shelly', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}>{{ device['status']['label']|trans }}</a> |
             <a href="javascript:void(0);" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fa {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a> |
@@ -156,7 +156,7 @@
             <li>{{ measurement['label']}}: {{ measurement['value']|trans }}</li>
         {% endfor %}
     {% endfor %}
-    {% for shellySensor in currentStat['shelly']|default([]) if shellySensor['type'] == "door" %}
+    {% for shellySensor in currentStat['shelly']|default([]) if shellySensor['type'] == "door" and shellySensor['status'] != 0 %}
         <li>{{ shellySensor['name'] }}: {{ shellySensor['status']['label']|trans }}</li>
     {% endfor %}
     {% for motionSensor in currentStat['mystrom']|default([]) if motionSensor['type']|default('') == 'motion' %}
@@ -446,7 +446,21 @@
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
+            }{% if not pcowebConnector.getIp() %},
+            {
+                label: '{% trans %}label.pco.pp_status{% endtrans %}',
+                borderColor: ['green'],
+                fill: false,
+                data: [
+                {% for pwData in history['pcoWeb'] %}
+                    {
+                        x: new Date("{{ pwData.timestamp|date("c") }}"),
+                        y: {{ pwData.getData()['ppStatus']|default(0)|replace({'Aus':0, '--':0, ' %':''}) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
             }
+            {% endif %}
             {% endif %}
             {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
             {% if not firstDataset24  %},{% endif %}
