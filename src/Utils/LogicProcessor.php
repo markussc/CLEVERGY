@@ -736,6 +736,11 @@ class LogicProcessor
             $tempOffset = (1 +(0-$outsideTemp)/10);
         }
 
+        // get current ppPowerLevel
+        $ppLevel = 100;
+        if ($wem['ppStatus'] != 'Aus' && $wem['ppStatus'] != '--') {
+            $ppLevel = str_replace(' %', '', $wem['ppStatus']);
+        }
         // we are on low energy rate
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
 
@@ -792,8 +797,12 @@ class LogicProcessor
             // adjust hc1 for high energy rate
             if ($avgPower < -1500 || ($avgPvPower > 1500 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
-                $ppPower = 80;
-                $log[] = "increase hc1+20 due to negative energy during high energy rate; set ppPower to 80%";
+                if ($avgPower < 0) {
+                    $ppPower = $ppLevel + 5;
+                } else {
+                    $ppPower = $ppLevel - 5;
+                }
+                $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
             }
         } else {
             // readout temperature forecast for the coming day
@@ -820,8 +829,12 @@ class LogicProcessor
             // adjust hc1 for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
-                $ppPower = 50;
-                $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower = 50%";
+                if ($avgPower < 0) {
+                    $ppPower = $ppLevel + 5;
+                } else {
+                    $ppPower = $ppLevel - 5;
+                }
+                $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
             }
         }
         // set hc1Hysteresis
