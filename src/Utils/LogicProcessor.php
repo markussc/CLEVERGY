@@ -886,20 +886,20 @@ class LogicProcessor
             $log[] =  'too hot inside, set hc2 = 10';
         } elseif ($insideTemp < $minInsideTemp - 2) {
             // extremely cold inside
-            $this->wem->executeCommand('hc2', 75);
-            $log[] =  'extremely cold inside, set hc2 = 75';
+            $this->wem->executeCommand('hc2', 100);
+            $log[] =  'extremely cold inside, set hc2 = 100';
         } elseif ($insideTemp < $minInsideTemp - 1) {
             // cold inside
-            $this->wem->executeCommand('hc2', 65);
-            $log[] =  'cold inside, set hc2 = 65';
+            $this->wem->executeCommand('hc2', 75);
+            $log[] =  'cold inside, set hc2 = 75';
         } elseif ($insideTemp < $minInsideTemp) {
             // little cold inside
-            $this->wem->executeCommand('hc2', 55);
-            $log[] =  'little cold inside, set hc2 = 55';
+            $this->wem->executeCommand('hc2', 65);
+            $log[] =  'little cold inside, set hc2 = 65';
         } else {
             // perfect temperature inside
-            $this->wem->executeCommand('hc2', 50);
-            $log[] =  'perfect temperature inside set hc2 = 50';
+            $this->wem->executeCommand('hc2', 55);
+            $log[] =  'perfect temperature inside set hc2 = 55';
         }
 
         $commandLog->setLog($log);
