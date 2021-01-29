@@ -786,16 +786,16 @@ class LogicProcessor
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
             if ($minTempNight < $outsideTemp - 5) {
                 // night will be cold compared to current temp
-                $hc1 = min($hc1Limit, 60);
+                $hc1 = min($hc1Limit, 70);
                 $hc1hysteresis = 3;
                 $ppPower = 50;
-                $log[] = "set hc1 to 60 as night will be cold compared to current temp; set hc1hysteresis to 3; set ppPower to 50%";
+                $log[] = "set hc1 to 70 as night will be cold compared to current temp; set hc1hysteresis to 3; set ppPower to 50%";
             } else {
                 // night will not be cold compared to current temp
-                $hc1 = min($hc1Limit, 50);
+                $hc1 = min($hc1Limit, 60);
                 $hc1hysteresis = 5;
                 $ppPower = 30;
-                $log[] = "set hc1 to 50 as night will not be cold compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
+                $log[] = "set hc1 to 60 as night will not be cold compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
             }
             if ($hc2TempDiff < 1) {
                 $ppPower -= 10;
@@ -835,10 +835,10 @@ class LogicProcessor
                 $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
             } else {
                 // day will not be warm compared to current temp
-                $hc1 = min($hc1Limit, 60);
+                $hc1 = min($hc1Limit, 70);
                 $hc1hysteresis = 3;
                 $ppPower = 30;
-                $log[] = "set hc1 to 60 as day will not be warm compared to current temp; set hc1hysteresis to 3; set ppPower to 30%";
+                $log[] = "set hc1 to 70 as day will not be warm compared to current temp; set hc1hysteresis to 3; set ppPower to 30%";
             }
             if ($hc2TempDiff < 0.5) {
                 $ppPower -= 10;
