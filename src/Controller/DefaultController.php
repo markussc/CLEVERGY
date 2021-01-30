@@ -159,10 +159,14 @@ class DefaultController extends Controller
                 return $this->get('App\Utils\Connectors\ShellyConnector')->executeCommand($command[1], $command[2]);
             case 'pcoweb':
                 return $this->get('App\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
+            case 'wem':
+                return $this->get('App\Utils\Connectors\WemConnector')->executeCommand($command[1], $command[2]);
             case 'settings':
                 if ($command[1] == 'mode') {
                     if ($command[2] == 'pcoweb') {
                         $connectorId = $this->get('App\Utils\Connectors\PcoWebConnector')->getIp();
+                    } elseif ($command[2] == 'wem') {
+                        $connectorId = $this->get('App\Utils\Connectors\WemConnector')->getUsername();
                     } else {
                         $connectorId = $command[2];
                     }

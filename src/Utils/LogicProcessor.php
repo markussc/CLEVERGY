@@ -129,6 +129,12 @@ class LogicProcessor
             $this->autoActionsPcoWeb($pcoMode);
         }
 
+        // execute auto actions for wem WEM heating, if we are not in manual mode
+        $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
+        if (Settings::MODE_MANUAL != $wemMode) {
+            $this->autoActionsWem();
+        }
+
         // process alarms
         $this->processAlarms();
 
@@ -698,6 +704,204 @@ class LogicProcessor
         }
         $pcowebNew = $this->pcoweb->getAll();
         $commandLog->setPpMode($pcowebNew['ppMode']);
+        $commandLog->setLog($log);
+        $commandLog->setTimestamp(new \DateTime());
+        $this->em->persist($commandLog);
+        $this->em->flush();
+    }
+
+    public function autoActionsWem()
+    {
+        $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
+        $wem = $this->wem->getAllLatest();
+        $outsideTemp = $wem['outsideTemp'];
+        $smartfox = $this->smartfox->getAllLatest();
+        $smartFoxHighPower = $smartfox['digital'][1]['state'];
+        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+        $avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+        // readout weather forecast (currently the cloudiness for the next mid-day hours period)
+        $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
+        // readout current temperature values
+        if ($this->mobilealerts->getAvailable()) {
+            $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
+        } elseif ($this->netatmo->getAvailable()) {
+            $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
+        } else {
+            // if no inside sensor is available, we assume 20°C
+            $insideTemp = 20;
+        }
+        // set the temperature offset for low outside temp
+        $tempOffset = 0;
+        if ($outsideTemp < 2) {
+            $tempOffset = (1 +(0-$outsideTemp)/10);
+        }
+
+        // get current ppPowerLevel
+        $ppLevel = 100;
+        if ($wem['ppStatus'] != 'Aus' && $wem['ppStatus'] != '--') {
+            $ppLevel = str_replace(' %', '', $wem['ppStatus']);
+        }
+        // temp diff between setDistrTemp and effDistrTemp
+        $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
+
+        // we are on low energy rate
+        $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
+
+        $waterTemp = $wem['waterTemp'];
+        if ($waterTemp === null) {
+            // if waterTemp could not be read out, the values can not be trusted. Skip any further processing.
+            return;
+        }
+
+        // write values to command log
+        $commandLog = new CommandLog();
+        $commandLog->setHighPvPower($smartFoxHighPower);
+        $commandLog->setAvgPvPower($avgPvPower);
+        $commandLog->setAvgPower($avgPower);
+        $commandLog->setWaterTemp($waterTemp);
+        $commandLog->setHeatStorageMidTemp($wem['storTemp']);
+        $commandLog->setAvgClouds($avgClouds);
+        $commandLog->setPpMode($wem['ppMode']);
+        $commandLog->setInsideTemp($insideTemp);
+        $log = [];
+
+        // adjust hc1
+        if ($outsideTemp < 1) {
+            // it's really cold, limit hc1 to max. 60
+            $hc1Limit = 60;
+        } else {
+            // it's not extremely cold, do not limit hc1
+            $hc1Limit = 100;
+        }
+        $hc1hysteresis = 3;
+        $hc1 = 75;
+        $ppPower = 100;
+        if ($smartFoxHighPower) {
+            $hc1 = min($hc1Limit, 100);
+            $this->wem->executeCommand('hc1hysteresis', 2);
+            $ppPower = 100;
+            $log[] = "set hc1 to 100 due to high PV power, set hc1hysteresis to 2, set ppPower to 100%";
+        } elseif (!$energyLowRate) {
+            // readout temperature forecast for the coming night
+            $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
+            if ($minTempNight < $outsideTemp - 5) {
+                // night will be cold compared to current temp
+                $hc1 = min($hc1Limit, 70);
+                $hc1hysteresis = 3;
+                $ppPower = 50;
+                $log[] = "set hc1 to 70 as night will be cold compared to current temp; set hc1hysteresis to 3; set ppPower to 50%";
+            } else {
+                // night will not be cold compared to current temp
+                $hc1 = min($hc1Limit, 60);
+                $hc1hysteresis = 5;
+                $ppPower = 30;
+                $log[] = "set hc1 to 60 as night will not be cold compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
+            }
+            if ($hc2TempDiff < 1) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 1";
+            }
+            if ($hc2TempDiff < 0.5) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
+            }
+
+            // adjust hc1 for high energy rate
+            if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+                $hc1 = $hc1+20;
+                if ($avgPower < 0) {
+                    if ($ppPower <= 95) {
+                        $ppPower = $ppLevel + 5;
+                    }
+                } elseif ($ppPower > 10) {
+                    $ppPower = $ppLevel - 10;
+                }
+                $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
+            }
+        } else {
+            // readout temperature forecast for the coming day
+            $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
+            if ($insideTemp > $minInsideTemp && ($maxTempDay > $outsideTemp + 8 || $avgClouds < 30)) {
+                // day will be extremely warm compared to current temp or it will be sunny
+                $hc1 = min($hc1Limit, 40);
+                $hc1hysteresis = 3;
+                $ppPower = 20;
+                $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp or it will be sunny; set hc1hysteresis to 3; set ppPower to 20%";
+            } elseif ($maxTempDay > $outsideTemp + 5) {
+                // day will be warm compared to current temp
+                $hc1 = min($hc1Limit, 50);
+                $hc1hysteresis = 5;
+                $ppPower = 30;
+                $log[] = "set hc1 to 50 as day will be warm compared to current temp; set hc1hysteresis to 5; set ppPower to 30%";
+            } else {
+                // day will not be warm compared to current temp
+                $hc1 = min($hc1Limit, 70);
+                $hc1hysteresis = 3;
+                $ppPower = 30;
+                $log[] = "set hc1 to 70 as day will not be warm compared to current temp; set hc1hysteresis to 3; set ppPower to 30%";
+            }
+            if ($hc2TempDiff < 0.5) {
+                $ppPower -= 10;
+                $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
+            }
+            // adjust hc1 for low energy rate
+            if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
+                $hc1 = $hc1+20;
+                if ($avgPower < 0) {
+                    if ($ppPower <= 95) {
+                        $ppPower = $ppLevel + 5;
+                    }
+                } elseif ($ppPower > 10) {
+                    $ppPower = $ppLevel - 10;
+                }
+                $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
+            }
+        }
+        // set hc1Hysteresis
+        if ($insideTemp < $minInsideTemp) {
+            $this->wem->executeCommand('hc1hysteresis', 3);
+            $log[] = "overwrite hc1hysteresis to 3 due to low inside temperature";
+        } else {
+            $this->wem->executeCommand('hc1hysteresis', $hc1hysteresis);
+        }
+
+        // set hc1
+        $this->wem->executeCommand('hc1', $hc1);
+
+        // set ppPower
+        $this->wem->executeCommand('ppPower', $ppPower);
+
+        // adjust hc2
+        if ($insideTemp > $minInsideTemp + 1) {
+            // little warm inside
+            $this->wem->executeCommand('hc2', 45);
+            $log[] =  'little warm inside, set hc2 = 45';
+        } elseif ($insideTemp > $minInsideTemp + 2) {
+            // warm inside
+            $this->wem->executeCommand('hc2', 40);
+            $log[] =  'warm inside, set hc2 = 40';
+        } elseif ($insideTemp > $minInsideTemp + 3) {
+            // too hot inside
+            $this->wem->executeCommand('hc2', 10);
+            $log[] =  'too hot inside, set hc2 = 10';
+        } elseif ($insideTemp < $minInsideTemp - 2) {
+            // extremely cold inside
+            $this->wem->executeCommand('hc2', 100);
+            $log[] =  'extremely cold inside, set hc2 = 100';
+        } elseif ($insideTemp < $minInsideTemp - 1) {
+            // cold inside
+            $this->wem->executeCommand('hc2', 75);
+            $log[] =  'cold inside, set hc2 = 75';
+        } elseif ($insideTemp < $minInsideTemp) {
+            // little cold inside
+            $this->wem->executeCommand('hc2', 65);
+            $log[] =  'little cold inside, set hc2 = 65';
+        } else {
+            // perfect temperature inside
+            $this->wem->executeCommand('hc2', 55);
+            $log[] =  'perfect temperature inside set hc2 = 55';
+        }
+
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);

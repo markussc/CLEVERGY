@@ -119,6 +119,63 @@ class OpenWeatherMapConnector
         return (int)$cloudiness;
     }
 
+    public function getMinTempNextNightPeriod()
+    {
+        $forecast = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('5dayforecast');
+        if ($forecast) {
+            $forecastData = $forecast->getData();
+        } else {
+            return null;
+        }
+        $minTemp = null;
+        if (isset($forecastData['list'])) {
+            foreach ($forecastData['list'] as $elem) {
+                $dateTime = new \DateTime();
+                $dateTime->setTimestamp($elem['dt']);
+                $today = new \DateTime('now');
+                $tomorrow = new \DateTime('tomorrow');
+                // we are interested in the hours between 20 and 8 only from today to tomorrow
+                if (($dateTime->format('d') == $today->format('d') && $dateTime->format('H') > 20) || ($dateTime->format('d') == $tomorrow->format('d') && $dateTime->format('H') < 8)) {
+                    if ($minTemp === null) {
+                        $minTemp = $elem['main']['temp']-273.15;
+                    } else {
+                        $minTemp = min($minTemp, $elem['main']['temp']-273.15);
+                    }
+                }
+            }
+        }
+
+        return $minTemp;
+    }
+
+    public function getMaxTempNextDaylightPeriod()
+    {
+        $forecast = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('5dayforecast');
+        if ($forecast) {
+            $forecastData = $forecast->getData();
+        } else {
+            return null;
+        }
+        $maxTemp = null;
+        if (isset($forecastData['list'])) {
+            foreach ($forecastData['list'] as $elem) {
+                $dateTime = new \DateTime();
+                $dateTime->setTimestamp($elem['dt']);
+                $tomorrow = new \DateTime('tomorrow');
+                // we are interested in the hours between 20 and 8 only from today to tomorrow
+                if ($dateTime->format('d') == $tomorrow->format('d') && $dateTime->format('H') > 8 && $dateTime->format('H') < 20) {
+                    if ($maxTemp === null) {
+                        $maxTemp = $elem['main']['temp']-273.15;
+                    } else {
+                        $maxTemp = max($maxTemp, $elem['main']['temp']-273.15);
+                    }
+                }
+            }
+        }
+
+        return $maxTemp;
+    }
+
     private function getCurrentClouds()
     {
         $current = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('current');
