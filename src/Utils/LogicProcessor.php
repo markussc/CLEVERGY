@@ -869,7 +869,7 @@ class LogicProcessor
         $this->wem->executeCommand('hc1', $hc1);
 
         // set ppPower
-        $this->wem->executeCommand('ppPower', $ppPower);
+        $this->wem->executeCommand('ppPower', min(100, max(10, $ppPower)));
 
         // adjust hc2
         if ($insideTemp > $minInsideTemp + 1) {
