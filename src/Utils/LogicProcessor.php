@@ -805,19 +805,6 @@ class LogicProcessor
                 $ppPower -= 10;
                 $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
-
-            // adjust hc1 for high energy rate
-            if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
-                $hc1 = $hc1+20;
-                if ($avgPower < 0) {
-                    if ($ppPower <= 95) {
-                        $ppPower = $ppLevel + 5;
-                    }
-                } elseif ($ppPower > 10) {
-                    $ppPower = $ppLevel - 10;
-                }
-                $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
-            }
         } else {
             // readout temperature forecast for the coming day
             $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
@@ -844,6 +831,21 @@ class LogicProcessor
                 $ppPower -= 10;
                 $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
+        }
+        if (!$energyLowRate) {
+            // adjust hc1 for high energy rate
+            if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+                $hc1 = $hc1+20;
+                if ($avgPower < 0) {
+                    if ($ppPower <= 95) {
+                        $ppPower = $ppLevel + 5;
+                    }
+                } elseif ($ppPower > 10) {
+                    $ppPower = $ppLevel - 10;
+                }
+                $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
+            }
+        } else {
             // adjust hc1 for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
