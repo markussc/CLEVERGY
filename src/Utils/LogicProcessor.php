@@ -744,6 +744,13 @@ class LogicProcessor
         // temp diff between setDistrTemp and effDistrTemp
         $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
 
+        // configure minPpPower
+        $minPpPower = 10;
+        if ($outsideTemp < 0 && $hc2TempDiff > 5) {
+            // cold outside and  hc2TempDiff is quite high, we should add some power here
+            $minPpPower = 100;
+        }
+
         // we are on low energy rate
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
 
@@ -869,7 +876,7 @@ class LogicProcessor
         $this->wem->executeCommand('hc1', $hc1);
 
         // set ppPower
-        $this->wem->executeCommand('ppPower', min(100, max(10, $ppPower)));
+        $this->wem->executeCommand('ppPower', min(100, max($minPpPower, $ppPower)));
 
         // adjust hc2
         if ($insideTemp > $minInsideTemp + 1) {
@@ -886,8 +893,8 @@ class LogicProcessor
             $log[] =  'too hot inside, set hc2 = 10';
         } elseif ($insideTemp < $minInsideTemp - 2) {
             // extremely cold inside
-            $this->wem->executeCommand('hc2', 100);
-            $log[] =  'extremely cold inside, set hc2 = 100';
+            $this->wem->executeCommand('hc2', 90);
+            $log[] =  'extremely cold inside, set hc2 = 90';
         } elseif ($insideTemp < $minInsideTemp - 1) {
             // cold inside
             $this->wem->executeCommand('hc2', 75);
