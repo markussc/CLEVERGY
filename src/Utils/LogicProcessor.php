@@ -744,13 +744,6 @@ class LogicProcessor
         // temp diff between setDistrTemp and effDistrTemp
         $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
 
-        // configure minPpPower
-        $minPpPower = 10;
-        if ($outsideTemp < 0 && $hc2TempDiff > 5) {
-            // cold outside and  hc2TempDiff is quite high, we should add some power here
-            $minPpPower = 100;
-        }
-
         // we are on low energy rate
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
 
@@ -772,8 +765,16 @@ class LogicProcessor
         $commandLog->setInsideTemp($insideTemp);
         $log = [];
 
+        // configure minPpPower
+        $minPpPower = 10;
+        if ($outsideTemp < 0 && $hc2TempDiff > 5) {
+            // cold outside and hc2TempDiff is quite high, we should add some power here
+            $minPpPower = 100;
+            $log[] = "set minPpPower to 100 due to cold outside temperature and hc2TempDiff high";
+        }
+
         // adjust hc1
-        if ($outsideTemp < 1) {
+        if ($outsideTemp < 1 && $hc2TempDiff < 10 && $insideTemp > $minInsideTemp - 1) {
             // it's really cold, limit hc1 to max. 60
             $hc1Limit = 60;
         } else {
@@ -840,7 +841,7 @@ class LogicProcessor
             }
         }
         if (!$energyLowRate) {
-            // adjust hc1 for high energy rate
+            // adjust hc1 and ppPower for high energy rate
             if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 if ($avgPower < 0) {
@@ -851,7 +852,7 @@ class LogicProcessor
                 $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
             }
         } else {
-            // adjust hc1 for low energy rate
+            // adjust hc1 and ppPower for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 if ($avgPower < 0) {
@@ -864,7 +865,45 @@ class LogicProcessor
                 $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
             }
         }
-        // set hc1Hysteresis
+
+        // adjust hc2
+        if ($insideTemp > $minInsideTemp + 1) {
+            // little warm inside
+            $hc2 = 45;
+            $log[] =  'little warm inside, set hc2 = 45';
+        } elseif ($insideTemp > $minInsideTemp + 2) {
+            // warm inside
+            $hc2 = 40;
+            $log[] =  'warm inside, set hc2 = 40';
+        } elseif ($insideTemp > $minInsideTemp + 3) {
+            // too hot inside
+            $hc2 = 10;
+            $log[] =  'too hot inside, set hc2 = 10';
+        } elseif ($insideTemp < $minInsideTemp - 2) {
+            // extremely cold inside
+            $hc2 =  90;
+            $log[] =  'extremely cold inside, set hc2 = 90';
+        } elseif ($insideTemp < $minInsideTemp - 1) {
+            // cold inside
+            $hc2 = 75;
+            $log[] =  'cold inside, set hc2 = 75';
+        } elseif ($insideTemp < $minInsideTemp) {
+            // little cold inside
+            $hc2 = 65;
+            $log[] =  'little cold inside, set hc2 = 65';
+        } else {
+            // perfect temperature inside
+            $hc2 = 55;
+            $log[] =  'perfect temperature inside set hc2 = 55';
+        }
+
+        // adjust hc1 for cold temperatures
+        if ($insideTemp < $minInsideTemp -1 && $outsideTemp < 0 && $hc2TempDiff > 5) {
+            $hc1 = max($hc1, $hc2);
+            $log[] = "adjust hc1 to " . $hc1 . " due to low inside, low outside and high hc2TempDiff";
+        }
+
+        // set hc1Hysteresis and hc1
         if ($insideTemp < $minInsideTemp) {
             $this->wem->executeCommand('hc1hysteresis', 3);
             $log[] = "overwrite hc1hysteresis to 3 due to low inside temperature";
@@ -878,36 +917,8 @@ class LogicProcessor
         // set ppPower
         $this->wem->executeCommand('ppPower', min(100, max($minPpPower, $ppPower)));
 
-        // adjust hc2
-        if ($insideTemp > $minInsideTemp + 1) {
-            // little warm inside
-            $this->wem->executeCommand('hc2', 45);
-            $log[] =  'little warm inside, set hc2 = 45';
-        } elseif ($insideTemp > $minInsideTemp + 2) {
-            // warm inside
-            $this->wem->executeCommand('hc2', 40);
-            $log[] =  'warm inside, set hc2 = 40';
-        } elseif ($insideTemp > $minInsideTemp + 3) {
-            // too hot inside
-            $this->wem->executeCommand('hc2', 10);
-            $log[] =  'too hot inside, set hc2 = 10';
-        } elseif ($insideTemp < $minInsideTemp - 2) {
-            // extremely cold inside
-            $this->wem->executeCommand('hc2', 90);
-            $log[] =  'extremely cold inside, set hc2 = 90';
-        } elseif ($insideTemp < $minInsideTemp - 1) {
-            // cold inside
-            $this->wem->executeCommand('hc2', 75);
-            $log[] =  'cold inside, set hc2 = 75';
-        } elseif ($insideTemp < $minInsideTemp) {
-            // little cold inside
-            $this->wem->executeCommand('hc2', 65);
-            $log[] =  'little cold inside, set hc2 = 65';
-        } else {
-            // perfect temperature inside
-            $this->wem->executeCommand('hc2', 55);
-            $log[] =  'perfect temperature inside set hc2 = 55';
-        }
+        // set hc2
+        $this->wem->executeCommand('hc2', $hc2);
 
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
