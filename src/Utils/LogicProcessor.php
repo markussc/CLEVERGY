@@ -717,6 +717,7 @@ class LogicProcessor
         $outsideTemp = $wem['outsideTemp'];
         $smartfox = $this->smartfox->getAllLatest();
         $smartFoxHighPower = $smartfox['digital'][1]['state'];
+        $netPower = $smartfox['power_io'];
         $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
         $avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
@@ -844,9 +845,10 @@ class LogicProcessor
             // adjust hc1 and ppPower for high energy rate
             if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
-                if ($avgPower < 0) {
+                $ppPower = $ppLevel;
+                if ($avgPower < 0 && $netPower < -200) {
                     $ppPower = min($ppLevel + 5, 100);
-                } else {
+                } elseif ($avgPower > 0 && $netPower > 0) {
                     $ppPower = max($ppLevel - 10, 10);
                 }
                 $log[] = "increase hc1+20 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
@@ -855,11 +857,12 @@ class LogicProcessor
             // adjust hc1 and ppPower for low energy rate
             if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
-                if ($avgPower < 0) {
+                $ppPower = $ppLevel;
+                if ($avgPower < 0 && $netPower < -200) {
                     if ($ppPower <= 95) {
                         $ppPower = $ppLevel + 5;
                     }
-                } elseif ($ppPower > 10) {
+                } elseif ($ppPower > 100 && $netPower > 0) {
                     $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
