@@ -872,8 +872,8 @@ class LogicProcessor
         // adjust hc2
         if ($insideTemp > $minInsideTemp + 1) {
             // little warm inside
-            $hc2 = 45;
-            $log[] =  'little warm inside, set hc2 = 45';
+            $hc2 = 50;
+            $log[] =  'little warm inside, set hc2 = 50';
         } elseif ($insideTemp > $minInsideTemp + 2) {
             // warm inside
             $hc2 = 40;
@@ -884,20 +884,20 @@ class LogicProcessor
             $log[] =  'too hot inside, set hc2 = 10';
         } elseif ($insideTemp < $minInsideTemp - 2) {
             // extremely cold inside
-            $hc2 =  90;
-            $log[] =  'extremely cold inside, set hc2 = 90';
+            $hc2 =  100;
+            $log[] =  'extremely cold inside, set hc2 = 100';
         } elseif ($insideTemp < $minInsideTemp - 1) {
             // cold inside
-            $hc2 = 75;
-            $log[] =  'cold inside, set hc2 = 75';
+            $hc2 = 85;
+            $log[] =  'cold inside, set hc2 = 85';
         } elseif ($insideTemp < $minInsideTemp) {
             // little cold inside
-            $hc2 = 65;
-            $log[] =  'little cold inside, set hc2 = 65';
+            $hc2 = 70;
+            $log[] =  'little cold inside, set hc2 = 70';
         } else {
             // perfect temperature inside
-            $hc2 = 55;
-            $log[] =  'perfect temperature inside set hc2 = 55';
+            $hc2 = 60;
+            $log[] =  'perfect temperature inside set hc2 = 60';
         }
 
         // adjust hc1 for cold temperatures
