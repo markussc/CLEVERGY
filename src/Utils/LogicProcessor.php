@@ -132,7 +132,7 @@ class LogicProcessor
         // execute auto actions for wem WEM heating, if we are not in manual mode
         $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
         if (Settings::MODE_MANUAL != $wemMode) {
-            $this->autoActionsWem();
+            $this->autoActionsWem($wemMode);
         }
 
         // process alarms
@@ -453,9 +453,11 @@ class LogicProcessor
         }
 
         // set the emergency temperature levels
-            // we are on low energy rate
-            $minWaterTemp = 38;
-            $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
+        $minWaterTemp = 38;
+        $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
+        if ($pcoMode == Settings::MODE_HOLIDAY) {
+            $minInsideTemp = $minInsideTemp - 2;
+        }
         // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = $this->minInsideTemp+1.7+$tempOffset;
         // readout current temperature values
@@ -710,7 +712,7 @@ class LogicProcessor
         $this->em->flush();
     }
 
-    public function autoActionsWem()
+    public function autoActionsWem($wemMode)
     {
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $wem = $this->wem->getAllLatest();
@@ -745,8 +747,11 @@ class LogicProcessor
         // temp diff between setDistrTemp and effDistrTemp
         $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
 
-        // we are on low energy rate
+
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
+        if ($wemMode == Settings::MODE_HOLIDAY) {
+            $minInsideTemp = $minInsideTemp - 2;
+        }
 
         $waterTemp = $wem['waterTemp'];
         if ($waterTemp === null) {
