@@ -428,7 +428,7 @@ class DefaultController extends Controller
             $effDistrTemp = '';
         }
 
-        if (isset($currentStat['pcoWeb']) &&$currentStat['pcoWeb']['ppStatus'] === "label.device.status.on") {
+        if (isset($currentStat['pcoWeb']) && ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on" || strpos($currentStat['pcoWeb']['ppStatus'], '%') > 0)) {
             $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']." °C";
             $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']." °C";
         } else {
