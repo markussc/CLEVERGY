@@ -79,7 +79,7 @@ class MobileAlertsConnector
             }
         }
         if (count($tmp) > 0) {
-            $insideTemp = array_sum($tmp)/count($tmp);
+            $insideTemp = min($tmp);
         } else {
             $insideTemp = 20;
         }
