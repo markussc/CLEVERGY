@@ -61,19 +61,24 @@ class WemConnector
 
     public function executeCommand($type, $command)
     {
-        switch ($type) {
-            case 'hc1':
-                $this->setHeatCircle1($command);
-                break;
-            case 'hc1hysteresis':
-                $this->setHeatCircle1Hyseteresis($command);
-                break;
-            case 'hc2':
-                $this->setHeatCircle2($command);
-                break;
-            case 'ppPower':
-                $this->setPpPower($command);
-                break;
+        try {
+            switch ($type) {
+                case 'hc1':
+                    $this->setHeatCircle1($command);
+                    break;
+                case 'hc1hysteresis':
+                    $this->setHeatCircle1Hyseteresis($command);
+                    break;
+                case 'hc2':
+                    $this->setHeatCircle2($command);
+                    break;
+                case 'ppPower':
+                    $this->setPpPower($command);
+                    break;
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
