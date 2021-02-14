@@ -867,7 +867,7 @@ class LogicProcessor
                     if ($ppPower <= 95) {
                         $ppPower = $ppLevel + 5;
                     }
-                } elseif ($ppPower > 100 && $netPower > 0) {
+                } elseif ($avgPower > 100 && $netPower > 0) {
                     $ppPower = $ppLevel - 10;
                 }
                 $log[] = "increase hc1+20 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
