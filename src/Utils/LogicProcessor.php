@@ -773,10 +773,19 @@ class LogicProcessor
 
         // configure minPpPower
         $minPpPower = 10;
-        if ($outsideTemp < 0 && $hc2TempDiff > 5) {
-            // cold outside and hc2TempDiff is quite high, we should add some power here
-            $minPpPower = 100;
-            $log[] = "set minPpPower to 100 due to cold outside temperature and hc2TempDiff high";
+        if ($outsideTemp < 0) {
+            // cold outside and hc2TempDiff is diverging, we should maybe add some power here
+            if ($hc2TempDiff > 5) {
+                $minPpPower = min(100,  min(80, $ppLevel + 5));
+            } elseif ($hc2TempDiff > 3) {
+                $minPpPower = min(100, $ppLevel + 1);
+            } elseif ($hc2TempDiff > 1) {
+                $minPpPower = $ppLevel;
+            } elseif ($hc2TempDiff <= 1) {
+                // hc2TempDiff small, we can reduce minPpPower slightly
+                $minPpPower = max(10, $ppLevel - 1);
+            }
+            $log[] = "set minPpPower to " . $minPpPower . " due to cold outside temperature and hc2TempDiff high";
         }
 
         // adjust hc1
