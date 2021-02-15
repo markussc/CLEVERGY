@@ -785,7 +785,7 @@ class LogicProcessor
                 // hc2TempDiff small, we can reduce minPpPower slightly
                 $minPpPower = max(10, $ppLevel - 1);
             }
-            $log[] = "set minPpPower to " . $minPpPower . " due to cold outside temperature and hc2TempDiff high";
+            $log[] = "set minPpPower to " . $minPpPower . " due to cold outside temperature and according to current hc2TempDiff (" . $hc2TempDiff . ")";
         }
 
         // adjust hc1
