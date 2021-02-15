@@ -913,9 +913,9 @@ class LogicProcessor
         }
 
         // adjust hc1 for cold temperatures
-        if ($insideTemp < $minInsideTemp -1 && $outsideTemp < 0 && $hc2TempDiff > 5) {
+        if ($insideTemp < $minInsideTemp -1 && $hc2TempDiff > 3) {
             $hc1 = max($hc1, $hc2);
-            $log[] = "adjust hc1 to " . $hc1 . " due to low inside, low outside and high hc2TempDiff";
+            $log[] = "adjust hc1 to " . $hc1 . " due to low inside and high hc2TempDiff";
         }
 
         // set hc1Hysteresis and hc1
