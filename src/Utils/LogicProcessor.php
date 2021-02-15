@@ -857,7 +857,7 @@ class LogicProcessor
         }
         if (!$energyLowRate) {
             // adjust hc1 and ppPower for high energy rate
-            if ($avgPower < -1000 || ($avgPvPower > 1000 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+            if ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
@@ -869,7 +869,7 @@ class LogicProcessor
             }
         } else {
             // adjust hc1 and ppPower for low energy rate
-            if ($avgPower < -500 || ($avgPvPower > 500 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
+            if ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
                 $hc1 = $hc1+20;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
