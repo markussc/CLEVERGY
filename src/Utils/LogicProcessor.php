@@ -777,11 +777,11 @@ class LogicProcessor
             // cold outside and hc2TempDiff is diverging, we should maybe add some power here
             if ($hc2TempDiff > 5) {
                 $minPpPower = min(100,  $ppLevel + 10);
-            } elseif ($hc2TempDiff > 3) {
+            } elseif ($hc2TempDiff > 2) {
                 $minPpPower = min(100, $ppLevel + 5);
-            } elseif ($hc2TempDiff > 1) {
+            } elseif ($hc2TempDiff > 0) {
                 $minPpPower = $ppLevel;
-            } elseif ($hc2TempDiff <= 1) {
+            } elseif ($hc2TempDiff <= 0) {
                 // hc2TempDiff small, we can reduce minPpPower slightly
                 $minPpPower = max(10, $ppLevel - 5);
             }
