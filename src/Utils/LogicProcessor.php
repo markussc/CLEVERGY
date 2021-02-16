@@ -773,7 +773,7 @@ class LogicProcessor
 
         // configure minPpPower
         $minPpPower = 10;
-        if ($outsideTemp < 10 && $wem['storTemp'] < $wem['setDistrTemp']) {
+        if ($outsideTemp < 10 && $wem['storTemp'] < $wem['setDistrTemp'] - 2) {
             // cold outside and hc2TempDiff is diverging while storage is too low, we should maybe add some power here
             if ($hc2TempDiff > 5) {
                 $minPpPower = min(100,  $ppLevel + 5);
