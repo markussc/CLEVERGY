@@ -874,7 +874,7 @@ class LogicProcessor
                 } elseif ($avgPower > 0 && $netPower > 0) {
                     $ppPower = max($ppLevel - 10, 10);
                 }
-                $log[] = "increase hc1 = 100 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
+                $log[] = "increase hc1 = 150 due to negative energy during high energy rate; adjust ppPower to " . $ppPower . "%";
             }
         } else {
             // adjust hc1 and ppPower for low energy rate
@@ -886,7 +886,7 @@ class LogicProcessor
                 } elseif ($avgPower > 100 && $netPower > 0) {
                     $ppPower = max($ppLevel - 10, 10);
                 }
-                $log[] = "increase hc1 = 100 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
+                $log[] = "increase hc1 = 150 due to negative energy during low energy rate; set ppPower to  " . $ppPower . "%";
             }
         }
 
