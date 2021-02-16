@@ -861,7 +861,7 @@ class LogicProcessor
         if (!$energyLowRate) {
             // adjust hc1 and ppPower for high energy rate
             if ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
-                $hc1 = 100;
+                $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
                     $ppDelta = 5;
@@ -879,7 +879,7 @@ class LogicProcessor
         } else {
             // adjust hc1 and ppPower for low energy rate
             if ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
-                $hc1 = 100;
+                $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
                     $ppPower = min($ppLevel + 5, 100);
