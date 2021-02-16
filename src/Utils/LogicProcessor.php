@@ -806,7 +806,7 @@ class LogicProcessor
             $hc1 = min($hc1Limit, 150);
             $this->wem->executeCommand('hc1hysteresis', 2);
             $ppPower = 100;
-            $log[] = "set hc1 to 100 due to high PV power, set hc1hysteresis to 2, set ppPower to 100%";
+            $log[] = "set hc1 to " . $hc1 . " due to high PV power, set hc1hysteresis to 2, set ppPower to 100%";
         } elseif (!$energyLowRate) {
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
