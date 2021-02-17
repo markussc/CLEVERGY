@@ -22,6 +22,7 @@ class WemConnector
     private $page;
     private $username;
     private $password;
+    private $currentPath;
 
     public function __construct(EntityManager $em, Array $connectors)
     {
@@ -67,7 +68,7 @@ class WemConnector
                     $this->setHeatCircle1($command);
                     break;
                 case 'hc1hysteresis':
-                    $this->setHeatCircle1Hyseteresis($command);
+                    $this->setHeatCircle1Hysteresis($command);
                     break;
                 case 'hc2':
                     $this->setHeatCircle2($command);
@@ -142,11 +143,13 @@ class WemConnector
         $this->page->waitForNavigation();
 
         // click first navigation button (info)
-        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a")[0];
+        // $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a")[0];
 
         // click update button
         $this->page->waitForSelector("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
         $this->page->click("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
+        $this->currentPath = "Default";
     }
 
     private function getDefault()
@@ -154,8 +157,10 @@ class WemConnector
         if ($this->browser === null) {
            $this->authenticate();
         }
-        $this->page->goto($this->basePath . 'Default.aspx');
-        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
+        if (!$this->currentPath == "Default") {
+            $this->page->goto($this->basePath . 'Default');
+            $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
+        }
         $data = [];
         $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
         $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML'))[0];
@@ -176,11 +181,14 @@ class WemConnector
            $this->authenticate();
         }
         $data = [];
-        $this->page->goto($this->basePath . 'Default.aspx');
+        if (!$this->currentPath == "Default") {
+            $this->page->goto($this->basePath . 'Default.aspx');
+            $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
+        }
         // click second navigation button (Betriebsart)
-        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_imgbtnEdit");
+        $this->page = "Betriebsart";
         $data['ppMode'] = $this->ppModeToString($this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'));
 
         return $data;
@@ -192,13 +200,16 @@ class WemConnector
            $this->authenticate();
         }
         $data = [];
-        $this->page->goto($this->basePath . 'Default.aspx');
+        if (!($this->currentPath == "Default" || $this->currentPath == "Betriebsart")) {
+            $this->page->goto($this->basePath . 'Default.aspx');
+        }
         // click "Anlagen" button in top navigation
         $this->page->click("#ctl00_RMTopMenu a.rmLink");
         $this->page->waitForSelector("#ctl00_SubMenuControl1_subMenu");
         // click "Fachmann" in sub navigation
         $this->page->click("#ctl00_SubMenuControl1_subMenu li:nth-of-type(4)>a");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl15_ctl00_lblValue");
+        $this->currentPath = "Fachmann";
         $data['ppSourceIn'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl14_ctl00_lblValue").innerHTML'))[0];
         $data['ppSourceOut'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl22_ctl00_lblValue").innerHTML'))[0];
 
@@ -216,6 +227,7 @@ class WemConnector
         $this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->currentPage = "command";
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
@@ -227,15 +239,16 @@ class WemConnector
     /*
      * $value: value in Kelvin
      */
-    private function setHeatCircle1Hyseteresis($value = 3)
+    private function setHeatCircle1Hysteresis($value = 3)
     {
         $value = 10 * $value;
         if ($this->page === null) {
            $this->authenticate();
         }
-        $this->getDefault();
+        //$this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->currentPage = "command";
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
@@ -252,9 +265,10 @@ class WemConnector
         if ($this->page === null) {
            $this->authenticate();
         }
-        $this->getDefault();
+        //$this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->currentPage = "command";
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
@@ -271,9 +285,10 @@ class WemConnector
         if ($this->page === null) {
            $this->authenticate();
         }
-        $this->getDefault();
+        //$this->getDefault();
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001205000000001D400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
+        $this->currentPage = "command";
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
