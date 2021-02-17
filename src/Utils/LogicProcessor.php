@@ -77,12 +77,6 @@ class LogicProcessor
 
     public function execute()
     {
-        $minute = date('i');
-        if ($minute % 30 == 0) {
-            $doWem = true;
-        } else {
-            $doWem = false;
-        }
         // edimax
         $this->initEdimax();
 
@@ -93,7 +87,7 @@ class LogicProcessor
         $this->initShelly();
 
         // smartfox
-        $this->initSmartfox();
+        $smartfox = $this->initSmartfox();
 
         // conexio
         $this->initConexio();
@@ -105,6 +99,20 @@ class LogicProcessor
         $this->initPcoweb();
 
         // wem
+        $doWem = false;
+        if ($this->wem->getUsername()) {
+            $now = new \DateTime();
+            $latestWem = $this->em->getRepository('App:WemDataStore')->getLatestElement($this->wem->getUsername());
+            $diff = 0;
+            if (count($latestWem)) {
+                $diff = date_diff($now, $latestWem[0]->getTimestamp())->format('%i');
+            }
+            if ($diff > 30 || ($smartfox['PvEnergy'][0] > 0 && $diff > 10)) {
+                // wem requests should only be done every 30 minutes; if PV power is available, allow every 10 minutes.
+                $doWem = true;
+            }
+        }
+
         if ($doWem) {
             $this->initWem();
         }
@@ -1040,6 +1048,7 @@ class LogicProcessor
 
     public function initSmartfox()
     {
+        $smartfox = null;
         if ($this->smartfox->getIp()) {
             $smartfox = $this->smartfox->getAll();
             $smartfoxEntity = new SmartFoxDataStore();
@@ -1055,6 +1064,8 @@ class LogicProcessor
             $this->em->persist($smartfoxEntity);
             $this->em->flush();
         }
+
+        return $smartfox;
     }
 
     public function initConexio()
