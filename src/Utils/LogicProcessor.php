@@ -77,6 +77,12 @@ class LogicProcessor
 
     public function execute()
     {
+        $minute = date('i');
+        if ($minute % 30 == 0) {
+            $doWem = true;
+        } else {
+            $doWem = false;
+        }
         // edimax
         $this->initEdimax();
 
@@ -99,7 +105,9 @@ class LogicProcessor
         $this->initPcoweb();
 
         // wem
-        $this->initWem();
+        if ($doWem) {
+            $this->initWem();
+        }
 
         // mobilealerts
         $this->initMobilealerts();
@@ -131,7 +139,7 @@ class LogicProcessor
 
         // execute auto actions for wem WEM heating, if we are not in manual mode
         $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
-        if (Settings::MODE_MANUAL != $wemMode) {
+        if ($doWem && Settings::MODE_MANUAL != $wemMode) {
             $this->autoActionsWem($wemMode);
         }
 
