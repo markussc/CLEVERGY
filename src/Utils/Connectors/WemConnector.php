@@ -143,7 +143,7 @@ class WemConnector
         $this->page->waitForNavigation();
 
         // click first navigation button (info)
-        // $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a")[0];
+        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a")[0];
 
         // click update button
         $this->page->waitForSelector("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
@@ -188,7 +188,7 @@ class WemConnector
         // click second navigation button (Betriebsart)
         $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_imgbtnEdit");
-        $this->page = "Betriebsart";
+        $this->currentPath = "Betriebsart";
         $data['ppMode'] = $this->ppModeToString($this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'));
 
         return $data;
