@@ -960,6 +960,9 @@ class LogicProcessor
         // set hc2
         $this->wem->executeCommand('hc2', $hc2);
 
+        // close chromium
+        $this->wem->close();
+
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);
@@ -1116,7 +1119,7 @@ class LogicProcessor
     public function initWem()
     {
         if ($this->wem->getUsername()) {
-            $wem = $this->wem->getAll();
+            $wem = $this->wem->getAll(false);
             if ($wem !== false) {
                 $wemEntity = new WemDataStore();
                 $wemEntity->setTimestamp(new \DateTime('now'));

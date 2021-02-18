@@ -23,6 +23,10 @@ class WemConnector
     private $username;
     private $password;
     private $currentPath;
+    private $status;
+    const UNAUTHENTICATED = 0;
+    const AUTHENTICATED = 1;
+    const UNAVAILABLE = -1;
 
     public function __construct(EntityManager $em, Array $connectors)
     {
@@ -32,6 +36,7 @@ class WemConnector
             $this->username = $connectors['wem']['username'];
             $this->password = $connectors['wem']['password'];
         }
+        $this->status = self::UNAUTHENTICATED;
     }
 
     public function getAllLatest()
@@ -39,7 +44,7 @@ class WemConnector
         return $this->em->getRepository('App:WemDataStore')->getLatest($this->username);
     }
 
-    public function getAll()
+    public function getAll($close = true)
     {
         // get analog, digital and integer values
         try {
@@ -47,11 +52,14 @@ class WemConnector
             $systemData = $this->getSystemMode();
             $specialistDefaultData = $this->getSpecialistDefault();
             $modeData = ['mode' => $this->wemModeToString($this->em->getRepository('App:Settings')->getMode($this->getUsername()))];
-            $this->browser->close();
-            $this->browser = null;
+            if ($close == true) {
+                $this->close();
+            }
             return array_merge($defaultData, $systemData, $specialistDefaultData, $modeData);
         } catch (\Exception $e) {
-          return false;
+            $this->close();
+            $this->status = self::UNAVAILABLE;
+            return false;
         }
     }
 
@@ -125,6 +133,7 @@ class WemConnector
     private function authenticate()
     {
         // initialize
+        $this->status = self::UNAVAILABLE;
         $puppeteer = new Puppeteer;
         $this->browser = $puppeteer->launch();
         $this->page = $this->browser->newPage();
@@ -150,18 +159,29 @@ class WemConnector
         $this->page->click("#ctl00_DeviceContextControl1_RefreshDeviceDataButton");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         $this->currentPath = "Default";
+        $this->status = self::AUTHENTICATED;
+    }
+
+    public function close()
+    {
+        $this->browser->close();
+        $this->browser = null;
+        $this->status = self::UNAUTHENTICATED;
     }
 
     private function getDefault()
     {
-        if ($this->browser === null) {
+        $data = [];
+        if ($this->status === self::UNAVAILABLE) {
+            return $data;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        if (!$this->currentPath == "Default") {
-            $this->page->goto($this->basePath . 'Default');
+        if ($this->currentPath != "Default") {
+            $this->page->goto($this->basePath . 'Default.aspx');
             $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         }
-        $data = [];
         $data['waterTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
         $data['storTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl3_ctl00_lblValue").innerHTML'))[0];
         $data['outsideTemp'] = explode(' ', $this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl01_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'))[0];
@@ -177,11 +197,14 @@ class WemConnector
 
     private function getSystemMode()
     {
-        if ($this->page === null) {
+        $data = [];
+        if ($this->status === self::UNAVAILABLE) {
+            return $data;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        $data = [];
-        if (!$this->currentPath == "Default") {
+        if ($this->currentPath != "Default") {
             $this->page->goto($this->basePath . 'Default.aspx');
             $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         }
@@ -196,10 +219,13 @@ class WemConnector
 
     private function getSpecialistDefault()
     {
-        if ($this->page === null) {
+        $data = [];
+        if ($this->status === self::UNAVAILABLE) {
+            return $data;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        $data = [];
         if (!($this->currentPath == "Default" || $this->currentPath == "Betriebsart")) {
             $this->page->goto($this->basePath . 'Default.aspx');
         }
@@ -221,10 +247,13 @@ class WemConnector
      */
     private function setHeatCircle1($value = 75)
     {
-        if ($this->page === null) {
+        if ($this->status === self::UNAVAILABLE) {
+            return;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        $this->getDefault();
+
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
@@ -242,10 +271,13 @@ class WemConnector
     private function setHeatCircle1Hysteresis($value = 3)
     {
         $value = 10 * $value;
-        if ($this->page === null) {
+        if ($this->status === self::UNAVAILABLE) {
+            return;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        //$this->getDefault();
+
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640012030000000032400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
@@ -262,10 +294,13 @@ class WemConnector
      */
     private function setHeatCircle2($value = 75)
     {
-        if ($this->page === null) {
+        if ($this->status === self::UNAVAILABLE) {
+            return;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        //$this->getDefault();
+
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=False');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
@@ -282,10 +317,13 @@ class WemConnector
      */
     private function setPpPower($value = 100)
     {
-        if ($this->page === null) {
+        if ($this->status === self::UNAVAILABLE) {
+            return;
+        }
+        if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        //$this->getDefault();
+
         $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001205000000001D400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
