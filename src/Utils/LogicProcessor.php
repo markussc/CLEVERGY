@@ -107,7 +107,7 @@ class LogicProcessor
             if (count($latestWem)) {
                 $diff = date_diff($now, $latestWem[0]->getTimestamp())->format('%i');
             }
-            if ($diff > 30 || ($smartfox['PvEnergy'][0] > 0 && $diff > 10)) {
+            if ($diff > 30 || ($smartfox['PvPower'][0] > 0 && $diff > 10)) {
                 // wem requests should only be done every 30 minutes; if PV power is available, allow every 10 minutes.
                 $doWem = true;
             }
