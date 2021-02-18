@@ -254,7 +254,7 @@ class WemConnector
            $this->authenticate();
         }
 
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=False');
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=32001A00000000000080004CFC0200110004&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
         $this->page->evaluate(
@@ -301,7 +301,7 @@ class WemConnector
            $this->authenticate();
         }
 
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=False');
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=33002200000000000080004CFC0200110004&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
         $this->page->evaluate(
