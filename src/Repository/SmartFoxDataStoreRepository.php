@@ -100,8 +100,11 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
     /*
      * lowRate = [start, end, days]   :  energy_low_rate parameter according to configuration. If set, only the low rate energy is calculated
      */
-    public function getEnergyIntervalHighRate($ip, $parameter, $lowRate, $start = null, $end = null)
+    public function getEnergyIntervalHighRate($ip, $parameter, $lowRate, $startInput = null, $endInput = null)
     {
+        // copy the input datetime objects, as we are going to modify them
+        $start = clone $startInput;
+        $end = clone $endInput;
         if ($start === null) {
             $start = new \DateTime('today'); // today at midnight (00:00)
         }
