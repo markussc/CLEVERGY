@@ -455,7 +455,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['ppStatus']|default(0)|replace({'Aus':0, '--':0, ' %':''}) }}
+                        y: {{ pwData.getData()['ppStatus']|default(0)|replace({'Aus':0, '--':20, ' %':''}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
