@@ -880,11 +880,11 @@ class LogicProcessor
                 $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
-                    $ppDelta = 5;
+                    $ppDelta = 3;
                     if ($avgPower < -1000 && $netPower < -1000) {
-                        $ppDelta = 20;
-                    } elseif ($avgPower < -500 && $netPower < -500) {
                         $ppDelta = 10;
+                    } elseif ($avgPower < -500 && $netPower < -500) {
+                        $ppDelta = 5;
                     }
                     $ppPower = min($ppLevel + $ppDelta, 100);
                 } elseif ($avgPower > 0 && $netPower > 0) {
