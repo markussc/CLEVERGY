@@ -760,8 +760,8 @@ class LogicProcessor
         if ($wem['ppStatus'] != 'Aus' && $wem['ppStatus'] != '--') {
             $ppLevel = str_replace(' %', '', $wem['ppStatus']);
         }
-        // temp diff between setDistrTemp and effDistrTemp
-        $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
+        // temp diff between setDistrTemp and storTemp
+        $hc2TempDiff = $wem['setDistrTemp'] - $wem['storTemp'];
 
 
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
