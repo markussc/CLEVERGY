@@ -793,6 +793,7 @@ class LogicProcessor
         $commandLog->setInsideTemp($insideTemp);
         $log = [];
 
+        $log[] = 'current ppLevel: ' . $ppLevel;
         // configure minPpPower
         $minPpPower = 10;
         if ($outsideTemp < 10) {
