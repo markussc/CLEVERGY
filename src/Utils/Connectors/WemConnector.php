@@ -49,7 +49,9 @@ class WemConnector
         // get analog, digital and integer values
         try {
             $defaultData = $this->getDefault();
+            sleep(10);
             $systemData = $this->getSystemMode();
+            sleep(10);
             $specialistDefaultData = $this->getSpecialistDefault();
             $modeData = ['mode' => $this->wemModeToString($this->em->getRepository('App:Settings')->getMode($this->getUsername()))];
             if ($close == true) {
@@ -70,6 +72,7 @@ class WemConnector
 
     public function executeCommand($type, $command)
     {
+        sleep(10);
         try {
             switch ($type) {
                 case 'hc1':
@@ -209,7 +212,7 @@ class WemConnector
             $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer");
         }
         // click second navigation button (Betriebsart)
-        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer a:not(.rmSelected)");
+        $this->page->click("#ctl00_rdMain_C_controlExtension_iconMenu_rmMenuLayer li:nth-of-type(2)>a");
         $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_imgbtnEdit");
         $this->currentPath = "Betriebsart";
         $data['ppMode'] = $this->ppModeToString($this->page->evaluate('document.querySelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl00_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl0_ctl00_lblValue").innerHTML'));
