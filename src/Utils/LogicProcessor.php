@@ -369,6 +369,12 @@ class LogicProcessor
      */
     public function autoActionsShelly()
     {
+        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+
+        // get current net_power
+        $smartfox = $this->smartfox->getAllLatest();
+        $netPower = $smartfox['power_io'];
+
         // get  shelly values
         $shellyDevices = $this->shelly->getAllLatest();
 
