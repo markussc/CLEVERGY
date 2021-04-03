@@ -369,7 +369,10 @@ class LogicProcessor
      */
     public function autoActionsShelly()
     {
-        foreach ($this->shelly->getAllLatest() as $deviceId => $shelly) {
+        // get  shelly values
+        $shellyDevices = $this->shelly->getAllLatest();
+
+        foreach ($shellyDevices as $deviceId => $shelly) {
             $shellyConfig = $this->connectors['shelly'][$deviceId];
             if ($shellyConfig['type'] == 'roller') {
                 // for rollers, check forceOpen and forceClose conditions
