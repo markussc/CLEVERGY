@@ -216,6 +216,7 @@ class DefaultController extends Controller
                 'shelly' => true,
                 'openweathermap' => true,
                 'mobilealerts' => true,
+                'ecar' => true,
             ]);
         }
         
