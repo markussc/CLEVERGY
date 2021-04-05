@@ -11,4 +11,5 @@ twig:
         mystromConnector: '@App\Utils\Connectors\MyStromConnector'
         shellyConnector: '@App\Utils\Connectors\ShellyConnector'
         pcowebConnector: '@App\Utils\Connectors\PcoWebConnector'
+        ecarConnector: '@App\Utils\Connectors\EcarConnector'
 

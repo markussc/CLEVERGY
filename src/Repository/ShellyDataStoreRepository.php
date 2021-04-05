@@ -20,8 +20,9 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
             } else {
                 $like = 'LIKE';
             }
-            $qb->andWhere('e.jsonValue '.$like.' :status')
-               ->setParameter('status', '%"val":'.$status.'%');
+            $qb->andWhere('e.jsonValue '.$like.' :status or e.jsonValue '.$like.' :status2')
+               ->setParameter('status', '%"val":'.$status.'%')
+                ->setParameter('status2', '%"val": '.$status.'%');
             return $qb->getQuery()->getResult();
         }
         $latest = $qb->getQuery()->getResult();
@@ -46,12 +47,13 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
             ->where('e.connectorId = :connectorId')
             ->andWhere('e.timestamp >= :start')
             ->andWhere('e.timestamp <= :end')
-            ->andWhere('e.jsonValue LIKE :status')
+            ->andWhere('e.jsonValue LIKE :status or e.jsonValue LIKE :status2')
             ->setParameters([
                 'connectorId' => $connectorId,
                 'start' => $start,
                 'end' => $end,
                 'status' => '%"val":1%',
+                'status2' => '%"val": 1%',
             ]);
 
         return $qb->getQuery()->getSingleScalarResult();

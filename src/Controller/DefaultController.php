@@ -121,6 +121,7 @@ class DefaultController extends Controller
                 'openweathermap' => true,
                 'mobilealerts' => true,
                 'netatmo' => true,
+                'ecar' => true,
             ]);
         }     
 
@@ -545,6 +546,9 @@ class DefaultController extends Controller
         }
         if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
             $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();
+        }
+        if (($fullSet === true || isset($fullSet['ecar'])) && array_key_exists('ecar', $this->getParameter('connectors'))) {
+            $currentStat['ecar'] = $this->get('App\Utils\Connectors\EcarConnector')->getAllLatest();
         }
 
         return $currentStat;

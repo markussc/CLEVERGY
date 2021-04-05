@@ -73,6 +73,12 @@ parameters:
                 -
                     deviceid: '99:88:77:66:55:44'
                     location: 'outside' # inside, outside, firstfloor, secondfloor
+        ecar:
+            -
+                name: my fancy car
+                type: id3 # currently only VW ID3 supported
+                username: <<myVWusername>>
+                password: <<myVWpassword>>
         edimax:
             -
                 name: 'Plug 1'

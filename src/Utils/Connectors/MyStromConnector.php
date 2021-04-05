@@ -389,6 +389,12 @@ class MyStromConnector
     private function startTimer($deviceConf, $activeTime)
     {
         $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($deviceConf['ip']);
+        if (!$device) {
+            $device = new Settings();
+            $device->setConnectorId($deviceConf['ip']);
+            $device->setMode(Settings::MODE_AUTO);
+            $this->em->persist($device);
+        }
         $config = $device->getConfig();
         $config['activeTime'] = intval($activeTime);
         $config['startTime'] = new \DateTime('now');

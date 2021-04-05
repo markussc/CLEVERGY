@@ -269,7 +269,7 @@ class LogicProcessor
         // if device is of type battery, calculate the remaining required total runtime and store temporarily as "forceOff --> runTime" condition). It will then turn off if the accumulated activeDuration (over several days) has reached the requested activeTime
         foreach ($mystromDevices as $deviceId => $mystrom) {
             if ($mystrom['type'] == 'battery') {
-                if ($mystrom['timerData']['activeTime']*60 > $mystrom['timerData']['activeDuration']) {
+                if (array_key_exists('activeTime', $mystrom['timerData']) && array_key_exists('activeDuration', $mystrom['timerData']) && $mystrom['timerData']['activeTime']*60 > $mystrom['timerData']['activeDuration']) {
                     // we have not reached the activeTime we need for this battery
                     $mystromDevices[$deviceId]['forceOff'][]['runTime'] = 24*60;
                 } else {
@@ -369,7 +369,16 @@ class LogicProcessor
      */
     public function autoActionsShelly()
     {
-        foreach ($this->shelly->getAllLatest() as $deviceId => $shelly) {
+        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+
+        // get current net_power
+        $smartfox = $this->smartfox->getAllLatest();
+        $netPower = $smartfox['power_io'];
+
+        // get  shelly values
+        $shellyDevices = $this->shelly->getAllLatest();
+
+        foreach ($shellyDevices as $deviceId => $shelly) {
             $shellyConfig = $this->connectors['shelly'][$deviceId];
             if ($shellyConfig['type'] == 'roller') {
                 // for rollers, check forceOpen and forceClose conditions
@@ -393,6 +402,48 @@ class LogicProcessor
                     // we only try to activate if we did not disable just before (disable wins)
                     if ($this->forceOnShelly($deviceId, $shelly)) {
                         continue;
+                    }
+                }
+            }
+        }
+        // auto actions for devices which have a nominalPower
+        if ($netPower > 0) {
+            if ($avgPower > 0) {
+                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                foreach ($shellyDevices as $deviceId => $shelly) {
+                    if ($shelly['nominalPower'] > 0) {
+                        // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                        if ($this->forceOnMystrom($deviceId, $shelly)) {
+                            continue;
+                        }
+                        // check if the device is on and allowed to be turned off
+                        if ($shelly['status']['val'] && $this->shelly->switchOK($deviceId)) {
+                            $this->shelly->executeCommand($deviceId, 0);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+            foreach ($shellyDevices as $deviceId => $shelly) {
+                if ($shelly['nominalPower'] > 0) {
+                    // check for "forceOff" conditions (if true, try to turn it off and skip
+                    if ($this->conditionchecker->checkCondition($shelly, 'forceOff')) {
+                        $this->forceOffMystrom($deviceId, $shelly);
+                        continue;
+                    }
+                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
+                    if ($this->forceOnMystrom($deviceId, $shelly)) {
+                        continue;
+                    }
+                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                    if (!$shelly['status']['val'] && $shelly['nominalPower'] < -1*$netPower && $shelly['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($shelly, 'on') && $this->shelly->switchOK($deviceId)) {
+                        if($this->shelly->executeCommand($deviceId, 1)) {
+                            break;
+                        } else {
+                            continue;
+                        }
                     }
                 }
             }

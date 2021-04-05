@@ -118,6 +118,18 @@
         {% endfor %}
         </div>
     {% endif %}
+    {% if ecarConnector.carAvailable() %}
+        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="ecar">
+            <h4><img src="{{ asset('ecar-blue.png') }}" style="height:50px; margin:0px; padding:0px;"></h4>
+            {% for device in currentStat['ecar'] %}
+                {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
+                {% trans %}label.ecar.battery{% endtrans %}: {{  device['battery']|trans }}<br>
+                {% trans %}label.ecar.location{% endtrans %}: {{  device['location']|trans }}<br>
+                {% trans %}label.ecar.status{% endtrans %}: {{  device['status']|trans }}
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
     {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 or currentStat['shelly']|default([])|length > 0 %}
         {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
