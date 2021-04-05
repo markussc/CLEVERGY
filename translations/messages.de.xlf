@@ -321,6 +321,34 @@
         <source>label.highrate</source>
         <target>Hochtarif</target>
       </trans-unit>
+      <trans-unit id="PE4BKDs" resname="label.ecar.battery.unknown">
+        <source>label.ecar.battery.unknown</source>
+        <target>unbekannt</target>
+      </trans-unit>
+      <trans-unit id="WcUWuDj" resname="label.ecar.location.unknown">
+        <source>label.ecar.location.unknown</source>
+        <target>unbekannt</target>
+      </trans-unit>
+      <trans-unit id="1in_8QT" resname="label.ecar.status.unknown">
+        <source>label.ecar.status.unknown</source>
+        <target>unbekannt</target>
+      </trans-unit>
+      <trans-unit id="DjJeZh1" resname="label.ecar.status">
+        <source>label.ecar.status</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="x8LqWoi" resname="label.ecar.battery">
+        <source>label.ecar.battery</source>
+        <target>Ladestand</target>
+      </trans-unit>
+      <trans-unit id="TbJfRSe" resname="label.ecar.location">
+        <source>label.ecar.location</source>
+        <target>Standort</target>
+      </trans-unit>
+      <trans-unit id="JYFi3fE" resname="label.ecar.name">
+        <source>label.ecar.name</source>
+        <target>Fahrzeug</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
