@@ -17,10 +17,12 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
         if ($status != -1) {
             if ($roller) {
                 $like = 'NOT LIKE';
+                $orNor = 'and';
             } else {
                 $like = 'LIKE';
+                $orNor = 'or';
             }
-            $qb->andWhere('e.jsonValue '.$like.' :status or e.jsonValue '.$like.' :status2')
+            $qb->andWhere('e.jsonValue '.$like.' :status ' . $orNor . ' e.jsonValue '.$like.' :status2')
                ->setParameter('status', '%"val":'.$status.'%')
                 ->setParameter('status2', '%"val": '.$status.'%');
             return $qb->getQuery()->getResult();
