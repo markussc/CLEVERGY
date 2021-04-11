@@ -749,7 +749,7 @@ class LogicProcessor
                 $this->pcoweb->executeCommand('hc1', 25);
                 $log[] = "normalize hc1 (set hc1=25) during high energy rate";
                 if ((($isSummer && $insideTemp > ($minInsideTemp + 1))|| $insideTemp >= $maxInsideTemp) && ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $pcoweb['hwHist'] >= 12) {
-                    $this->pcoweb->wexecuteCommand('waterTemp', $minWaterTemp+2);
+                    $this->pcoweb->executeCommand('waterTemp', $minWaterTemp+2);
                     $this->pcoweb->executeCommand('hwHysteresis', 2);
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER due to high energy rate and reduce waterTemp and hysteresis to min temporarily";
