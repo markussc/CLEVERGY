@@ -413,7 +413,7 @@ class LogicProcessor
                 foreach ($shellyDevices as $deviceId => $shelly) {
                     if ($shelly['nominalPower'] > 0) {
                         // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
-                        if ($this->forceOnMystrom($deviceId, $shelly)) {
+                        if ($this->forceOnShelly($deviceId, $shelly)) {
                             continue;
                         }
                         // check if the device is on and allowed to be turned off
@@ -430,11 +430,11 @@ class LogicProcessor
                 if ($shelly['nominalPower'] > 0) {
                     // check for "forceOff" conditions (if true, try to turn it off and skip
                     if ($this->conditionchecker->checkCondition($shelly, 'forceOff')) {
-                        $this->forceOffMystrom($deviceId, $shelly);
+                        $this->forceOffShelly($deviceId, $shelly);
                         continue;
                     }
                     // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                    if ($this->forceOnMystrom($deviceId, $shelly)) {
+                    if ($this->forceOnShelly($deviceId, $shelly)) {
                         continue;
                     }
                     // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
