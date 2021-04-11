@@ -216,6 +216,7 @@ class DefaultController extends Controller
                 'shelly' => true,
                 'openweathermap' => true,
                 'mobilealerts' => true,
+                'ecar' => true,
             ]);
         }
         
@@ -377,13 +378,13 @@ class DefaultController extends Controller
 
         if (isset($currentStat['conexio'])) {
             $solpower = $currentStat['conexio']['p']." W";
-            $soltemp = $currentStat['conexio']['s1']." °C";
-            $hightemp = $currentStat['conexio']['s3']." °C";
-            $lowtemp = $currentStat['conexio']['s2']." °C";
+            $soltemp = $currentStat['conexio']['s1']."°C";
+            $hightemp = $currentStat['conexio']['s3']."°C";
+            $lowtemp = $currentStat['conexio']['s2']."°C";
         } elseif (isset($currentStat['logoControl'])) {
-            $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . " °C";
-            $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . " °C";
-            $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . " °C";
+            $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . "°C";
+            $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . "°C";
+            $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . "°C";
             $lowtemp = "";
         } else {
             $solpower = "";
@@ -400,29 +401,29 @@ class DefaultController extends Controller
         $basementhumidity = "";
         $outsideTemp = "";
         if (isset($climateValues['insidetemp'])) {
-            $insidetemp = $climateValues['insidetemp'] . " °C";
+            $insidetemp = $climateValues['insidetemp'] . "°C";
         }
         if (isset($climateValues['firstfloortemp'])) {
-            $firstfloortemp = $climateValues['firstfloortemp'] . " °C";
+            $firstfloortemp = $climateValues['firstfloortemp'] . "°C";
         }
         if (isset($climateValues['secondfloortemp'])) {
-            $secondfloortemp = $climateValues['secondfloortemp']. " °C";
+            $secondfloortemp = $climateValues['secondfloortemp']. "°C";
         }
         if (isset($climateValues['insidehumidity'])) {
             $insidehumidity = $climateValues['insidehumidity'] . " %";
         }
         if (isset($climateValues['basementtemp'])) {
-            $basementtemp = $climateValues['basementtemp'] . " °C";
+            $basementtemp = $climateValues['basementtemp'] . "°C";
         }
         if (isset($climateValues['basementhumidity'])) {
             $basementhumidity = $climateValues['basementhumidity'] . " %";
         }
         if (isset($climateValues['outsidetemp'])) {
-            $outsideTemp = $climateValues['outsidetemp'] . " °C";
+            $outsideTemp = $climateValues['outsidetemp'] . "°C";
         }
 
         if(isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
-            $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']." °C";
+            $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']."°C";
         } elseif(isset($currentStat['pcoWeb'])) {
             $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
         } else {
@@ -430,17 +431,17 @@ class DefaultController extends Controller
         }
 
         if (isset($currentStat['pcoWeb']) && ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on" || strpos($currentStat['pcoWeb']['ppStatus'], '%') > 0)) {
-            $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']." °C";
-            $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']." °C";
+            $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']."°C";
+            $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']."°C";
         } else {
             $sourceintemp = "";
             $sourceouttemp = "";
         }
         if(isset($currentStat['pcoWeb'])) {
-            $outsideTemp = $currentStat['pcoWeb']['outsideTemp']." °C";
-            $waterTemp = $currentStat['pcoWeb']['waterTemp']." °C";
+            $outsideTemp = $currentStat['pcoWeb']['outsideTemp']."°C";
+            $waterTemp = $currentStat['pcoWeb']['waterTemp']."°C";
             $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
-            $storTemp = $this->get('translator')->trans($currentStat['pcoWeb']['storTemp']);
+            $storTemp = $currentStat['pcoWeb']['storTemp']."°C";
         } else {;
             $waterTemp = '';
             $ppStatus = '';
