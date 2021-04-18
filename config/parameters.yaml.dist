@@ -18,6 +18,8 @@ parameters:
         wem: # connector for WEM Portal (Weishaupt Energy Manager)
             username: me@you.com
             password:  mysecret
+            ip: 192.168.22.31
+            port: 502
         conexio:
             ip: 192.168.1.100
             username: admin

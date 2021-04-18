@@ -4,8 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "322b969d8265043ebe88943e740dcd58",
+    "content-hash": "32423455afc733faab4c8aad52abc2d5",
     "packages": [
+        {
+            "name": "aldas/modbus-tcp-client",
+            "version": "2.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aldas/modbus-tcp-client.git",
+                "reference": "0ce52f3a7ade81f34c470249ea7dc611b5f4359f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aldas/modbus-tcp-client/zipball/0ce52f3a7ade81f34c470249ea7dc611b5f4359f",
+                "reference": "0ce52f3a7ade81f34c470249ea7dc611b5f4359f",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0",
+                "psr/log": "^1.0",
+                "react/child-process": "^0.6",
+                "react/datagram": "^1.5",
+                "react/socket": "^1.6"
+            },
+            "suggest": {
+                "psr/log": "Required for using the Log middleware with BinaryStreamConnection"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ModbusTcpClient\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Modbus TCP protocol client library",
+            "keywords": [
+                "modbus"
+            ],
+            "time": "2021-01-26T07:50:20+00:00"
+        },
         {
             "name": "clue/socket-raw",
             "version": "v1.5.0",
