@@ -245,9 +245,6 @@ class WemConnector
     private function readPpStatusModbusTcp()
     {
         $ppStatus = $this->readUint16ModbusTcp(self::MODBUSTCP_PPSTATUS);
-        if (!$ppStatus) {
-            $ppStatus = 'Aus'; // backwards compatibility to WEM Portal
-        }
 
         return $ppStatus;
     }
@@ -275,7 +272,7 @@ class WemConnector
     {
         $bytes = $this->readBytesFc4ModbusTcp($address);
 
-        return Types::parseUInt16(Types::byteArrayToByte($bytes));
+        return Types::parseInt16(Types::byteArrayToByte($bytes));
     }
 
     /*

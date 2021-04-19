@@ -99,23 +99,17 @@ class LogicProcessor
         $this->initPcoweb();
 
         // wem
-        $doWem = false;
+        $doWemPortal = false;
         if ($this->wem->getUsername()) {
             $now = new \DateTime();
-            $latestWem = $this->em->getRepository('App:WemDataStore')->getLatestElement($this->wem->getUsername());
-            $diff = 0;
-            if (count($latestWem)) {
-                $diff = date_diff($now, $latestWem[0]->getTimestamp())->format('%i');
-            }
-            if ($diff > 15 || ($smartfox['PvPower'][0] > 0 && $diff > 5)) {
-                // wem requests should only be done every 15 minutes; if PV power is available, allow every 5 minutes.
-                $doWem = true;
+            $nowMinutes = $now->format('i');
+            if ($nowMinutes % 15 == 0 || ($smartfox['PvPower'][0] > 0 && $nowMinutes % 5 == 0)) {
+                // WEM Portal requests should only be done every 15 minutes; if PV power is available, allow every 5 minutes.
+                $doWemPortal = true;
             }
         }
+        $this->initWem();
 
-        if ($doWem) {
-            $this->initWem();
-        }
 
         // mobilealerts
         $this->initMobilealerts();
@@ -147,8 +141,8 @@ class LogicProcessor
 
         // execute auto actions for wem WEM heating, if we are not in manual mode
         $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
-        if ($doWem && Settings::MODE_MANUAL != $wemMode) {
-            $this->autoActionsWem($wemMode);
+        if (Settings::MODE_MANUAL != $wemMode) {
+            $this->autoActionsWem($wemMode, $doWemPortal);
         }
 
         // process alarms
@@ -785,7 +779,7 @@ class LogicProcessor
         $this->em->flush();
     }
 
-    public function autoActionsWem($wemMode)
+    public function autoActionsWem($wemMode, $doWemPortal)
     {
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $wem = $this->wem->getAllLatest();
@@ -813,11 +807,7 @@ class LogicProcessor
         }
 
         // get current ppPowerLevel
-        if ($wem['ppStatus'] != 'Aus' && $wem['ppStatus'] != '--') {
-            $ppLevel = str_replace(' %', '', $wem['ppStatus']);
-        } else {
-            $ppLevel = 0;
-        }
+        $ppLevel = $wem['ppStatus'];
 
         // temp diff between setDistrTemp and storTemp
         $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
@@ -1001,7 +991,7 @@ class LogicProcessor
 
         // set ppPower
         $newPpPower = min(100, max($minPpPower, $ppPower));
-        if ($ppLevel != 0 && ($newPpPower > $ppLevel + 3 || $newPpPower < $ppLevel - 3)) {
+        if ($doWemPortal && $ppLevel != 0 && ($newPpPower > $ppLevel + 3 || $newPpPower < $ppLevel - 3)) {
             $this->wem->executeCommand('ppPower', $newPpPower);
         }
 
