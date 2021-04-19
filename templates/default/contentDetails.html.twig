@@ -84,7 +84,7 @@
         <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: {{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</li>
         {% endif %}
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ [currentStat['pcoWeb']['ppStatus']|default(0), '%']|join('')|replace({'Aus%': 'label.device.status.off', '0%': 'label.device.status.off'})|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ [currentStat['pcoWeb']['ppStatus']|default(0)|replace({' %': ''}), '%']|join('')|replace({'Aus%': 'label.device.status.off', '0%': 'label.device.status.off'})|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>

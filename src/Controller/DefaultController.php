@@ -440,7 +440,7 @@ class DefaultController extends Controller
         if(isset($currentStat['pcoWeb'])) {
             $outsideTemp = $currentStat['pcoWeb']['outsideTemp']."°C";
             $waterTemp = $currentStat['pcoWeb']['waterTemp']."°C";
-            $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
+            $ppStatus = $this->get('translator')->trans(str_replace('0%', 'label.device.status.off', str_replace('Aus%', 'label.device.status.off', str_replace(' %', '', $currentStat['pcoWeb']['ppStatus']) . '%')));
             $storTemp = $currentStat['pcoWeb']['storTemp']."°C";
         } else {;
             $waterTemp = '';
