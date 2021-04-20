@@ -992,6 +992,7 @@ class LogicProcessor
         // set ppPower
         $newPpPower = min(100, max($minPpPower, $ppPower));
         if ($doWemPortal && $ppLevel != 0 && ($newPpPower > $ppLevel + 3 || $newPpPower < $ppLevel - 3)) {
+            $log[] = "send ppPower command to device";
             $this->wem->executeCommand('ppPower', $newPpPower);
         }
 
