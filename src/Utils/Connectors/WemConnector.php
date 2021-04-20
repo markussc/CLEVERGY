@@ -74,6 +74,13 @@ class WemConnector
     {
         // get analog, digital and integer values
         try {
+            $setDistrTemp = $this->readTempModbusTcp(self::MODBUSTCP_SETDISTRTEMP);
+            if ($setDistrTemp === 0.1) {
+                $setDistrTemp = '---';
+                $cpStatus = 'label.device.status.off';
+            } else {
+                $this->readCpStatusModbusTcp();
+            }
             $modbusTcpData = [
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
                 'waterTemp' => $this->readTempModbusTcp(self::MODBUSTCP_WARMWATER),
@@ -81,9 +88,9 @@ class WemConnector
                 'ppSourceOut' => '---',
                 'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
                 'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
-                'setDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_SETDISTRTEMP),
+                'setDistrTemp' => $setDistrTemp,
                 'effDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_EFFDISTRTEMP),
-                'cpStatus' => $this->readCpStatusModbusTcp(),
+                'cpStatus' => $cpStatus,
                 'ppMode' => $this->readPpModeModbusTcp(),
                 'ppStatus' => $this->readPpStatusModbusTcp(),
                 'storTemp' => '---', // currently not available

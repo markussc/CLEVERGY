@@ -809,9 +809,12 @@ class LogicProcessor
         // get current ppPowerLevel
         $ppLevel = $wem['ppStatus'];
 
-        // temp diff between setDistrTemp and storTemp
-        $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
-
+        // temp diff between setDistrTemp and effDistrTemp
+        if ($wem['setDistrTemp'] !== '---') {
+            $hc2TempDiff = $wem['setDistrTemp'] - $wem['effDistrTemp'];
+        } else {
+            $hc2TempDiff = 0;
+        }
 
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         if ($wemMode == Settings::MODE_HOLIDAY) {
