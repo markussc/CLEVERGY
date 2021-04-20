@@ -79,7 +79,7 @@ class WemConnector
                 $setDistrTemp = '---';
                 $cpStatus = 'label.device.status.off';
             } else {
-                $this->readCpStatusModbusTcp();
+                $cpStatus = $this->readCpStatusModbusTcp();
             }
             $modbusTcpData = [
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
