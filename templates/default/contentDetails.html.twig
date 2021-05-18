@@ -429,7 +429,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['storTemp']|default(0) }}
+                        y: {{ pwData.getData()['storTemp']|default(0)|replace({'':0}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
