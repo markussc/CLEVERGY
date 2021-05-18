@@ -88,8 +88,8 @@ class SmartFoxConnector
         }
 
         $values = [
-            "energy_in" => $data["eDayValue"],
-            "energy_out" => $data["eDayToGridValue"],
+            "energy_in" => $data["energyValue"],
+            "energy_out" => $data["eToGridValue"],
             "power_io" => $data["detailsPowerValue"],
             "digital" => [
                 "0" => ["state" => $data["relayStatusValue1"]],
