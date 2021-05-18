@@ -74,34 +74,36 @@ class SmartFoxConnector
         foreach ($xml->children() as $value) {
             $val = (string)$value;
             if (strpos($val, " kW") !== false) {
-                $val = 1000*substr($val, 0, strpos($val, " kW"));
+                $val = 1000*(float)substr($val, 0, strpos($val, " kW"));
             } elseif (strpos($val, " kWh") !== false) {
-                $val = 1000*substr($val, 0, strpos($val, " kWh"));
+                $val = 1000*(float)substr($val, 0, strpos($val, " kWh"));
             } elseif (strpos($val, " Wh") !== false) {
-                $val = 1*substr($val, 0, strpos($val, " Wh"));
+                $val = 1*(float)substr($val, 0, strpos($val, " Wh"));
             } elseif (strpos($val, " °C") !== false) {
-                $val = 1*substr($val, 0, strpos($val, " °C"));
+                $val = 1*(float)substr($val, 0, strpos($val, " °C"));
             } elseif (strpos($val, " W") !== false) {
-                $val = 1*substr($val, 0, strpos($val, " W"));
+                $val = 1*(float)substr($val, 0, strpos($val, " W"));
             }
             $data[(string)$value['id']] = $val;
         }
 
-        return [
-            "energy_in" => $data["u5827-41"],
-            "energy_out" => $data["u5824-41"],
-            "power_io" => $data["u5790-41"],
+        $values = [
+            "energy_in" => $data["energyValue"],
+            "energy_out" => $data["eToGridValue"],
+            "power_io" => $data["detailsPowerValue"],
             "digital" => [
-                "0" => ["state" => $data["u5674-41"]],
-                "1" => ["state" => $data["u5704-41"]],
-                "2" => ["state" => $data["u5710-41"]],
-                "3" => ["state" => $data["u5707-41"]],
+                "0" => ["state" => $data["relayStatusValue1"]],
+                "1" => ["state" => $data["relayStatusValue2"]],
+                "2" => ["state" => $data["relayStatusValue3"]],
+                "3" => ["state" => $data["relayStatusValue4"]],
             ],
-            "PvPower" => ["0" => $data["u5272-41"]],
-            "PvEnergy" => ["0" => $data["u7015"]],
+            "PvPower" => ["0" => $data["wr1PowerValue"]],
+            "PvEnergy" => ["0" => $data["wr1EnergyValue"]],
             "day_energy_in" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in'),
             "day_energy_out" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out'),
             "energyToday" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip)
         ];
+
+        return $values;
     }
 }
