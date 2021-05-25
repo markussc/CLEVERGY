@@ -24,14 +24,14 @@
       <script>var selectedMystrom;</script>
 {% endif %}
 <div class="row">
-    <div class="small-12 medium-6 columns" style="margin-top:0.5em; margin-left:0.5em;">
+    <div class="small-12 medium-5 columns" style="margin-top:0.5em; margin-left:0.5em;">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
         <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
         <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap">{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
-    <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="chromecast">
+    <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;" id="chromecast">
         <h4><i class="fas fa-headphones-alt" style="font-size:2em; color:#6c3483 ;"></i></h4>
         {% for ccId, chromecast in connectors['chromecast'] %}
             <h6>
@@ -65,7 +65,7 @@
 </div>
 <div class="row">
     {% if currentStat['edimax']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 %}
-    <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="edimax">
+    <div class="small-6 columns refresh" style="margin-top:0.5em;" id="edimax">
         <h4><i class="fas fa-plug" style="font-size:2em; color:#148f77 "></i></h4>
         {% for key, device in currentStat['edimax']|default([]) %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
@@ -100,7 +100,7 @@
     </div>
     {% endif %}
     {% if shellyConnector.rollerRelayAvailable() %}
-        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="shelly">
+        <div class="small-6 columns refresh" style="margin-top:0.5em;" id="shelly">
         <h4><i class="fas fa-toggle-on" style="font-size:2em; color:#1f618d ;"></i></h4>
         {% for key, device in currentStat['shelly'] if (device['type'] == "roller" or device['type'] == "relay") %}
             {% if not loop.first %}<br/>{% endif %}
@@ -118,21 +118,11 @@
         {% endfor %}
         </div>
     {% endif %}
-    {% if ecarConnector.carAvailable() %}
-        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="ecar">
-            <h4><img src="{{ asset('ecar-blue.png') }}" style="height:50px; margin:0px; padding:0px;"></h4>
-            {% for device in currentStat['ecar'] %}
-                {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
-                {% trans %}label.ecar.battery{% endtrans %}: {{  device['battery']|trans }}<br>
-                {% trans %}label.ecar.location{% endtrans %}: {{  device['location']|trans }}<br>
-                {% trans %}label.ecar.status{% endtrans %}: {{  device['status']|trans }}
-                {% if not loop.last %}<hr>{% endif %}
-            {% endfor %}
-        </div>
-    {% endif %}
+</div>
+<div class="row">
     {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 or currentStat['shelly']|default([])|length > 0 %}
         {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
-        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="alarm">
+        <div class="small-6 columns refresh" style="margin-top:0.5em;" id="alarm">
         <h4><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></h4>
         {% if connectors['threema']|default([])|length > 0 %}
             {% set alarmMode = mobilealertsConnector.getAlarmMode()|default(0) %}
@@ -154,10 +144,11 @@
         {% for motionSensor in currentStat['mystrom']|default([]) if motionSensor['type']|default('') == 'motion' %}
         {% if not motionSensor['status']['val']|default(false) %}<i class="fas fa-male" style="color:green"></i>{% else %}<i class="fas fa-running" style="color:red"></i>{% endif %} {{ motionSensor['name'] }}<br/>
         {% endfor %}
+        </div>
         {% endif %}
     {% endif %}
     {% if gardenaConnector.availableDevices|default([])|length > 0 %}
-        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="gardena">
+        <div class="small-6 columns refresh" style="margin-top:0.5em;" id="gardena">
         <h4><i class="fas fa-leaf" style="font-size:2em; color:green;"></i></h4>
         {% for gardenaDevice in gardenaConnector.availableDevices() %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower" style="color:silver"></i></a>
@@ -166,8 +157,24 @@
         {% endfor %}
         </div>
     {% endif %}
+    </div>
+    {% if ecarConnector.carAvailable() %}
+    <div class="row">
+        <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;" id="ecar">
+            <h4><img src="{{ asset('ecar-blue.png') }}" style="height:50px; margin:0px; padding:0px;"></h4>
+            {% for device in currentStat['ecar'] %}
+                {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
+                {% trans %}label.ecar.battery{% endtrans %}: {{  device['battery']|trans }}<br>
+                {% trans %}label.ecar.location{% endtrans %}: {{  device['location']|trans }}<br>
+                {% trans %}label.ecar.status{% endtrans %}: {{  device['status']|trans }}
+                {% if not loop.last %}<hr>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     {% if connectors['command']|default([])|length > 0 %}
-        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="command">
+    <div class="row">
+        <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;" id="command">
         <h4><i class="fas fa-terminal" style="font-size:2em; color:#2e4053 ;"></i></h4>
         {% for key, command in connectors['command'] %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}]);"{% endif %}><i class="{{ command['icon']}}" style="color:silver"></i></a>
@@ -175,5 +182,6 @@
             {% if not loop.last %}<br/>{% endif %}
         {% endfor %}
         </div>
+    </div>
     {% endif %}
 </div>
