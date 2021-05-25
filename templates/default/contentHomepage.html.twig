@@ -156,6 +156,16 @@
         {% endfor %}
         {% endif %}
     {% endif %}
+    {% if gardenaConnector.availableDevices|default([])|length > 0 %}
+        <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="gardena">
+        <h4><i class="fas fa-leaf" style="font-size:2em; color:green;"></i></h4>
+        {% for gardenaDevice in gardenaConnector.availableDevices() %}
+            <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower" style="color:silver"></i></a>
+            {{ gardenaDevice.config['name']}}
+            {% if not loop.last %}<br/>{% endif %}
+        {% endfor %}
+        </div>
+    {% endif %}
     {% if connectors['command']|default([])|length > 0 %}
         <div class="small-6 medium-4 columns refresh" style="margin-top:0.5em;" id="command">
         <h4><i class="fas fa-terminal" style="font-size:2em; color:#2e4053 ;"></i></h4>

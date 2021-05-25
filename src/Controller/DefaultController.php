@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Utils\Connectors\WemConnector;
+use App\Utils\Connectors\GardenaConnector;
 use App\Entity\Settings;
 use App\Utils\LogicProcessor;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -191,6 +191,8 @@ class DefaultController extends Controller
                 $connectors = $this->getParameter('connectors');
                 exec($connectors['command'][$command[1]]['cmd']);
                 return true;
+            case 'gardena':
+                return $this->get('App\Utils\Connectors\GardenaConnector')->executeCommand($command[1], $command[2]);
         }
 
         // no known device

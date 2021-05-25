@@ -12,4 +12,5 @@ twig:
         shellyConnector: '@App\Utils\Connectors\ShellyConnector'
         pcowebConnector: '@App\Utils\Connectors\PcoWebConnector'
         ecarConnector: '@App\Utils\Connectors\EcarConnector'
+        gardenaConnector: '@App\Utils\Connectors\GardenaConnector'
 

@@ -91,3 +91,7 @@ services:
         arguments:
             $em: "@doctrine.orm.entity_manager"
             $connectors: "%connectors%"
+    App\Utils\Connectors\GardenaConnector:
+        public: true
+        arguments:
+            $connectors: "%connectors%"

@@ -33,6 +33,39 @@ class Settings
     /**
      * @var string
      *
+     * @ORM\Column(type="string", nullable=true)
+     * @Assert\NotBlank()
+     */
+    private $type;
+
+    /**
+     * Set the type of the connector.
+     *
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+
+    /**
+     * Get the type of the connector.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @var string
+     *
      * @ORM\Column(type="string", nullable=false)
      * @Assert\NotBlank()
      */
