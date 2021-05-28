@@ -31,10 +31,10 @@
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap">{% endif %}
     </div>
     {% if connectors['chromecast']|default([])|length > 0 %}
-    <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;">
-        <h4><a href="javascript::void();" onclick="$('#chromecast_container').toggle()"><i class="fas fa-headphones-alt" style="font-size:2em; color:#6c3483 ;"></i></a></h4>
+    <div class="small-12 medium-6 columns" style="margin-top:0.5em;">
+        <h4><a href="javascript:void(0);" onclick="$('#chromecast_container').toggle()"><i class="fas fa-headphones-alt" style="font-size:2em; color:#6c3483 ;"></i></a></h4>
         <div id="chromecast_container" style="display:none;">
-        <div id="chromecast refresh">
+        <div id="chromecast" class="refresh">
         {% for ccId, chromecast in connectors['chromecast'] %}
             <h6>
                 {% if chromecast['edimax']|default([])|length > 0 or chromecast['mystrom']|default([])|length > 0 %}
@@ -70,9 +70,9 @@
 <div class="row">
     {% if currentStat['edimax']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 %}
     <div class="small-6 columns" style="margin-top:0.5em;">
-        <h4><a href="javascript::void();" onclick="$('#edimax_container').toggle()"><i class="fas fa-plug" style="font-size:2em; color:#148f77 "></i></a></h4>
+        <h4><a href="javascript:void(0);" onclick="$('#edimax_container').toggle()"><i class="fas fa-plug" style="font-size:2em; color:#148f77 "></i></a></h4>
         <div id="edimax_container" style="display:none;">
-        <div id="edimax refresh">
+        <div id="edimax" class="refresh">
         {% for key, device in currentStat['edimax']|default([]) %}
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i></a>
             <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
@@ -108,10 +108,10 @@
     </div>
     {% endif %}
     {% if shellyConnector.rollerRelayAvailable() %}
-        <div class="small-6 columns refresh" style="margin-top:0.5em;">
-            <h4><a href="javascript::void();" onclick="$('#shelly_container').toggle()"><i class="fas fa-toggle-on" style="font-size:2em; color:#1f618d ;"></i></a></h4>
+        <div class="small-6 columns" style="margin-top:0.5em;">
+            <h4><a href="javascript:void(0);" onclick="$('#shelly_container').toggle()"><i class="fas fa-toggle-on" style="font-size:2em; color:#1f618d ;"></i></a></h4>
             <div id="shelly_container" style="display:none;">
-            <div id="shelly refresh">
+            <div id="shelly" class="refresh">
             {% for key, device in currentStat['shelly'] if (device['type'] == "roller" or device['type'] == "relay") %}
             {% if not loop.first %}<br/>{% endif %}
             {% if device['status']['val']|default(100) < 2 %}
@@ -134,10 +134,10 @@
 <div class="row">
     {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 or currentStat['shelly']|default([])|length > 0 %}
         {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
-        <div class="small-6 columns refresh" style="margin-top:0.5em;">
-            <h4><a href="javascript::void();" onclick="$('#alarm_container').toggle()"><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></a></h4>
+        <div class="small-6 columns" style="margin-top:0.5em;">
+            <h4><a href="javascript:void(0);" onclick="$('#alarm_container').toggle()"><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></a></h4>
             <div id="alarm_container" style="display:none;">
-            <div id="alarm refresh">
+            <div id="alarm" class="refresh">
             {% if connectors['threema']|default([])|length > 0 %}
                 {% set alarmMode = mobilealertsConnector.getAlarmMode()|default(0) %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', 'alarm', {{ (alarmMode + 1) % 2 }}]);"{% endif %}><i class="fas {% if alarmMode %}fa-comment{% else %}fa-comment-slash{% endif %}"></i></a> {% trans %}label.alarm.notification{% endtrans %}<br>
@@ -164,10 +164,10 @@
         {% endif %}
     {% endif %}
     {% if gardenaConnector.availableDevices|default([])|length > 0 %}
-        <div class="small-6 columns refresh" style="margin-top:0.5em;">
-            <h4><a href="javascript::void();" onclick="$('#gardena_container').toggle()"><i class="fas fa-leaf" style="font-size:2em; color:green;"></i></a></h4>
+        <div class="small-6 columns" style="margin-top:0.5em;">
+            <h4><a href="javascript:void(0);" onclick="$('#gardena_container').toggle()"><i class="fas fa-leaf" style="font-size:2em; color:green;"></i></a></h4>
             <div id="gardena_container" style="display:none;">
-            <div id="gardena refresh">
+            <div id="gardena" class="refresh">
             {% for gardenaDevice in gardenaConnector.availableDevices() %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower" style="color:silver"></i></a>
                 {{ gardenaDevice.config['name']}}
@@ -180,10 +180,10 @@
     </div>
     {% if ecarConnector.carAvailable() %}
     <div class="row">
-        <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;">
-            <h4><a href="javascript::void();" onclick="$('#ecar_container').toggle()"><img src="{{ asset('ecar-blue.png') }}" style="height:50px; margin:0px; padding:0px;"></a></h4>
+        <div class="small-12 medium-6 columns" style="margin-top:0.5em;">
+            <h4><a href="javascript:void(0);" onclick="$('#ecar_container').toggle()"><img src="{{ asset('ecar-blue.png') }}" style="height:50px; margin:0px; padding:0px;"></a></h4>
             <div id="ecar_container" style="display:none;">
-            <div id="ecar refresh">
+            <div id="ecar" class="refresh"">
             {% for device in currentStat['ecar'] %}
                 {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
                 {% trans %}label.ecar.battery{% endtrans %}: {{  device['battery']|trans }}<br>
@@ -198,10 +198,10 @@
     {% endif %}
     {% if connectors['command']|default([])|length > 0 %}
     <div class="row">
-        <div class="small-12 medium-6 columns refresh" style="margin-top:0.5em;">
-            <h4><a href="javascript::void();" onclick="$('#command_container').toggle()"><i class="fas fa-terminal" style="font-size:2em; color:#2e4053 ;"></i></h4>
+        <div class="small-12 medium-6 columns" style="margin-top:0.5em;">
+            <h4><a href="javascript:void(0);" onclick="$('#command_container').toggle()"><i class="fas fa-terminal" style="font-size:2em; color:#2e4053 ;"></i></h4>
             <div id="command_container" style="display:none;">
-            <div id="command refresh">
+            <div id="command" class="refresh"">
             {% for key, command in connectors['command'] %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}]);"{% endif %}><i class="{{ command['icon']}}" style="color:silver"></i></a>
                 {{ command['name']}}
