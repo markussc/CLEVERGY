@@ -28,6 +28,7 @@ class UpdateGardenaCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->getContainer()->get(GardenaConnector::class)->updateDevices();
+        // forcibly update the devices by requesting information from the gardena API
+        $this->getContainer()->get(GardenaConnector::class)->updateDevices(true);
     }
 }

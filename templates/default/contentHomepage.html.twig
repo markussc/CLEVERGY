@@ -169,8 +169,12 @@
             <div id="gardena_container" style="display:none;">
             <div id="gardena" class="refresh">
             {% for gardenaDevice in gardenaConnector.availableDevices() %}
+                {% if gardenaDevice.config['type']|default(false) == 'VALVE' %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower" style="color:silver"></i></a>
                 {{ gardenaDevice.config['name']}}
+                {% elseif gardenaDevice.config['type']|default(false) == 'SENSOR' and gardenaDevice.config['soilHumidity']|default(false) != false %}
+                {{ gardenaDevice.config['name'] }}: <i class="fas fa-tint" style="color:blue;"></i> {{  gardenaDevice.config['soilHumidity'] }}%
+                {% endif %}
                 {% if not loop.last %}<br/>{% endif %}
             {% endfor %}
             </div>

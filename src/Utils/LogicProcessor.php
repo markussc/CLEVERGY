@@ -26,6 +26,7 @@ use App\Utils\Connectors\ThreemaConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\NetatmoConnector;
+use App\Utils\Connectors\GardenaConnector;
 use App\Utils\ConditionChecker;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -48,12 +49,14 @@ class LogicProcessor
     protected $conexio;
     protected $logo;
     protected $netatmo;
+    protected $gardena;
+    protected $threema;
     protected $conditionchecker;
     protected $translator;
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->edimax = $edimax;
@@ -67,6 +70,7 @@ class LogicProcessor
         $this->conexio = $conexio;
         $this->logo = $logo;
         $this->netatmo = $netatmo;
+        $this->gardena = $gardena;
         $this->threema = $threema;
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
@@ -123,6 +127,9 @@ class LogicProcessor
         // netatmo
         $this->initNetAtmo();
 
+        // gardena
+        $this->initGardena();
+
         // write to database
         $this->em->flush();
 
@@ -150,6 +157,9 @@ class LogicProcessor
         if ($doWem && Settings::MODE_MANUAL != $wemMode) {
             $this->autoActionsWem($wemMode);
         }
+
+        // execute auto actions for Gardena devices
+        // do nothing currently
 
         // process alarms
         $this->processAlarms();
@@ -1215,6 +1225,13 @@ class LogicProcessor
                 $this->em->persist($netatmoEntity);
                 $this->em->flush();
             }
+        }
+    }
+
+    public function initGardena()
+    {
+        if ($this->gardena->getAvailable()) {
+            $this->gardena->updateDevices();
         }
     }
 

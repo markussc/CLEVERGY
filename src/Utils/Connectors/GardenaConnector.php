@@ -42,25 +42,59 @@ class GardenaConnector
         }
     }
 
+    public function getAvailable()
+    {
+        if ($this->username !== null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function availableDevices()
     {
         return $this->em->getRepository('App:Settings')->findByType('gardena');
     }
 
-    public function updateDevices()
+    public function updateDevices($force = false)
     {
-        $devices = $this->getDevices();
-        foreach ($devices as $device) {
-            $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($device['id']);
-            if (!$settings) {
-                $settings = new Settings();
-                $settings->setConnectorId($device['id']);
-            }
-            $settings->setType('gardena');
-            $settings->setConfig(['name' => $device['name']]);
-            $this->em->persist($settings);
-            $settings->setMode(Settings::MODE_AUTO);
+        $controlDevice = $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId('gardena');
+        $now = new \DateTime();
+        if (!$controlDevice) {
+            $controlDevice = new Settings();
+            $controlDevice->setConnectorId('gardena');
+            $controlDevice->setConfig(['lastUpdate' => new \DateTime('yesterday')]);
+            $diff = 30;
+        } else {
+            $config = $controlDevice->getConfig();
+            $lastUpdate = new \DateTime($config['lastUpdate']['date']);
+            $diff = date_diff($now, $lastUpdate)->format('%i');
         }
+
+        if ($force || $diff >= 30) {
+            $controlDevice->setConfig(['lastUpdate' =>$now]);
+            $devices = $this->getDevices();
+            foreach ($devices as $device) {
+                $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($device['id']);
+                if (!$settings) {
+                    $settings = new Settings();
+                    $settings->setConnectorId($device['id']);
+                }
+                $settings->setType('gardena');
+                $config = [
+                    'name' => $device['name'],
+                    'type' => $device['type']
+                ];
+                if ($device['type'] == 'SENSOR' && array_key_exists('soilHumidity', $device)) {
+                    $config['soilHumidity'] = $device['soilHumidity'];
+                }
+                $settings->setConfig($config);
+                $this->em->persist($settings);
+                $settings->setMode(Settings::MODE_AUTO);
+            }
+        }
+
+        $this->em->persist($controlDevice);
         $this->em->flush();
     }
 
@@ -214,18 +248,34 @@ class GardenaConnector
     {
         $devices = [];
         $locations = $this->getLocations();
+        $idName = [];
         foreach ($locations as $location) {
             if (is_array($location) && array_key_exists('id', $location)) {
                 $locationStates = $this->getLocation($location['id']);
                 if (array_key_exists('included', $locationStates)) {
                     foreach ($locationStates['included'] as $included) {
+                        if (array_key_exists('attributes', $included) && array_key_exists('name', $included['attributes']) && array_key_exists('value', $included['attributes']['name'])) {
+                            $idName[ $included['id']] = $included['attributes']['name']['value'];
+                        }
                         if ($included['type'] == 'VALVE') {
                             $device['id'] = $included['id'];
                             $device['name'] = $included['attributes']['name']['value'];
+                            $device['type'] = 'VALVE';
+                            $devices[] = $device;
+                        } else if ($included['type'] == 'SENSOR' && array_key_exists('attributes', $included) && array_key_exists('soilHumidity', $included['attributes'])) {
+                            $device['id'] = $included['id'];
+                            $device['type'] = 'SENSOR';
+                            $device['soilHumidity'] = $included['attributes']['soilHumidity']['value'];
                             $devices[] = $device;
                         }
                     }
                 }
+            }
+        }
+        // add missing names to the devices
+        foreach ($devices as &$device) {
+            if (array_key_exists($device['id'], $idName)) {
+                $device['name'] = $idName[$device['id']];
             }
         }
 
