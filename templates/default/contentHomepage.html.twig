@@ -114,7 +114,7 @@
                     {% endif %}
                     <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}"' class="button tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
                 {% endif %}
-                {{ device['name']}}{%  if device.status.power|default(false) is not same as(false) %} ({{  device.status.power|number_format(0) }} W){% endif %}
+                {{ device['name']}}{%  if device.status.power|default(false) is not same as(false) %} ({{  device.status.power|number_format(0, '.', "'") }} W){% endif %}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
             {% endif %}
         {% endfor %}
