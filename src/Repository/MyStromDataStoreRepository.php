@@ -7,7 +7,7 @@ namespace App\Repository;
  */
 class MyStromDataStoreRepository extends DataStoreBaseRepository
 {
-    public function getLatest($ip, $status = -1)
+    public function getLatest($ip, $status = -1, $extended = false)
     {
         $qb = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
@@ -23,8 +23,17 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
         if (!count($latest)) {
             return 0;
         } else {
-            return $latest[0]->getData();
+            if ($latest[0]->getExtendedData()) {
+                return $latest[0]->getExtendedData();
+            } else {
+                return $latest[0]->getData();
+            }
         }
+    }
+
+    public function getLatestExtended($ip, $status = -1)
+    {
+        return $this->getLatest($ip, $status, true);
     }
 
     public function getActiveDuration($ip, $start = null, $end = null)

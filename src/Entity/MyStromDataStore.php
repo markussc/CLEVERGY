@@ -17,6 +17,13 @@ class MyStromDataStore extends DataStoreBase
     private $boolValue;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(type="json_array")
+     */
+    private $jsonValue;
+
+    /**
      * Set the data.
      *
      * @param bool $data
@@ -33,5 +40,24 @@ class MyStromDataStore extends DataStoreBase
     public function getData()
     {
         return $this->boolValue;
+    }
+
+    /**
+     * Set the extended data.
+     *
+     * @param array $data
+     *
+     * @return MyStromDataStorage $this
+     */
+    public function setExtendedData($data = array())
+    {
+        $this->jsonValue = $data;
+
+        return $this;
+    }
+
+    public function getExtendedData()
+    {
+        return $this->jsonValue;
     }
 }

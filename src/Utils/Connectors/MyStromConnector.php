@@ -93,7 +93,7 @@ class MyStromConnector
                     'ip' => $device['ip'],
                     'name' => $device['name'],
                     'type' => $type,
-                    'status' => $this->createStatus($this->em->getRepository('App:MyStromDataStore')->getLatest($device['ip'])),
+                    'status' => $this->createStatus($this->em->getRepository('App:MyStromDataStore')->getLatestExtended($device['ip'])),
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
@@ -241,7 +241,11 @@ class MyStromConnector
             $arrKey = 'relay';
         }
         if (!empty($r) && array_key_exists($arrKey, $r) && $r[$arrKey] == true) {
-            return $this->createStatus(1);
+            $status = 1;
+            if (array_key_exists('power', $r)) {
+                $status = ['power' => $r['power']];
+            }
+            return $this->createStatus($status);
         } else {
             return $this->createStatus(0);
         }
@@ -250,16 +254,21 @@ class MyStromConnector
     private function createStatus($status)
     {
         if ($status) {
-            return [
+            $ret =  [
                 'label' => 'label.device.status.on',
                 'val' => 1,
             ];
+            if (is_array($status) && array_key_exists('power', $status)) {
+                $ret['power'] = $status['power'];
+            }
         } else {
-            return [
+            $ret = [
                 'label' => 'label.device.status.off',
                 'val' => 0,
             ];
         }
+
+        return $ret;
     }
 
     private function setOn($device)

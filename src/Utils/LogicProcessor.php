@@ -1059,6 +1059,9 @@ class LogicProcessor
                 $mystromEntity->setTimestamp(new \DateTime('now'));
                 $mystromEntity->setConnectorId($mystrom['ip']);
                 $mystromEntity->setData($mystrom['status']['val']);
+                if (array_key_exists('power', $mystrom['status'])) {
+                    $mystromEntity->setExtendedData($mystrom['status']);
+                }
                 $this->em->persist($mystromEntity);
             }
         }
@@ -1067,6 +1070,9 @@ class LogicProcessor
             $mystromEntity->setTimestamp(new \DateTime('now'));
             $mystromEntity->setConnectorId($mystrom['ip']);
             $mystromEntity->setData($mystrom['status']['val']);
+            if (array_key_exists('power', $mystrom['status'])) {
+                $mystromEntity->setExtendedData($mystrom['status']);
+            }
             $this->em->persist($mystromEntity);
         }
         $this->em->flush();
