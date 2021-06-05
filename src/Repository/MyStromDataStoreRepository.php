@@ -59,4 +59,35 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
+
+    public function getConsumption($ip, $start = null, $end = null)
+    {
+        if ($start === null) {
+            $start = new \DateTime('today');
+        }
+        if ($end === null) {
+            $end = new \DateTime('now');
+        }
+
+        $qb = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp >= :start')
+            ->andWhere('e.timestamp <= :end')
+            ->andWhere('e.jsonValue LIKE \'%power%\'')
+            ->setParameters([
+                'ip' => $ip,
+                'start' => $start,
+                'end' => $end
+            ]);
+
+        $entries = $qb->getQuery()->getResult();
+        $consumption = 0;
+        foreach ($entries as $entry) {
+            if (is_array($entry->getExtendedData()) && array_key_exists('power', $entry->getExtendedData())) {
+                $consumption += $entry->getExtendedData()['power']*60;
+            }
+        }
+
+        return $consumption/3600/1000;
+    }
 }

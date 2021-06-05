@@ -349,6 +349,14 @@
         <source>label.ecar.name</source>
         <target>Fahrzeug</target>
       </trans-unit>
+      <trans-unit id="jsBuwnl" resname="label.device.power">
+        <source>label.device.power</source>
+        <target>Leistung aktuell</target>
+      </trans-unit>
+      <trans-unit id="v4a2IYS" resname="label.device.energy">
+        <source>label.device.energy</source>
+        <target>Energie heute</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

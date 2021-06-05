@@ -38,6 +38,21 @@
         }
     </script>
 {% endif %}
+<div id="deviceModal" class="reveal" data-reveal>
+    <h4 id="deviceModalTitle"></h4>
+    <p class="lead" id="deviceModalLead"></p>
+    <div id="deviceModalContent"></div>
+    <button class="close-button" data-close aria-label="Close modal" type="button" id="deviceModalClose">
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<script>
+    function loadDeviceModal(title, lead, content) {
+        $("#deviceModalTitle").html(title);
+        $("#deviceModalLead").html(lead);
+        $("#deviceModalContent").html(content);
+    }
+</script>
 <div class="row">
     <div class="small-12 medium-5 columns" style="margin-top:0.5em; margin-left:0.5em;">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
@@ -84,7 +99,7 @@
 </div>
 <div class="row">
     {% if currentStat['edimax']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 %}
-    <div class="small-6 columns" style="margin-top:0.5em;">
+    <div class="medium-6 small-12 columns" style="margin-top:0.5em;">
         <h4><a href="javascript:void(0);" onclick="$('#edimax_container').toggle()"><i class="fas fa-plug" style="font-size:2em; color:#148f77 "></i></a></h4>
         <div id="edimax_container" style="display:none;">
         <div id="edimax" class="refresh">
@@ -114,7 +129,11 @@
                     {% endif %}
                     <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}"' class="button tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
                 {% endif %}
-                {{ device['name']}}{%  if device.status.power|default(false) is not same as(false) %} ({{  device.status.power|number_format(0, '.', "'") }} W){% endif %}
+                {%  if device.status.power|default(false) is not same as(false) %}
+                <a href="#" data-open="deviceModal" onclick="loadDeviceModal('{{ device['name']}}', '', '<ul><li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, '.', '"') }} W</li><li>{% trans %}label.device.energy{% endtrans %}: {{  device.consumption|number_format(1, '.', "'") }} kWh</li></ul>');">{{ device['name']}}</a>
+                {% else %}
+                    {{ device['name']}}
+                {% endif %}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
             {% endif %}
         {% endfor %}
@@ -123,7 +142,7 @@
     </div>
     {% endif %}
     {% if shellyConnector.rollerRelayAvailable() %}
-        <div class="small-6 columns" style="margin-top:0.5em;">
+        <div class="medium-6 small-12 columns" style="margin-top:0.5em;">
             <h4><a href="javascript:void(0);" onclick="$('#shelly_container').toggle()"><i class="fas fa-toggle-on" style="font-size:2em; color:#1f618d ;"></i></a></h4>
             <div id="shelly_container" style="display:none;">
             <div id="shelly" class="refresh">
@@ -149,7 +168,7 @@
 <div class="row">
     {% if currentStat['mobileAlerts']|default([])|length > 0 or currentStat['mystrom']|default([])|length > 0 or currentStat['shelly']|default([])|length > 0 %}
         {% if mobilealertsConnector.contactAvailable()|default(false) or mystromConnector.motionAvailable()|default(false) or shellyConnector.doorAvailable()|default(false) %}
-        <div class="small-6 columns" style="margin-top:0.5em;">
+        <div class="medium-6 small-12 columns" style="margin-top:0.5em;">
             <h4><a href="javascript:void(0);" onclick="$('#alarm_container').toggle()"><i class="fas fa-eye" style="font-size:2em; color:#c40e0e ;"></i></a></h4>
             <div id="alarm_container" style="display:none;">
             <div id="alarm" class="refresh">
@@ -179,7 +198,7 @@
         {% endif %}
     {% endif %}
     {% if gardenaConnector.availableDevices|default([])|length > 0 %}
-        <div class="small-6 columns" style="margin-top:0.5em;">
+        <div class="medium-6 small-12 columns" style="margin-top:0.5em;">
             <h4><a href="javascript:void(0);" onclick="$('#gardena_container').toggle()"><i class="fas fa-leaf" style="font-size:2em; color:green;"></i></a></h4>
             <div id="gardena_container" style="display:none;">
             <div id="gardena" class="refresh">

@@ -89,7 +89,7 @@ class MyStromConnector
                 } else {
                     $type = 'relay';
                 }
-                $results[] = [
+                $result = [
                     'ip' => $device['ip'],
                     'name' => $device['name'],
                     'type' => $type,
@@ -98,8 +98,12 @@ class MyStromConnector
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
                     'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
-                    'timerData' => $this->getTimerData($device),
+                    'timerData' => $this->getTimerData($device)
                 ];
+                if (array_key_exists('power', $result['status'])) {
+                    $result['consumption'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
+                }
+                $results[] = $result;
             }
         }
 
@@ -142,7 +146,7 @@ class MyStromConnector
             $type = 'relay';
         }
 
-        return [
+        $result = [
             'ip' => $device['ip'],
             'name' => $device['name'],
             'type' => $type,
@@ -153,6 +157,11 @@ class MyStromConnector
             'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
             'timerData' => $this->getTimerData($device),
         ];
+        if (array_key_exists('power', $result['status'])) {
+            $result['consumption'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
+        }
+
+        return $result;
     }
 
     public function activateAllPIR()
@@ -241,31 +250,42 @@ class MyStromConnector
             $arrKey = 'relay';
         }
         if (!empty($r) && array_key_exists($arrKey, $r) && $r[$arrKey] == true) {
-            $status = 1;
+            $status = true;
             if (array_key_exists('power', $r)) {
-                $status = ['power' => $r['power']];
+                $status = [
+                    'val' => 1,
+                    'power' => $r['power']
+                ];
             }
             return $this->createStatus($status);
         } else {
-            return $this->createStatus(0);
+            $status = false;
+            if (is_array($r) && array_key_exists('power', $r)) {
+                $status = [
+                    'val' => 0,
+                    'power' => $r['power']
+                ];
+            }
+            return $this->createStatus($status);
         }
     }
 
     private function createStatus($status)
     {
-        if ($status) {
+        $ret = [];
+        if ((is_array($status) && array_key_exists('val', $status) && $status['val']) || $status === true) {
             $ret =  [
                 'label' => 'label.device.status.on',
                 'val' => 1,
             ];
-            if (is_array($status) && array_key_exists('power', $status)) {
-                $ret['power'] = $status['power'];
-            }
         } else {
             $ret = [
                 'label' => 'label.device.status.off',
                 'val' => 0,
             ];
+        }
+        if (is_array($status) && array_key_exists('power', $status)) {
+            $ret['power'] = $status['power'];
         }
 
         return $ret;
