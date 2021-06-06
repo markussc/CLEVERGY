@@ -70,6 +70,7 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
         }
 
         $qb = $this->createQueryBuilder('e')
+            ->select('e.jsonValue')
             ->where('e.connectorId = :ip')
             ->andWhere('e.timestamp >= :start')
             ->andWhere('e.timestamp <= :end')
@@ -79,12 +80,11 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
                 'start' => $start,
                 'end' => $end
             ]);
-
         $entries = $qb->getQuery()->getResult();
         $consumption = 0;
         foreach ($entries as $entry) {
-            if (is_array($entry->getExtendedData()) && array_key_exists('power', $entry->getExtendedData())) {
-                $consumption += $entry->getExtendedData()['power']*60;
+            if (is_array($entry) && array_key_exists('jsonValue', $entry) && array_key_exists('power', $entry['jsonValue'])) {
+                $consumption += $entry['jsonValue']['power']*60;
             }
         }
 

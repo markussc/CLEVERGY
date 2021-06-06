@@ -103,8 +103,6 @@ class MyStromConnector
                 if (array_key_exists('power', $result['status'])) {
                     $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
                     $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
-                    $result['consumption_month'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('this month'), $now);
-                    $result['consumption_year'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('this year'), $now);
                 }
                 $results[] = $result;
             }
@@ -163,8 +161,6 @@ class MyStromConnector
         if (array_key_exists('power', $result['status'])) {
             $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
             $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
-            $result['consumption_month'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('this month'), $now);
-            $result['consumption_year'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('this year'), $now);
         }
 
         return $result;
