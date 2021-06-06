@@ -353,9 +353,21 @@
         <source>label.device.power</source>
         <target>Leistung aktuell</target>
       </trans-unit>
-      <trans-unit id="v4a2IYS" resname="label.device.energy">
-        <source>label.device.energy</source>
+      <trans-unit id="K0C8Iez" resname="label.device.energy_day">
+        <source>label.device.energy_day</source>
         <target>Energie heute</target>
+      </trans-unit>
+      <trans-unit id=".QR_Bjl" resname="label.device.energy_yesterday">
+        <source>label.device.energy_yesterday</source>
+        <target>Energie gestern</target>
+      </trans-unit>
+      <trans-unit id="Ukxbscc" resname="label.device.energy_month">
+        <source>label.device.energy_month</source>
+        <target>Energie diesen Monat</target>
+      </trans-unit>
+      <trans-unit id="eaikGUQ" resname="label.device.energy_year">
+        <source>label.device.energy_year</source>
+        <target>Energie dieses Jahr</target>
       </trans-unit>
     </body>
   </file>
