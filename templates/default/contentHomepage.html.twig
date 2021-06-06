@@ -130,7 +130,7 @@
                     <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}"' class="button tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
                 {% endif %}
                 {%  if device.status.power|default(false) is not same as(false) %}
-                <a href="#" data-open="deviceModal" onclick="loadDeviceModal('{{ device['name']}}', '', '<ul><li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", "'") }} W</li><li>{% trans %}label.device.energy{% endtrans %}: {{  device.consumption|number_format(1, '.', "'") }} kWh</li></ul>');">{{ device['name']}}</a>
+                <a href="#" data-open="deviceModal" onclick="loadDeviceModal('{{ device['name']}}', '', '<ul><li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", '') }} W</li><li>{% trans %}label.device.energy{% endtrans %}: {{  device.consumption|number_format(1, '.', '') }} kWh</li></ul>');">{{ device['name']}}</a>
                 {% else %}
                     {{ device['name']}}
                 {% endif %}
