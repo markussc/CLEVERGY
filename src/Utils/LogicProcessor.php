@@ -1253,7 +1253,7 @@ class LogicProcessor
             $now = new \DateTime();
             foreach ($this->ecar->getAll() as $ecar) {
                 $latestEcar = $this->em->getRepository('App:EcarDataStore')->getLatestElement($ecar['carId']);
-                $diff = 0;
+                $diff = 30;
                 if (count($latestEcar)) {
                     $diff = date_diff($now, $latestEcar[0]->getTimestamp())->format('%i');
                 }
