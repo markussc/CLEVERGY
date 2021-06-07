@@ -261,13 +261,16 @@ class MyStromConnector
             }
             return $this->createStatus($status);
         } else {
-            $status = false;
             if (is_array($r) && array_key_exists('power', $r)) {
-                $status = [
-                    'val' => 0,
-                    'power' => $r['power']
-                ];
+                $power = $r['power'];
+            } else {
+                $power = 0;
             }
+            $status = [
+                'val' => 0,
+                'power' => $power
+            ];
+
             return $this->createStatus($status);
         }
     }
