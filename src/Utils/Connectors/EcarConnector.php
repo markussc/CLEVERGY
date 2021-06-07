@@ -2,8 +2,8 @@
 
 namespace App\Utils\Connectors;
 
+use App\Utils\Connectors\WeConnectIdConnector;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Settings;
 
 /**
  * Connector to retrieve data from electric cars
@@ -13,7 +13,6 @@ use App\Entity\Settings;
 class EcarConnector
 {
     protected $em;
-    protected $browser;
     protected $connectors;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
@@ -35,20 +34,44 @@ class EcarConnector
      * Reads the latest available data from the database
      * @return array
      */
-    public function getAllLatest()
+    public function getAll()
     {
         $results = [];
         if ($this->carAvailable()) {
             foreach ($this->connectors['ecar'] as $device) {
-                $results[] = [
-                    'name' => $device['name'],
-                    'battery' => 'label.ecar.battery.unknown',
-                    'location' => 'label.ecar.location.unknown',
-                    'status' => 'label.ecar.location.unknown',
-                ];
+                if ($device['type'] == 'id3') {
+                    $weConnectId = new WeConnectIdConnector($device);
+                    $data = $weConnectId->getData();
+                    if ($data) {
+                        $results[] = [
+                            'name' => $device['name'],
+                            'carId' => $device['carId'],
+                            'data' => $data,
+                        ];
+                    }
+                }
             }
         }
 
         return $results;
+    }
+
+    /**
+     * Reads the latest available data from the database
+     * @return array
+     */
+    public function getAllLatest()
+    {
+        $latest = [];
+        if (array_key_exists('ecar', $this->connectors)) {
+            foreach ($this->connectors['ecar'] as $ecar) {
+                $data = $this->em->getRepository('App:EcarDataStore')->getLatest($ecar['carId']);
+                if ($data) {
+                    $latest[] = $data;
+                }
+            }
+        }
+
+        return $latest;
     }
 }

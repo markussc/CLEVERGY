@@ -95,3 +95,6 @@ services:
         public: true
         arguments:
             $connectors: "%connectors%"
+    App\Utils\Connectors\WeConnectIdConnector:
+        public: true
+

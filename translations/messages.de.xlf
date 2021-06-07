@@ -345,6 +345,10 @@
         <source>label.ecar.location</source>
         <target>Standort</target>
       </trans-unit>
+      <trans-unit id="6_rH5qL" resname="label.ecar.range">
+        <source>label.ecar.range</source>
+        <target>Reichweite</target>
+      </trans-unit>
       <trans-unit id="JYFi3fE" resname="label.ecar.name">
         <source>label.ecar.name</source>
         <target>Fahrzeug</target>

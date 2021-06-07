@@ -13,6 +13,7 @@ use App\Entity\SmartFoxDataStore;
 use App\Entity\MobileAlertsDataStore;
 use App\Entity\ShellyDataStore;
 use App\Entity\NetatmoDataStore;
+use App\Entity\EcarDataStore;
 use App\Entity\CommandLog;
 use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
@@ -27,6 +28,7 @@ use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\NetatmoConnector;
 use App\Utils\Connectors\GardenaConnector;
+use App\Utils\Connectors\EcarConnector;
 use App\Utils\ConditionChecker;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -56,7 +58,7 @@ class LogicProcessor
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->edimax = $edimax;
@@ -71,6 +73,7 @@ class LogicProcessor
         $this->logo = $logo;
         $this->netatmo = $netatmo;
         $this->gardena = $gardena;
+        $this->ecar = $ecar;
         $this->threema = $threema;
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
@@ -129,6 +132,9 @@ class LogicProcessor
 
         // gardena
         $this->initGardena();
+
+        // ecar
+        $this->initEcar();
 
         // write to database
         $this->em->flush();
@@ -1238,6 +1244,29 @@ class LogicProcessor
     {
         if ($this->gardena->getAvailable()) {
             $this->gardena->updateDevices();
+        }
+    }
+
+     public function initEcar()
+    {
+        if ($this->ecar->carAvailable()) {
+            $now = new \DateTime();
+            foreach ($this->ecar->getAll() as $ecar) {
+                $latestEcar = $this->em->getRepository('App:EcarDataStore')->getLatestElement($ecar['carId']);
+                $diff = 0;
+                if (count($latestEcar)) {
+                    $diff = date_diff($now, $latestEcar[0]->getTimestamp())->format('%i');
+                }
+                if ($diff > 15) {
+                    // ecar requests should only be done every 15 minutes
+                    $ecarEntity = new EcarDataStore();
+                    $ecarEntity->setTimestamp(new \DateTime('now'));
+                    $ecarEntity->setConnectorId($ecar['carId']);
+                    $ecarEntity->setData($ecar);
+                    $this->em->persist($ecarEntity);
+                    $this->em->flush();
+                }
+            }
         }
     }
 

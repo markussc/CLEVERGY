@@ -229,9 +229,7 @@
             <div id="ecar" class="refresh"">
             {% for device in currentStat['ecar'] %}
                 {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
-                {% trans %}label.ecar.battery{% endtrans %}: {{  device['battery']|trans }}<br>
-                {% trans %}label.ecar.location{% endtrans %}: {{  device['location']|trans }}<br>
-                {% trans %}label.ecar.status{% endtrans %}: {{  device['status']|trans }}
+                {% trans %}label.ecar.range{% endtrans %}: {{ device['data']['properties'][1]['value']|default('???') }} km
                 {% if not loop.last %}<hr>{% endif %}
             {% endfor %}
             </div>
