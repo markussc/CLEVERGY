@@ -23,7 +23,7 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
         if (!count($latest)) {
             return 0;
         } else {
-            if ($latest[0]->getExtendedData()) {
+            if ($extended && $latest[0]->getExtendedData()) {
                 return $latest[0]->getExtendedData();
             } else {
                 return $latest[0]->getData();
