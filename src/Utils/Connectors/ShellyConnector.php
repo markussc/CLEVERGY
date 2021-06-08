@@ -39,7 +39,12 @@ class ShellyConnector
 
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
-                $results[] = $this->getOneLatest($device);
+                $result = $this->getOneLatest($device);
+                if (array_key_exists('power', $result['status'])) {
+                    $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], $today, $now);
+                    $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
+                }
+                $results[] = $result;
             }
         }
 
@@ -91,7 +96,7 @@ class ShellyConnector
             $autoIntervals = [];
         }
 
-        return [
+        $result = [
             'ip' => $device['ip'],
             'port' => $device['port'],
             'name' => $device['name'],
@@ -103,6 +108,12 @@ class ShellyConnector
             'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
             'timestamp' => new \DateTime('now'),
         ];
+        if (array_key_exists('power', $result['status'])) {
+            $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], $today, $now);
+            $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
+        }
+
+        return $result;
     }
 
     public function getOneLatest($device)
@@ -276,7 +287,13 @@ class ShellyConnector
             }
         } elseif (!empty($r) && $device['type'] == 'relay') {
             if (array_key_exists('ison', $r) && $r['ison'] == true) {
-                return $this->createStatus(1);
+                $powerResp = $this->queryShelly($device, 'power');
+                if (!empty($powerResp) && array_key_exists('power', $powerResp)) {
+                    $power = $powerResp['power'];
+                } else {
+                    $power = 0;
+                }
+                return $this->createStatus(1, 0, $power);
             } else {
                 return $this->createStatus(0);
             }
@@ -289,17 +306,19 @@ class ShellyConnector
         }
     }
 
-    public function createStatus($status, $position = 100)
+    public function createStatus($status, $position = 100, $power = 0)
     {
         if ($status == 1) {
             return [
                 'label' => 'label.device.status.on',
                 'val' => 1,
+                'power' => $power,
             ];
         } elseif ($status == 0) {
             return [
                 'label' => 'label.device.status.off',
                 'val' => 0,
+                'power' => $power,
             ];
         } elseif ($status == 2) {
             return [
@@ -413,6 +432,9 @@ class ShellyConnector
             switch ($cmd) {
                 case 'status':
                     $reqUrl = 'relay/'.$device['port'];
+                    break;
+                case 'power':
+                    $reqUrl = 'meter/'.$device['port'];
                     break;
                 case 'on':
                     $reqUrl = 'relay/'.$device['port'].'?turn=on';

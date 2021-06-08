@@ -163,7 +163,16 @@
             {% else %}
                 <a href="javascript:void(0);" class="button tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, -1]);"{% endif %}><i class="fas fa-stop-circle"></i></a>
             {% endif %}
-            {{ device['name']}}
+            {%  if device.status.power|default(false) is not same as(false) %}
+                <a href="#" data-open="deviceModal" onclick="loadDeviceModal('{{ device['name']}}', '', '\
+                <ul>\
+                    <li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", '') }} W</li>\
+                    <li>{% trans %}label.device.energy_day{% endtrans %}: {{  device.consumption_day|number_format(1, '.', '') }} kWh</li>\
+                    <li>{% trans %}label.device.energy_yesterday{% endtrans %}: {{  device.consumption_yesterday|number_format(1, '.', '') }} kWh</li>\
+                </ul>');">{{ device['name']}}</a>
+            {% else %}
+                {{ device['name']}}
+            {% endif %}
             {% endfor %}
             </div>
             </div>
