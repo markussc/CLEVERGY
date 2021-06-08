@@ -61,7 +61,7 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
         return $qb->getQuery()->getSingleScalarResult();
     }
 
-    public function getConsumption($ip, $start = null, $end = null)
+    public function getConsumption($connectorId, $start = null, $end = null)
     {
         if ($start === null) {
             $start = new \DateTime('today');
@@ -77,7 +77,7 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
             ->andWhere('e.timestamp <= :end')
             ->andWhere('e.jsonValue LIKE \'%power%\'')
             ->setParameters([
-                'ip' => $ip,
+                'ip' => $connectorId,
                 'start' => $start,
                 'end' => $end
             ]);

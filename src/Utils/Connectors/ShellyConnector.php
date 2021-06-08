@@ -41,8 +41,9 @@ class ShellyConnector
             foreach ($this->connectors['shelly'] as $device) {
                 $result = $this->getOneLatest($device);
                 if (array_key_exists('power', $result['status'])) {
-                    $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], $today, $now);
-                    $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
+                    $connectorId = $device['ip'].'_'.$device['port'];
+                    $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('today'), new \DateTime('now'));
+                    $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
                 }
                 $results[] = $result;
             }
@@ -109,8 +110,8 @@ class ShellyConnector
             'timestamp' => new \DateTime('now'),
         ];
         if (array_key_exists('power', $result['status'])) {
-            $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], $today, $now);
-            $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), new \DateTime('today'));
+            $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, $today, $now);
+            $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
         }
 
         return $result;
