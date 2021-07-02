@@ -80,7 +80,10 @@ services:
         arguments:
             $em: "@doctrine.orm.entity_manager"
             $connectors: "%connectors%"
-
+    App\Utils\Connectors\MobileAlertsConnector:
+        public: true
+        arguments:
+            $connectors: "%connectors%"
     App\Utils\Connectors\WemConnector:
         public: true
         arguments:

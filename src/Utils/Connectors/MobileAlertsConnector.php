@@ -2,8 +2,9 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from the MobileAlerts cloud
@@ -14,14 +15,14 @@ use Symfony\Component\DomCrawler\Crawler;
 class MobileAlertsConnector
 {
     protected $em;
-    protected $browser;
+    private $client;
     protected $basePath;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->connectors = $connectors;
     }
 
@@ -126,9 +127,12 @@ class MobileAlertsConnector
     {
         $data = [];
         $this->basePath = 'http://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
-        $this->browser->getClient()->setTimeout(20);
         try {
-            $response = $this->browser->get($this->basePath . $this->connectors['mobilealerts']['phoneid']);
+            $response = $this->client->request(
+                'GET',
+                $this->basePath . $this->connectors['mobilealerts']['phoneid'],
+                []
+            );
         } catch (\Exception $e) {
             return $data;
         }
@@ -138,7 +142,6 @@ class MobileAlertsConnector
 
         $currentSensor = '';
         $measurementCounter = 0;
-
         foreach ($sensorComponents as $sensorComponent) {
             $cr = new Crawler($sensorComponent);
             $label = $cr->filter('h5')->text();
