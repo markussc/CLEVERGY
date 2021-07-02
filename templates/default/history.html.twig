@@ -20,7 +20,7 @@
         <tbody>
             {% for interval in history['intervals'] %}
             {% set highRateInAbs = (history['smartfox']['energy_in_' ~ interval ~ '_highrate']/1000)|round(1) %}
-            {% set totalIn = (history['smartfox']['energy_in_' ~ interval]/1000)|round(1) %}
+            {% set totalIn = (history['smartfox']['energy_in_' ~ interval]/1000)|round(1)|replace({0: 0.001}) %}
             {% set highRateInPercentage = 100/totalIn*highRateInAbs %}
             <tr>
                 <th>{{ ('label.' ~ interval) |trans }}</th>
