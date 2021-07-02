@@ -1,0 +1,139 @@
+parameters:
+    energy_low_rate:
+        start: 21
+        end: 7
+        days:
+            - 6
+            - 7
+    min_inside_temp: 20.5
+    authenticated_ips:
+        10.12.1.1: markus.schafroth@3084.ch
+        10.14.1.145: hu.schafroth@gmx.ch
+    connectors:
+        threema:
+            id: '*OSHANS1'
+            secret: w7Mky9wQHYxRpgRk
+            alarm:
+                - hu.schafroth@gmx.ch
+                - franziska.schafroth@gmx.ch
+        smartfox:
+            ip: 10.14.1.50
+            version: pro
+        pcoweb:
+            ip: 10.14.1.146
+        logocontrol:
+            ip: 10.12.1.80
+            heatStorageSensor: 'Speicher unten'
+            powerSensor: Energiedach
+            collectorSensor: Sonnenkollektor
+            sensors:
+                3:
+                    - Sonnenkollektor
+                    - °C
+                    - yellow
+                1:
+                    - Energiedach
+                    - °C
+                    - pink
+                0:
+                    - Erdregister
+                    - °C
+                    - brown
+                4:
+                    - 'Speicher unten'
+                    - °C
+                    - red
+        mobilealerts:
+            phoneid: '466157187397'
+            sensors:
+                0251D7EEEAAA:
+                    -
+                        - Innentemperatur
+                        - °C
+                        - red
+                        - dashboard
+                        - insidetemp
+                036D8FDA5361:
+                    -
+                        - 'Temperatur 1. OG'
+                        - °C
+                        - red
+                        - false
+                        - firstfloortemp
+                    -
+                        - 'Luftfeuchtigkeit innen'
+                        - '%'
+                        - false
+                        - false
+                        - insidehumidity
+#                1079798C869C:
+#                    -
+#                        - Eingang Schloss
+#                        - ''
+#                        - false
+#                        - true
+#                        - contact
+                107CFCD65CE2:
+                    -
+                        - Remise Schloss
+                        - ''
+                        - false
+                        - true
+                        - contact
+
+                10771277E7D1:
+                    -
+                        - Schiebetür
+                        - ''
+                        - false
+                        - true
+                        - contact
+        openweathermap:
+            api_key: 2d9589d1e4bd08f6d3540e22be4bbbd9
+            lat: 47.0329637
+            lon: 7.7514371
+        ecar:
+            -
+                name: Huskymobil
+                type: id3
+                username: hu.schafroth@gmx.ch
+                password: husky3454
+                carId: WVWZZZE1ZMP076007
+        mystrom:
+            -
+                name: Anwesenheit
+                ip: 10.14.1.141
+                type: motion
+            -
+                name: Ladestation
+                ip: 10.14.1.11
+                type: battery
+                nominalPower: 2300
+                minOnTime: 15
+                minOffTime: 30
+        shelly:
+            -
+                name: Teichpumpe
+                ip: 10.14.1.12
+                port: 0
+                type: relay
+                nominalPower: 1200
+                minOnTime: 5
+                minOffTime: 10
+                autoIntervals:
+                    -
+                        - '0:00'
+                        - '23:59'
+            -
+                name: Eingang
+                ip: 10.12.1.208
+                type: door
+            -
+                name: Remise
+                ip: 10.12.1.209
+                type: door
+            -
+                name: Schlafzimmer
+                ip: 10.12.1.212
+                type: door
+

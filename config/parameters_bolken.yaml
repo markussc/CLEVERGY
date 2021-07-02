@@ -1,0 +1,40 @@
+parameters:
+    energy_low_rate:
+        start: 21
+        end: 7
+        days:
+            - 6,12
+            - 7
+    min_inside_temp: 22
+    authenticated_ips: []
+    connectors:
+        openweathermap:
+            api_key: 2d9589d1e4bd08f6d3540e22be4bbbd9
+            lat: 47.19147686
+            lon: 7.66314626
+        smartfox:
+            ip: 10.17.1.60
+            version: pro
+        wem:
+            username: markus.halder@besonet.ch
+            password: AdminMoin1912
+            ip: 10.17.1.62
+            port: 502
+        netatmo:
+            clientid: 5f91efaa6a017f112071458c
+            clientsecret: UOO6AciczcOPImkK4KH2ExbAV
+            username: ute.halder@besonet.ch
+            password: Jakobs-47
+            deviceid: '70:ee:50:19:ae:52'
+            location: 'inside' #inside, outside, firstfloor, secondfloor
+            modules:
+                -
+                    deviceid: '03:00:00:09:35:fc'
+                    location: 'firstfloor'
+                -
+                    deviceid: '02:00:00:2c:bb:ae'
+                    location: 'outside'
+        mystrom:
+            -
+                name: MyStrom 1
+                ip: 10.17.1.51
