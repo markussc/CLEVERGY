@@ -84,7 +84,7 @@
         <li>{% trans %}label.pco.mode{% endtrans %}: <a href="#" data-open="pcowebModeModal">{{ currentStat['pcoWeb']['mode']|default('---')|trans }}</a></li>
         <li>{% trans %}label.pco.pp_mode{% endtrans %}: {{ currentStat['pcoWeb']['ppMode']|default('---')|trans }}</li>
         {% endif %}
-        <li>{% trans %}label.pco.pp_status{% endtrans %}: {{ currentStat['pcoWeb']['ppStatus']|default('---')|trans }}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>
+        <li>{% trans %}label.pco.pp_status{% endtrans %}: {% if currentStat['pcoWeb']['ppStatus']|default(0) == 0 or currentStat['pcoWeb']['ppStatus']|default(0) == 'Aus' or currentStat['pcoWeb']['ppStatus']|default(0) == 'label.device.status.off' %}{% trans %}label.device.status.off{% endtrans%}{% else %}{{ [currentStat['pcoWeb']['ppStatus']|default(0)|replace({' %': ''}), '%']|join('') }}{% endif %}{% if currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans != currentStat['pcoWeb']['ppStatus']|default('---')|trans %}{% if pcowebConnector.getIp() %} ({{ currentStat['pcoWeb']['ppStatusMsg']|default('---')|trans }}){% endif %}{% endif %}</li>
         <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
         <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>
@@ -403,7 +403,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['setDistrTemp']|default(0)|replace({'--':0}) }}
+                        y: {{ pwData.getData()['setDistrTemp']|default(0)|replace({'--':0, '---':0}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -429,7 +429,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['storTemp']|default(0) }}
+                        y: {{ pwData.getData()['storTemp']|default(0)|replace({'---':0}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -455,7 +455,7 @@
                 {% for pwData in history['pcoWeb'] %}
                     {
                         x: new Date("{{ pwData.timestamp|date("c") }}"),
-                        y: {{ pwData.getData()['ppStatus']|default(0)|replace({'Aus':0, '--':20, ' %':''}) }}
+                        y: {{ pwData.getData()['ppStatus']|default(0)|replace({'Aus':0, '--':20, '%':'', ' ': ''}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]

@@ -1,4 +1,7 @@
 {
+    "aldas/modbus-tcp-client": {
+        "version": "2.1.1"
+    },
     "clue/socket-raw": {
         "version": "v1.5.0"
     },
