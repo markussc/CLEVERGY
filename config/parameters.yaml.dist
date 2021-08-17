@@ -142,6 +142,9 @@ parameters:
                         'openweathermap:currentClouds': '<15'
                     -
                         'time': '>8:30' # < and > are supported. 24h time format # if there are multiple time conditions to be fulfilled, use 'time1', 'time2' etc.
+        shellycloud:
+            server: https://shelly-3-eu.shelly.cloud
+            authkey: 1234345D324e983
         openweathermap:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
             lat: 46.9
