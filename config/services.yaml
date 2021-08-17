@@ -69,7 +69,6 @@ services:
     App\Utils\Connectors\ShellyConnector:
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
             $browser: "@buzz"
             $connectors: "%connectors%"
             $host: "%host%"

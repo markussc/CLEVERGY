@@ -2,9 +2,11 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\ShellyDataStore;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to communicate with Shelly devices
@@ -16,17 +18,27 @@ class ShellyConnector
 {
     protected $em;
     protected $browser;
+    private $client;
+    private $baseUrl;
+    private $server;
+    private $authkey;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, \Buzz\Browser $browser,Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
+        $this->client = $client;
+        $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
         $this->browser = $browser;
         $this->connectors = $connectors;
         // set timeout for buzz browser client
         $this->browser->getClient()->setTimeout(3);
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
+        if (array_key_exists('shellycloud', $connectors)) {
+            $this->server = $connectors['shellycloud']['server'];
+            $this->authkey = $connectors['shellycloud']['authkey'];
+        }
     }
 
     /**
@@ -59,8 +71,15 @@ class ShellyConnector
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
                 if ($device['type'] == 'door') {
-                    // we do not have instant access to door sensors
-                    $results[] = $this->getOneLatest($device);
+                    // we query the shelly cloud api (max. 1 request per second, therefore a sleep after every query)
+                    if (array_key_exists('cloudId', $device)) {
+                        // we query the shelly cloud api (max. 1 request per second, therefore a sleep after every query)
+                        $results[] = $this->getOne($device);
+                        sleep(1);
+                    } else {
+                        // we don't have access to the shelly cloud for this device, therefore we get the latest stored value from database
+                        $results[] = $this->getOneLatest($device);
+                    }
                 } else {
                     $results[] = $this->getOne($device);
                 }
@@ -446,6 +465,12 @@ class ShellyConnector
             }
         } elseif ($device['type'] == 'door') {
             switch ($cmd) {
+                case 'status':
+                    if (array_key_exists('cloudId', $device)) {
+                        return $this->getStatusCloud($device['cloudId']);
+                    } else {
+                        return false;
+                    }
                 case 'configureDark':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
                     $reqUrl = 'settings?dark_url='.$triggerUrl;
@@ -563,5 +588,27 @@ class ShellyConnector
         }
 
         return false;
+    }
+
+    private function getStatusCloud($cloudId)
+    {
+        try {
+            $response = $this->client->request(
+                'POST',
+                $this->baseUrl . '/device/status',
+                [
+                    'body' => [
+                        'auth_key' => $this->authkey,
+                        'id' => $cloudId,
+                    ],
+                ]
+            );
+            if ($response->getStatusCode() === Response::HTTP_OK) {
+                $response = json_decode($response->getContent(), true);
+                return $response['data']['device_status'];
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
