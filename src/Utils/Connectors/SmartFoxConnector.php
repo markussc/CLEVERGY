@@ -83,6 +83,8 @@ class SmartFoxConnector
                 $val = 1*(float)substr($val, 0, strpos($val, " °C"));
             } elseif (strpos($val, " W") !== false) {
                 $val = 1*(float)substr($val, 0, strpos($val, " W"));
+            } elseif (strpos($val, "%") !== false) {
+                $val = 1*(float)substr($val, 0, strpos($val, "%"));
             }
             $data[(string)$value['id']] = $val;
         }
@@ -101,7 +103,8 @@ class SmartFoxConnector
             "PvEnergy" => ["0" => $data["wr1EnergyValue"]],
             "day_energy_in" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in'),
             "day_energy_out" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out'),
-            "energyToday" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip)
+            "energyToday" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip),
+            "consumptionControl1Percent" => $data["consumptionControl1Percent"]
         ];
 
         return $values;

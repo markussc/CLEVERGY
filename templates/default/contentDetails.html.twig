@@ -368,7 +368,24 @@
         data: { 
             datasets: [
             {% set firstDataset24 = true %}
+            {% if currentStat['smartFox']['consumptionControl1Percent']|default(false) %}
+            {% set firstDataset24 = false %}
+            {
+                label: '{% trans %}label.smartfox.heater{% endtrans %}',
+                borderColor: ['yellow'],
+                fill: false,
+                data: [
+                {% for sfData in history['smartFox'] %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ sfData.getData()['consumptionControl1Percent']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            },
+            {% endif %}
             {% if currentStat['pcoWeb']|default(false) %}
+            {% if not firstDataset24  %},{% endif %}
             {% set firstDataset24 = false %}
             {
                 label: '{% trans %}label.pco.water_temp{% endtrans %}',

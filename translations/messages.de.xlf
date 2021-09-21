@@ -373,6 +373,10 @@
         <source>label.device.energy_year</source>
         <target>Energie dieses Jahr</target>
       </trans-unit>
+      <trans-unit id="7zjv6Vl" resname="label.smartfox.heater">
+        <source>label.smartfox.heater</source>
+        <target>Heizstab</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
