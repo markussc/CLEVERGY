@@ -361,28 +361,28 @@
         }
     });
     {% endif %}
-    {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+    {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
     // 24hTemperatures
     charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
         type: 'line',
         data: { 
             datasets: [
             {% set firstDataset24 = true %}
-            {% if currentStat['smartFox']['consumptionControl1Percent']|default(false) %}
+            {% if currentStat['smartFox']['consumptionControl1Percent']|default(-1) >= 0 %}
             {% set firstDataset24 = false %}
             {
                 label: '{% trans %}label.smartfox.heater{% endtrans %}',
                 borderColor: ['yellow'],
                 fill: false,
                 data: [
-                {% for sfData in history['smartFox'] %}
+                {% for sfData in history['smartFox']|default([]) %}
                     {
                         x: new Date("{{ sfData.timestamp|date("c") }}"),
                         y: {{ sfData.getData()['consumptionControl1Percent']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
-            },
+            }
             {% endif %}
             {% if currentStat['pcoWeb']|default(false) %}
             {% if not firstDataset24  %},{% endif %}
