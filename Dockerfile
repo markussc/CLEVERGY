@@ -13,6 +13,7 @@ RUN apt-get -y update && apt-get install -y \
         wget \
         curl \
         gnupg \
+        sshpass \
         wait-for-it \
         cron \
     && true
