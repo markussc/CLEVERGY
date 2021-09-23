@@ -3,7 +3,7 @@ version: '3'
 services:
   www:
     image: oshans/www:0.0.1
-    container_name: www
+    container_name: www_${INSTANCENAME}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     env_file:
@@ -16,5 +16,5 @@ services:
     networks:
       - default
     ports:
-      - "80:8000"
+      - "${PORT}:8000"
     restart: on-failure
