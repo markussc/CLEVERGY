@@ -16,6 +16,8 @@ RUN apt-get -y update && apt-get install -y \
         sshpass \
         wait-for-it \
         cron \
+        python3 \
+        python3-pip \
     && true
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -47,6 +49,9 @@ RUN yarn install
 RUN yarn run encore prod
 RUN bin/console cache:warmup
 RUN wget https://get.symfony.com/cli/installer -O - | bash
+
+# install weconnect-cli
+RUN pip3 install weconnect-cli
 
 # apply database migrations and run symfony web server
 CMD wait-for-it db:3306 -- bin/console doctrine:migrations:migrate --no-interaction ; env >> /etc/environment ; service cron start ; /root/.symfony/bin/symfony server:start
