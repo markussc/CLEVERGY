@@ -377,6 +377,10 @@
         <source>label.smartfox.heater</source>
         <target>Heizstab</target>
       </trans-unit>
+      <trans-unit id="atIcl12" resname="label.ecar.soc">
+        <source>label.ecar.soc</source>
+        <target>Ladestand</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

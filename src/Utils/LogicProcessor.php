@@ -147,15 +147,21 @@ class LogicProcessor
         $this->autoActionsShelly();
 
         // execute auto actions for PcoWeb heating, if we are not in manual mode
-        $pcoMode = $this->em->getRepository('App:Settings')->getMode($this->pcoweb->getIp());
-        if (Settings::MODE_MANUAL != $pcoMode) {
-            $this->autoActionsPcoWeb($pcoMode);
+        $pcoIp = $this->pcoweb->getIp();
+        if ($pcoIp) {
+            $pcoMode = $this->em->getRepository('App:Settings')->getMode($pcoIp);
+            if (Settings::MODE_MANUAL != $pcoMode) {
+                $this->autoActionsPcoWeb($pcoMode);
+            }
         }
 
         // execute auto actions for wem WEM heating, if we are not in manual mode
-        $wemMode = $this->em->getRepository('App:Settings')->getMode($this->wem->getUsername());
-        if (Settings::MODE_MANUAL != $wemMode) {
-            $this->autoActionsWem($wemMode, $doWemPortal);
+        $wemUsername = $this->wem->getUsername();
+        if ($wemUsername) {
+            $wemMode = $this->em->getRepository('App:Settings')->getMode($wemUsername);
+            if (Settings::MODE_MANUAL != $wemMode) {
+                $this->autoActionsWem($wemMode, $doWemPortal);
+            }
         }
 
         // execute auto actions for Gardena devices
@@ -1233,24 +1239,13 @@ class LogicProcessor
 
      public function initEcar()
     {
-        if ($this->ecar->carAvailable()) {
-            $now = new \DateTime();
-            foreach ($this->ecar->getAll() as $ecar) {
-                $latestEcar = $this->em->getRepository('App:EcarDataStore')->getLatestElement($ecar['carId']);
-                $diff = 30;
-                if (count($latestEcar)) {
-                    $diff = date_diff($now, $latestEcar[0]->getTimestamp())->format('%i');
-                }
-                if ($diff > 15) {
-                    // ecar requests should only be done every 15 minutes
-                    $ecarEntity = new EcarDataStore();
-                    $ecarEntity->setTimestamp(new \DateTime('now'));
-                    $ecarEntity->setConnectorId($ecar['carId']);
-                    $ecarEntity->setData($ecar);
-                    $this->em->persist($ecarEntity);
-                    $this->em->flush();
-                }
-            }
+        foreach ($this->ecar->getAll() as $ecar) {
+            $ecarEntity = new EcarDataStore();
+            $ecarEntity->setTimestamp(new \DateTime('now'));
+            $ecarEntity->setConnectorId($ecar['carId']);
+            $ecarEntity->setData($ecar);
+            $this->em->persist($ecarEntity);
+            $this->em->flush();
         }
     }
 
