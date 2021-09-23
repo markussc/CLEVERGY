@@ -1,8 +1,20 @@
 # OSHANS
 Open smart home automation, notification and statistics center
 
+### Run using Docker-Compose
+* Create a parameters.yaml file in config/ folder according to the parameters.yaml dist file
+* Create a .env.local file according to the .env.local.dist file
+```sh
+$ chmod +x start.sh
+$ ./start.sh
+```
 
-### Installation
+* Check using the following command, whether the application is running:
+```
+$ docker-compose ps
+```
+
+### Install and run locally (deprecated)
 
 * Create a parameters.yaml file in config/ folder according to the parameters.yaml.dist file
 * Create a .env.local file according to the .env.local.dist file
@@ -10,10 +22,10 @@ Open smart home automation, notification and statistics center
 ```sh
 $ chmod +x nodesource_setup.sh
 $ sudo ./nodesource_setup.sh
-$ sudo apt install -y nodejs
+$ sudo apt install -y nodejs curl
 $ curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 $ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-$ sudo apt update && sudo apt install yarn php-zip
+$ sudo apt update && sudo apt install yarn php-zip php-mysql php-curl
 $ composer install
 $ wget https://get.symfony.com/cli/installer -O - | bash
 $ export PATH="$HOME/.symfony/bin:$PATH"
