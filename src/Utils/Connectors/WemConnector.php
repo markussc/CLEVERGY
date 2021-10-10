@@ -206,7 +206,7 @@ class WemConnector
            $this->authenticate();
         }
         sleep(10);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001707000000002B400074240300110104&readdata=True');
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001707000000004E400074240300110104&readdata=True');
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->currentPage = "command";
         $this->page->evaluate(
