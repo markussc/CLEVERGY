@@ -424,22 +424,22 @@ class DefaultController extends Controller
             $outsideTemp = $climateValues['outsidetemp'] . "°C";
         }
 
-        if(isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
+        if(is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
             $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']."°C";
-        } elseif(isset($currentStat['pcoWeb'])) {
+        } elseif(is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb'])) {
             $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
         } else {
             $effDistrTemp = '';
         }
 
-        if (isset($currentStat['pcoWeb']) && ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on" || strpos($currentStat['pcoWeb']['ppStatus'], '%') > 0)) {
+        if (is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb']) && ($currentStat['pcoWeb']['ppStatus'] === "label.device.status.on" || strpos($currentStat['pcoWeb']['ppStatus'], '%') > 0)) {
             $sourceintemp = $currentStat['pcoWeb']['ppSourceIn']."°C";
             $sourceouttemp = $currentStat['pcoWeb']['ppSourceOut']."°C";
         } else {
             $sourceintemp = "";
             $sourceouttemp = "";
         }
-        if(isset($currentStat['pcoWeb'])) {
+        if(is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb'])) {
             $outsideTemp = $currentStat['pcoWeb']['outsideTemp']."°C";
             $waterTemp = $currentStat['pcoWeb']['waterTemp']."°C";
             if ($currentStat['pcoWeb']['ppStatus'] === 0 || $currentStat['pcoWeb']['ppStatus'] == 'Aus' || $currentStat['pcoWeb']['ppStatus'] == 'label.device.status.off') {

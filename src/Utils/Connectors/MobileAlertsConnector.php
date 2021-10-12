@@ -33,7 +33,7 @@ class MobileAlertsConnector
             foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
                 if (array_key_exists(4, $sensorConf[0]) && $sensorConf[0][4] == 'contact') {
                     $data = $this->em->getRepository('App:MobileAlertsDataStore')->getLatest($sensorId);
-                    if ($data[1]['value'] == 'label.device.status.open') {
+                    if (is_array($data) && $data[1]['value'] == 'label.device.status.open') {
                         $alarms[] = [
                             'name' => $sensorConf[0][0],
                             'state' => $data[1]['value'],
