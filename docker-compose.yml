@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  www:
+    image: oshans/www:0.0.1
+    container_name: www_${INSTANCENAME}
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    env_file:
+      - ./.env.local
+    environment:
+      - TZ=Europe/Zurich
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    networks:
+      - default
+    ports:
+      - "${PORT}:8000"
+    restart: always

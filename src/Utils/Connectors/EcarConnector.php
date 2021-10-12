@@ -42,7 +42,7 @@ class EcarConnector
                 if ($device['type'] == 'id3') {
                     $weConnectId = new WeConnectIdConnector($device);
                     $data = $weConnectId->getData();
-                    if (is_array($data) && array_key_exists('properties', $data) && $data['properties'][1]['value'] != '') {
+                    if (is_array($data) && !empty($data)) {
                         $results[] = [
                             'name' => $device['name'],
                             'carId' => $device['carId'],
