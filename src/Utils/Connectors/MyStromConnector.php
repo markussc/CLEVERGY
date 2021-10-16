@@ -394,6 +394,9 @@ class MyStromConnector
     {
         foreach ($this->connectors['mystrom'] as $device) {
             if ($device['ip'] == $ip) {
+                if (array_key_exists('type', $device) && $device['type'] == 'carTimer') {
+                    $device['carTimerData'] = $this->getCarTimerData($device);
+                }
                 return $device;
             }
         }
@@ -440,6 +443,8 @@ class MyStromConnector
                 if (is_array($config) && array_key_exists('carId', $config)  && array_key_exists('deadline', $config)  && array_key_exists('percent', $config)) {
                     $carTimerData = [
                         'carId' => $config['carId'],
+                        'connectorId' => $this->connectors['ecar'][$config['carId']]['carId'],
+                        'capacity' => $this->connectors['ecar'][$config['carId']]['capacity'],
                         'deadline' => $config['deadline'],
                         'percent' => $config['percent'],
                     ];

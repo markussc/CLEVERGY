@@ -83,6 +83,7 @@ parameters:
             -
                 name: my fancy car
                 type: id3 # currently only VW ID3 supported
+                capacity: 58 # battery capacity in kWh
                 username: <<myVWusername>>
                 password: <<myVWpassword>>
         edimax:
@@ -122,6 +123,7 @@ parameters:
                 ip: '192.168.55.3'
                 nominalPower: 100
                 #other parameters such as lowRateOn and forceOn identical to edimax
+                type: carTimer # type for e-car scenario (currently only supported with mystrom switches)
             -
                 ip: '192.168.55.6'
                 name: 'presence'

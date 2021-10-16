@@ -7,6 +7,7 @@ use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
+use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
 use Doctrine\Common\Persistence\ObjectManager;
 
@@ -17,6 +18,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 class ConditionChecker
 {
     protected $em;
+    protected $smartfox;
     protected $edimax;
     protected $mobilealerts;
     protected $openweathermap;
@@ -25,9 +27,10 @@ class ConditionChecker
     protected $pcoWeb;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(ObjectManager $em, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
     {
         $this->em = $em;
+        $this->smartfox = $smartfox;
         $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
         $this->openweathermap = $openweathermap;
@@ -68,6 +71,44 @@ class ConditionChecker
         } elseif ($type == 'on') {
             // if we check for 'on' condition but this is not set, it is implicitely fulfilled
             return true;
+        }
+
+        // check for forceOn condition for carTimer
+        if ($type == "forceOn" && array_key_exists('carTimerData', $conf) && is_array($conf['carTimerData']) && array_key_exists('percent', $conf['carTimerData'])) {
+            // get the current percentage for the car
+            $latestEcar = $this->em->getRepository("App:EcarDataStore")->getLatest($conf['carTimerData']['connectorId']);
+            if (is_array($latestEcar) && array_key_exists('data', $latestEcar) && array_key_exists('soc', $latestEcar['data'])) {
+                $currentPercent = $latestEcar['data']['soc'];
+                $targetPercent = $conf['carTimerData']['percent'];
+                $capacity = $conf['carTimerData']['capacity'];
+                $hourlyPercent = 100 / $capacity * $conf['nominalPower'] / 1000;
+                $percentDiff = $targetPercent - $currentPercent;
+                $now = new \DateTime('now');
+                $deadline = new \DateTime($conf['carTimerData']['deadline']['date']);
+                $diff = $deadline->diff($now);
+                $hours = $diff->h;
+                $hours = $hours + ($diff->days*24);
+                if ($hours > 0 && $percentDiff > 0) {
+                    // the targetPercent and deadline are not reached yet
+                    // check if we need to start charging in order to reach the targetPercent until deadline
+                    $percentDuringDiff = $hourlyPercent * $hours;
+                    if  ($percentDuringDiff < $percentDiff) {
+                        // we need to start immediately
+                        return true;
+                    } elseif (($hours < 24 && $percentDiff > $hourlyPercent*8) || ($this->checkEnergyLowRate() && $percentDiff > $hourlyPercent*8)) {
+                        // the deadline is within 16 hours from now and we need more than 8 hours charging left, or low rate and more than 16 hours charing left
+                        $switchState = $this->em->getRepository("App:MyStromDataStore")->getLatest($conf['ip']);
+                        $powerAverage = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 15);
+                        if ($switchState && $powerAverage < $conf['nominalPower']/2) {
+                            // currently charging, we want at least half of the charging power by self production
+                            return true;
+                        }  elseif (!$switchState && $powerAverage < -1*$conf['nominalPower']/2) {
+                            // currently not charging, we want half of the charging power by self production after switching on
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
         // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
