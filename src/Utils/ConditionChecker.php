@@ -81,7 +81,8 @@ class ConditionChecker
                 $currentPercent = $latestEcar['data']['soc'];
                 $targetPercent = $conf['carTimerData']['percent'];
                 $capacity = $conf['carTimerData']['capacity'];
-                $hourlyPercent = 100 / $capacity * $conf['nominalPower'] / 1000;
+                $chargingPower = 0.95 * $conf['nominalPower']; // we expect 5% of charging losses
+                $hourlyPercent = 100 / $capacity * $chargingPower / 1000;
                 $percentDiff = $targetPercent - $currentPercent;
                 $now = new \DateTime('now');
                 $deadline = new \DateTime($conf['carTimerData']['deadline']['date']);
@@ -95,8 +96,11 @@ class ConditionChecker
                     if  ($percentDuringDiff < $percentDiff) {
                         // we need to start immediately
                         return true;
-                    } elseif (($hours < 24 && $percentDiff > $hourlyPercent*8) || ($this->checkEnergyLowRate() && $percentDiff > $hourlyPercent*8)) {
-                        // the deadline is within 16 hours from now and we need more than 8 hours charging left, or low rate and more than 16 hours charing left
+                    } elseif (($hours < 24 && $percentDiff > $hourlyPercent*8) || ($this->checkEnergyLowRate() && $percentDiff > $hourlyPercent*8) || $currentPercent < 30) {
+                        // the deadline is within 24 hours from now and we need more than 8 hours charging left,
+                        // or low rate and more than 8 hours charging left,
+                        // or battery level below 30%
+                        // in these cases we want to allow max half of the charging power from the grid
                         $switchState = $this->em->getRepository("App:MyStromDataStore")->getLatest($conf['ip']);
                         $powerAverage = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 15);
                         if ($switchState && $powerAverage < $conf['nominalPower']/2) {
