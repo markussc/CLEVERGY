@@ -88,7 +88,7 @@ class ConditionChecker
                 $diff = $deadline->diff($now);
                 $hours = $diff->h;
                 $hours = $hours + ($diff->days*24);
-                if ($hours > 0 && $percentDiff > 0) {
+                if ($hours >= 0 && $percentDiff > 0) {
                     // the targetPercent and deadline are not reached yet
                     // check if we need to start charging in order to reach the targetPercent until deadline
                     $percentDuringDiff = $hourlyPercent * $hours;
@@ -107,6 +107,9 @@ class ConditionChecker
                             return true;
                         }
                     }
+                }
+                if ($this->checkEnergyLowRate() && $currentPercent < 15) {
+                    return true;
                 }
             }
         }
