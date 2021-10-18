@@ -41,7 +41,10 @@ services:
         public: true
         arguments:
             $energyLowRate: "%energy_low_rate%"
-
+    App\Utils\PriorityManager:
+        public: false
+        arguments:
+            $connectors: "%connectors%"
     App\Utils\LogicProcessor:
         public: true
         arguments:

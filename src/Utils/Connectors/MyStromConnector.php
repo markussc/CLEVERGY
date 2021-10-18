@@ -251,7 +251,7 @@ class MyStromConnector
         return false;
     }
 
-    private function getStatus($device)
+    public function getStatus($device)
     {
         if (array_key_exists('type', $device) && $device['type'] == 'motion') {
             $r = $this->queryMyStrom($device, 'motion');

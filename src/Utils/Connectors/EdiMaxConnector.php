@@ -153,7 +153,7 @@ class EdiMaxConnector
         return false;
     }
 
-    private function getStatus($device)
+    public function getStatus($device)
     {
         $r = $this->queryEdiMax($device, 'status');
         if (!empty($r) && array_key_exists('CMD', $r) && array_key_exists('Device.System.Power.State', $r['CMD']) && $r['CMD']['Device.System.Power.State'] == 'ON') {

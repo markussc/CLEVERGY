@@ -9,6 +9,7 @@ use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
+use App\Utils\PriorityManager;
 use Doctrine\Common\Persistence\ObjectManager;
 
 /**
@@ -18,6 +19,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 class ConditionChecker
 {
     protected $em;
+    protected $prio;
     protected $smartfox;
     protected $edimax;
     protected $mobilealerts;
@@ -27,9 +29,10 @@ class ConditionChecker
     protected $pcoWeb;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
     {
         $this->em = $em;
+        $this->prio = $prio;
         $this->smartfox = $smartfox;
         $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
@@ -150,6 +153,11 @@ class ConditionChecker
         if ($type == 'forceOff' && isset($conf['forceOff'])) {
             if ($this->processConditions($conf['forceOff'])) {
 
+                return true;
+            }
+            // handle priorities
+            if (!$this->checkPriority($conf)) {
+                // there is a device with higher priority ready to be started
                 return true;
             }
         }
@@ -378,5 +386,21 @@ class ConditionChecker
         }
 
         return $fulfilled;
+    }
+
+    /*
+     * returns true, if we have priority (i.e. no force off required)
+     */
+    private function checkPriority($device)
+    {
+        // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
+        if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
+            $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+            $maxNominalPower = -1*($currentAveragePower - $device['nominalPower']);
+            return !$this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
+        } else {
+            // we do not have any priority set, so we have priority
+            return true;
+        }
     }
 }

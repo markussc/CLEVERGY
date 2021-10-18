@@ -290,7 +290,7 @@ class ShellyConnector
         return false;
     }
 
-    private function getStatus($device)
+    public function getStatus($device)
     {
         $r = $this->queryShelly($device, 'status');
         if (!empty($r) && $device['type'] == 'roller') {
