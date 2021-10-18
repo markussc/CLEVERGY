@@ -8,7 +8,7 @@ services:
     tty: true        # docker run -t
     volumes:
       - ./config/parameters.yaml:/www/config/parameters.yaml
-      - ./sessions:/www/var/sessions
+      - ./var/sessions:/www/var/sessions
     env_file:
       - ./.env.local
     environment:
