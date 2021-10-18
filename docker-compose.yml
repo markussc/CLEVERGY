@@ -6,6 +6,9 @@ services:
     container_name: www_${INSTANCENAME}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+    volumes:
+      - ./config/parameters.yaml:/www/config/parameters.yaml
+      - ./sessions:/www/var/sessions
     env_file:
       - ./.env.local
     environment:
