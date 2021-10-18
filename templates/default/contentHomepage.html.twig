@@ -47,7 +47,7 @@
         {% endfor %}
       </select>
       <label for="cartimer_deadline">{%  trans %}label.mystrom.cartimer_deadline{% endtrans %}</label><br>
-      <input type="datetime-local" value="" id="cartimer_deadline" min="{{ 'now'|date("Y-m-d") }}T{{ 'now'|date("H:i") }}">
+      <input type="datetime-local" value="{{ 'now'|date("Y-m-d") }}T{{ 'now'|date("H:i") }}" id="cartimer_deadline" min="{{ 'now'|date("Y-m-d") }}T{{ 'now'|date("H:i") }}">
       <label for="cartimer_percent">{%  trans %}label.mystrom.cartimer_percent{% endtrans %}</label><br>
       <input type="number" value="" min="10" max="100" maxlength="3" id="cartimer_percent">
       <hr>
