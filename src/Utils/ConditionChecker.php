@@ -156,7 +156,7 @@ class ConditionChecker
                 return true;
             }
             // handle priorities
-            if (!$this->checkPriority($conf)) {
+            if (!$this->checkPriority($this->deviceClass, $conf)) {
                 // there is a device with higher priority ready to be started
                 return true;
             }
@@ -391,12 +391,30 @@ class ConditionChecker
     /*
      * returns true, if we have priority (i.e. no force off required)
      */
-    private function checkPriority($device)
+    private function checkPriority($deviceClass, $device)
     {
         // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
         if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
             $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
-            $maxNominalPower = -1*($currentAveragePower - $device['nominalPower']);
+            // check if device is currently running
+            $status = [];
+            if ($deviceClass == "EdiMax") {
+                $status = $this->edimax->getStatus($device);
+            } elseif ($deviceClass == "MyStrom") {
+                $status = $this->mystrom->getStatus($device);
+            } elseif ($deviceClass == "Shelly") {
+                $status = $this->shelly->getStatus($device);
+            }
+            if (array_key_exists('val', $status) && $status['val'] && array_key_exists('power', $status)) {
+                // currently turned on, calculate using effective current power used by the device
+                $maxNominalPower = -1*($currentAveragePower - $status['power']);
+            } elseif (array_key_exists('val', $status) && $status['val']) {
+                // currently turned on, calculate using 90% of nominalPower
+                $maxNominalPower = -1*($currentAveragePower - 0.9 * $device['nominalPower']);
+            } else {
+                // currently turned off, check with current averagePower
+                $maxNominalPower = -1*($currentAveragePower);
+            }
             return !$this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
         } else {
             // we do not have any priority set, so we have priority
