@@ -149,6 +149,11 @@ class ConditionChecker
 
                 return true;
             }
+            // handle priorities
+            if ($this->checkPriorityForceOn($this->deviceClass, $conf)) {
+                // there is a device with lower priority ready to be stopped
+                return true;
+            }
         }
         if ($type == 'forceOff' && isset($conf['forceOff'])) {
             if ($this->processConditions($conf['forceOff'])) {
@@ -156,7 +161,7 @@ class ConditionChecker
                 return true;
             }
             // handle priorities
-            if (!$this->checkPriority($this->deviceClass, $conf)) {
+            if (!$this->checkPriorityForceOff($this->deviceClass, $conf)) {
                 // there is a device with higher priority ready to be started
                 return true;
             }
@@ -391,7 +396,7 @@ class ConditionChecker
     /*
      * returns true, if we have priority (i.e. no force off required)
      */
-    private function checkPriority($deviceClass, $device)
+    private function checkPriorityForceOff($deviceClass, $device)
     {
         // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
         if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
@@ -405,6 +410,7 @@ class ConditionChecker
             } elseif ($deviceClass == "Shelly") {
                 $status = $this->shelly->getStatus($device);
             }
+            // check if we should turn off or prevent to turn on (forceOff)
             if (array_key_exists('val', $status) && $status['val'] && array_key_exists('power', $status)) {
                 // currently turned on, calculate using effective current power used by the device
                 $maxNominalPower = -1*($currentAveragePower - $status['power']);
@@ -420,5 +426,34 @@ class ConditionChecker
             // we do not have any priority set, so we have priority
             return true;
         }
+    }
+
+    /*
+     * returns true, if we have priority (i.e. forceOn required)
+     */
+    private function checkPriorityForceOn($deviceClass, $device)
+    {
+        // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
+        if (array_key_exists('priority', $device) && $device['priority'] > 0 && array_key_exists('nominalPower', $device)) {
+            // check if device is currently running
+            $status = [];
+            if ($deviceClass == "EdiMax") {
+                $status = $this->edimax->getStatus($device);
+            } elseif ($deviceClass == "MyStrom") {
+                $status = $this->mystrom->getStatus($device);
+            } elseif ($deviceClass == "Shelly") {
+                $status = $this->shelly->getStatus($device);
+            }
+            if (array_key_exists('val', $status) && $status['val']) {
+                $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+                if ($currentAveragePower < $device['nominalPower']/4) {
+                    // currently running and only small part of nominalPower is currently imported
+                    // check if there is another device with lower priority that could be turned off first
+                    return $this->prio->checkStoppingDevice($device['priority']-1);
+                }
+            }
+        }
+        // we do not have any priority set or not currently running, so we have no priority
+        return false;
     }
 }
