@@ -52,8 +52,7 @@ COPY ./ /www
 RUN /usr/bin/composer install --no-interaction
 RUN yarn install
 RUN yarn run encore prod
-RUN bin/console cache:warmup
 
 # apply database migrations and run symfony web server
-CMD wait-for-it db:3306 -- bin/console doctrine:migrations:migrate --no-interaction ; env >> /etc/environment ; service cron start ; /root/.symfony/bin/symfony server:start
+CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /root/.symfony/bin/symfony server:start
 EXPOSE 8000
