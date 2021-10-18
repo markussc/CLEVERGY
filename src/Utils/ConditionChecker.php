@@ -86,9 +86,12 @@ class ConditionChecker
                 $percentDiff = $targetPercent - $currentPercent;
                 $now = new \DateTime('now');
                 $deadline = new \DateTime($conf['carTimerData']['deadline']['date']);
-                $diff = $deadline->diff($now);
+                $diff = $now->diff($deadline);
                 $hours = $diff->h;
                 $hours = $hours + ($diff->days*24);
+                if ($diff->invert) {
+                    $hours *= -1;
+                }
                 if ($hours >= 0 && $percentDiff > 0) {
                     // the targetPercent and deadline are not reached yet
                     // check if we need to start charging in order to reach the targetPercent until deadline
