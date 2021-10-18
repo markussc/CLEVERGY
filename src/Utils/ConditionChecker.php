@@ -149,22 +149,23 @@ class ConditionChecker
 
                 return true;
             }
-            // handle priorities
-            if ($this->checkPriorityForceOn($this->deviceClass, $conf)) {
-                // there is a device with lower priority ready to be stopped
-                return true;
-            }
         }
+        // check for prioritized forceOn
+        if ($type == 'forceOn' && $this->checkPriorityForceOn($this->deviceClass, $conf)) {
+            // there is a device with lower priority ready to be stopped
+            return true;
+        }
+        // check forceOff
         if ($type == 'forceOff' && isset($conf['forceOff'])) {
             if ($this->processConditions($conf['forceOff'])) {
 
                 return true;
             }
-            // handle priorities
-            if (!$this->checkPriorityForceOff($this->deviceClass, $conf)) {
-                // there is a device with higher priority ready to be started
-                return true;
-            }
+        }
+        // check for prioritized forceOff
+        if ($type == 'forceOn' && !$this->checkPriorityForceOff($this->deviceClass, $conf)) {
+            // there is a device with higher priority ready to be started
+            return true;
         }
         if ($type == 'forceOpen' && isset($conf['forceOpen'])) {
             if ($this->processConditions($conf['forceOpen'])) {
@@ -433,7 +434,7 @@ class ConditionChecker
      */
     private function checkPriorityForceOn($deviceClass, $device)
     {
-        // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
+        // check if there is a device with lower priority to be turned off first
         if (array_key_exists('priority', $device) && $device['priority'] > 0 && array_key_exists('nominalPower', $device)) {
             // check if device is currently running
             $status = [];
