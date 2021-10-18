@@ -156,7 +156,7 @@
                     <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";' class="button tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
                 {% endif %}
                 {% if device['type'] == 'carTimer' %}
-                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button tiny" style="border-radius:5px;"><i class="fas fa-hourglass-half"></i> {{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|date("d.m.Y H:i") }}</a>
+                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button tiny" style="border-radius:5px;"><i class="fas fa-hourglass-half"></i> {{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}</a>
                 {% endif %}
                 {%  if device.status.power|default(false) is not same as(false) %}
                     <a href="#" data-open="deviceModal" onclick="loadDeviceModal('{{ device['name']}}', '', '\
