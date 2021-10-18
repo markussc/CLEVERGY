@@ -54,5 +54,5 @@ RUN yarn install
 RUN yarn run encore prod
 
 # apply database migrations and run symfony web server
-CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /root/.symfony/bin/symfony server:start
+CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console cache:clear ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /root/.symfony/bin/symfony server:start
 EXPOSE 8000
