@@ -111,6 +111,12 @@ class DefaultController extends Controller
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
                 $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\LogoControlConnector')->getIp());
             }
+            if (array_key_exists('ecar', $this->getParameter('connectors'))) {
+                foreach ($this->getParameter('connectors')['ecar'] as $ecar) {
+                    $ecarHistory[$ecar['carId']] = $em->getRepository('App:EcarDataStore')->getHistoryLast24h($ecar['carId']);
+                }
+                $history['ecar'] = $ecarHistory;
+            }
         } else {
             $currentStat = $this->getCurrentStat([
                 'edimax' => true,
@@ -561,7 +567,6 @@ class DefaultController extends Controller
         if (($fullSet === true || isset($fullSet['ecar'])) && array_key_exists('ecar', $this->getParameter('connectors'))) {
             $currentStat['ecar'] = $this->get('App\Utils\Connectors\EcarConnector')->getAllLatest();
         }
-
         return $currentStat;
     }
 

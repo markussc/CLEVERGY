@@ -361,7 +361,7 @@
         }
     });
     {% endif %}
-    {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+    {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or history['ecar']|default(false) %}
     // 24hTemperatures
     charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
         type: 'line',
@@ -496,6 +496,22 @@
                 {% endfor %}
                 ]
             }{% endfor %}{% endfor %}
+            {% for ecar in connectors['ecar']|default([]) %}
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
+                label: '{{ ecar['name'] }}',
+                borderColor: 'green',
+                fill: false,
+                data: [
+                {% for ecarData in history['ecar'][ecar['carId']] %}
+                    {
+                        x: new Date("{{ ecarData.timestamp|date("c") }}"),
+                        y: {{ ecarData.getData()['data']['soc']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            }{% endfor %}
             {% if connectors['netatmo']['deviceid']|default(false) %}
             {% if not firstDataset24  %},{% endif %}
             {% set firstDataset24 = false %}
