@@ -4,6 +4,7 @@ namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
 use App\Entity\Settings;
+use App\Entity\MyStromDataStore;
 
 /**
  * Connector to retrieve data from MyStrom devices
@@ -284,6 +285,19 @@ class MyStromConnector
         }
     }
 
+    public function storeStatus($device, $status)
+    {
+        $mystromEntity = new MyStromDataStore();
+        $mystromEntity->setTimestamp(new \DateTime('now'));
+        $mystromEntity->setConnectorId($device['ip']);
+        $mystromEntity->setData($status['val']);
+        if (array_key_exists('power', $status)) {
+            $mystromEntity->setExtendedData($status);
+        }
+        $this->em->persist($mystromEntity);
+        $this->em->flush();
+    }
+
     private function createStatus($status)
     {
         $ret = [];
@@ -309,6 +323,9 @@ class MyStromConnector
     {
         $r = $this->queryMyStrom($device, 'on');
         if (!empty($r)) {
+            // get the current (new) status and store to database
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -319,6 +336,9 @@ class MyStromConnector
     {
         $r = $this->queryMyStrom($device, 'off');
         if (!empty($r)) {
+            // get the current (new) status and store to database
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;

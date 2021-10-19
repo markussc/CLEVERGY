@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Utils\Connectors\GardenaConnector;
 use App\Entity\Settings;
 use App\Utils\LogicProcessor;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -560,16 +559,16 @@ class DefaultController extends Controller
             $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\WemConnector')->getAllLatest();  // we store the wem data to the pcoWeb data structure for simplicity
         }
         if (($fullSet === true || isset($fullSet['conexio'])) && array_key_exists('conexio', $this->getParameter('connectors'))) {
-            $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAll(true);
+            $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['edimax'])) && array_key_exists('edimax', $this->getParameter('connectors'))) {
-            $currentStat['edimax'] = $this->get('App\Utils\Connectors\EdiMaxConnector')->getAll();
+            $currentStat['edimax'] = $this->get('App\Utils\Connectors\EdiMaxConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['mystrom'])) && array_key_exists('mystrom', $this->getParameter('connectors'))) {
-            $currentStat['mystrom'] = $this->get('App\Utils\Connectors\MyStromConnector')->getAll();
+            $currentStat['mystrom'] = $this->get('App\Utils\Connectors\MyStromConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['shelly'])) && array_key_exists('shelly', $this->getParameter('connectors'))) {
-            $currentStat['shelly'] = $this->get('App\Utils\Connectors\ShellyConnector')->getAll();
+            $currentStat['shelly'] = $this->get('App\Utils\Connectors\ShellyConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['mobilealerts'])) && array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
             $currentStat['mobileAlerts'] = $this->get('App\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
@@ -578,7 +577,7 @@ class DefaultController extends Controller
             $currentStat['openweathermap'] = $this->get('App\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['logocontrol'])) && array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-            $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAll(true);
+            $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
             $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();

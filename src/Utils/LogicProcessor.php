@@ -1036,12 +1036,7 @@ class LogicProcessor
     public function initEdimax()
     {
         foreach ($this->edimax->getAll() as $edimax) {
-            $edimaxEntity = new EdiMaxDataStore();
-            $edimaxEntity->setTimestamp(new \DateTime('now'));
-            $edimaxEntity->setConnectorId($edimax['ip']);
-            $edimaxEntity->setData($edimax['status']['val']);
-            $this->em->persist($edimaxEntity);
-            $this->em->flush();
+            $this->edimax->storeStatus($edimax, $edimax['status']['val']);
         }
     }
 
@@ -1051,27 +1046,13 @@ class LogicProcessor
             $device = $this->mystrom->getConfig($deviceId);
             if ($device) {
                 $mystrom = $this->mystrom->getOne($device);
-                $mystromEntity = new MyStromDataStore();
-                $mystromEntity->setTimestamp(new \DateTime('now'));
-                $mystromEntity->setConnectorId($mystrom['ip']);
-                $mystromEntity->setData($mystrom['status']['val']);
-                if (array_key_exists('power', $mystrom['status'])) {
-                    $mystromEntity->setExtendedData($mystrom['status']);
-                }
-                $this->em->persist($mystromEntity);
+                $this->mystrom->storeStatus($mystrom, $mystrom['status']);
+            }
+        } else {
+            foreach ($this->mystrom->getAll() as $mystrom) {
+                $this->mystrom->storeStatus($mystrom, $mystrom['status']);
             }
         }
-        foreach ($this->mystrom->getAll() as $mystrom) {
-            $mystromEntity = new MyStromDataStore();
-            $mystromEntity->setTimestamp(new \DateTime('now'));
-            $mystromEntity->setConnectorId($mystrom['ip']);
-            $mystromEntity->setData($mystrom['status']['val']);
-            if (array_key_exists('power', $mystrom['status'])) {
-                $mystromEntity->setExtendedData($mystrom['status']);
-            }
-            $this->em->persist($mystromEntity);
-        }
-        $this->em->flush();
     }
 
     public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port

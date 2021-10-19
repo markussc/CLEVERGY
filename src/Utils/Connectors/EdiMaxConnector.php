@@ -4,6 +4,7 @@ namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManager;
 use App\Entity\Settings;
+use App\Entity\EdiMaxDataStore;
 
 /**
  * Connector to retrieve data from EdiMax devices
@@ -178,10 +179,21 @@ class EdiMaxConnector
         }
     }
 
+    public function storeStatus($device, $status)
+    {
+        $edimaxEntity = new EdiMaxDataStore();
+        $edimaxEntity->setTimestamp(new \DateTime('now'));
+        $edimaxEntity->setConnectorId($device['ip']);
+        $edimaxEntity->setData($status);
+        $this->em->persist($edimaxEntity);
+        $this->em->flush();
+    }
+
     private function setOn($device)
     {
         $r = $this->queryEdiMax($device, 'on');
         if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
+            $this->storeStatus($device, 1);
             return true;
         } else {
             return false;
@@ -192,6 +204,7 @@ class EdiMaxConnector
     {
         $r = $this->queryEdiMax($device, 'off');
         if (!empty($r) && array_key_exists('CMD', $r) && $r['CMD'] == 'OK') {
+            $this->storeStatus($device, 0);
             return true;
         } else {
             return false;
