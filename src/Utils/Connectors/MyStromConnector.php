@@ -102,7 +102,7 @@ class MyStromConnector
                     'timerData' => $this->getTimerData($device),
                     'carTimerData' => $this->getCarTimerData($device),
                 ];
-                if (array_key_exists('power', $result['status'])) {
+                if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
                     $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
                     $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), $today);
                 }

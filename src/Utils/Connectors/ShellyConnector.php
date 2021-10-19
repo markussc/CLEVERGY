@@ -52,7 +52,7 @@ class ShellyConnector
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
                 $result = $this->getOneLatest($device);
-                if (array_key_exists('power', $result['status'])) {
+                if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
                     $connectorId = $device['ip'].'_'.$device['port'];
                     $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('today'), new \DateTime('now'));
                     $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
@@ -372,7 +372,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'on');
         if (!empty($r)) {
-            $this->storeStatus($device, 1);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -383,7 +384,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'off');
         if (!empty($r)) {
-            $this->storeStatus($device, 0);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
