@@ -48,7 +48,24 @@ class DefaultController extends Controller
         $activePage = "overview";
         $history = [];
         $currentStat = [];
+        $fromParam = $from = $request->query->get("from");
+        $toParam = $request->query->get("to");
+        if ($fromParam && $toParam) {
+            $from = new \DateTime($fromParam);
+            $to = new \DateTime($toParam);
+        } else {
+            $from = new \DateTime('-1 days');
+            $to = new \DateTime('now');
+        }
         if ($request->query->get("details")) {
+            if ($fromParam && $toParam) {
+                $from = new \DateTime($fromParam);
+                $to = new \DateTime($toParam);
+            } else {
+                $from = new \DateTime('-1 days');
+                $to = new \DateTime('now');
+            }
+
             $activePage = "details";
             $em = $this->getDoctrine()->getManager();
             // get current values
@@ -90,30 +107,30 @@ class DefaultController extends Controller
             if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
                 $mobileAlertsHistory = [];
                 foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
-                    $mobileAlertsHistory[$sensorId] = $em->getRepository('App:MobileAlertsDataStore')->getHistoryLast24h($sensorId);
+                    $mobileAlertsHistory[$sensorId] = $em->getRepository('App:MobileAlertsDataStore')->getHistory($sensorId, $from, $to);
                 }
                 $history['mobileAlerts'] = $mobileAlertsHistory;
             }
             if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
-                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\NetatmoConnector')->getId());
+                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistory($this->get('App\Utils\Connectors\NetatmoConnector')->getId(), $from, $to);
             }
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-                $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp());
+                $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistory($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), $from, $to);
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\PcoWebConnector')->getIp());
+                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistory($this->get('App\Utils\Connectors\PcoWebConnector')->getIp(), $from, $to);
             } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\WemConnector')->getUsername()); // we store the wem data to the pcoWeb data structure for simplicity
+                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistory($this->get('App\Utils\Connectors\WemConnector')->getUsername(), $from, $to); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-                $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\ConexioConnector')->getIp());
+                $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistory($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $from, $to);
             }
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-                $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistoryLast24h($this->get('App\Utils\Connectors\LogoControlConnector')->getIp());
+                $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistory($this->get('App\Utils\Connectors\LogoControlConnector')->getIp(), $from, $to);
             }
             if (array_key_exists('ecar', $this->getParameter('connectors'))) {
                 foreach ($this->getParameter('connectors')['ecar'] as $ecar) {
-                    $ecarHistory[$ecar['carId']] = $em->getRepository('App:EcarDataStore')->getHistoryLast24h($ecar['carId']);
+                    $ecarHistory[$ecar['carId']] = $em->getRepository('App:EcarDataStore')->getHistory($ecar['carId'], $from, $to);
                 }
                 $history['ecar'] = $ecarHistory;
             }
@@ -136,6 +153,8 @@ class DefaultController extends Controller
             'activePage' => $activePage,
             'currentStat' => $currentStat,
             'history' => $history,
+            'from' => $from,
+            'to' => $to,
         ]);
     }
 

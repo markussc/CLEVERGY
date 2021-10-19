@@ -51,7 +51,7 @@
       <label for="cartimer_percent">{%  trans %}label.mystrom.cartimer_percent{% endtrans %}</label><br>
       <input type="number" value="" min="10" max="100" maxlength="3" id="cartimer_percent">
       <hr>
-      <button type="button" onclick="sendCommand(['mystrom', selectedMystromCar, getCarTimerValue()]);$('#mystromCarTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
+      <button type="button" class="button" onclick="sendCommand(['mystrom', selectedMystromCar, getCarTimerValue()]);$('#mystromCarTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
       <button class="close-button" data-close aria-label="Close modal" type="button" id="mystromTimerModalClose">
         <span aria-hidden="true">&times;</span>
       </button>

@@ -179,7 +179,22 @@
 </div>
 {% endif %}
 {% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
-    <div class="row">
+<hr>
+<div class="row">
+    <div class="small-12 medium-4 columns">
+        <label for="from">{% trans %}label.overview.history.set_interval.from{% endtrans %}</label>
+        <input type="datetime-local" id="from" value="{{ from|date("Y-m-d") }}T{{ from|date("H:i") }}">
+    </div>
+    <div class="small-12 medium-4 columns">
+        <label for="to">{% trans %}label.overview.history.set_interval.to{% endtrans %}</label>
+        <input type="datetime-local" id="to" value="{{ to|date("Y-m-d") }}T{{ to|date("H:i") }}">
+    </div>
+    <div class="small-12 medium-4 columns">
+        <label for="historyIntervalButton">&nbsp;</label>
+        <button type="button" class="button" id="historyIntervalButton" onclick="setHistoryInterval()">{% trans %}label.overview.history.set_interval.submit{% endtrans %}</button>
+    </div>
+</div>
+<div class="row">
     <div class="small-12 columns refresh">
         <canvas id="twentyFourPowerCanvas" ></canvas>
     </div>
@@ -191,6 +206,13 @@
 </div>
 {% endif %}
 <script>
+    function setHistoryInterval()
+    {
+        var from = $("#from").val();
+        var to = $("#to").val();
+        window.location = "?details=true&from=" + from + "&to=" + to;
+    }
+
     function updateChartCallback(chart, data, color)
     {
         if (data) {

@@ -381,25 +381,37 @@
         <source>label.ecar.soc</source>
         <target>Ladestand</target>
       </trans-unit>
-      <trans-unit id="abc" resname="label.mystrom.cartimer">
+      <trans-unit id="b9uUTOQ" resname="label.mystrom.cartimer">
         <source>label.mystrom.cartimer</source>
         <target>E-Fahrzeugladestation</target>
       </trans-unit>
-      <trans-unit id="def" resname="label.mystrom.select_mystrom_cartimer_lead">
+      <trans-unit id="JEFyrEc" resname="label.mystrom.select_mystrom_cartimer_lead">
         <source>label.mystrom.select_mystrom_cartimer_lead</source>
         <target>Gewünschtes Fahrzeug, Zeitpunkt und Ladeziel auswählen und "Starten" drücken.</target>
       </trans-unit>
-      <trans-unit id="gdf" resname="label.mystrom.cartimer_car">
+      <trans-unit id="vk3M4sT" resname="label.mystrom.cartimer_car">
         <source>label.mystrom.cartimer_car</source>
         <target>Fahrzeug</target>
       </trans-unit>
-      <trans-unit id="der" resname="label.mystrom.cartimer_deadline">
+      <trans-unit id="5YmsFW7" resname="label.mystrom.cartimer_deadline">
         <source>label.mystrom.cartimer_deadline</source>
         <target>Zeitpunkt</target>
       </trans-unit>
-      <trans-unit id="w2er" resname="label.mystrom.cartimer_percent">
+      <trans-unit id="blw6Q9t" resname="label.mystrom.cartimer_percent">
         <source>label.mystrom.cartimer_percent</source>
         <target>Ladeziel in Prozent</target>
+      </trans-unit>
+      <trans-unit id="CQe4FSC" resname="label.overview.history.set_interval.from">
+        <source>label.overview.history.set_interval.from</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="zVfX.B6" resname="label.overview.history.set_interval.to">
+        <source>label.overview.history.set_interval.to</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="xQXPEEf" resname="label.overview.history.set_interval.submit">
+        <source>label.overview.history.set_interval.submit</source>
+        <target>Aktualisieren</target>
       </trans-unit>
     </body>
   </file>
