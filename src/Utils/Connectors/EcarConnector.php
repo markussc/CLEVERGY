@@ -116,7 +116,7 @@ class EcarConnector
                 if  ($percentDuringDiff < $percentDiff) {
                     // we need to start immediately
                     $priority = true;
-                } elseif (($hours < 24 && $percentDiff > $hourlyPercent*8) || ($energyLowRate && $percentDiff > $hourlyPercent*8) || $currentPercent < 30) {
+                } elseif (($hours < 24 && $percentDiff > $hourlyPercent*4) || ($energyLowRate && $hours < 48 && $percentDiff > $hourlyPercent*8) || $currentPercent < 30) {
                     // the deadline is within 24 hours from now and we need more than 8 hours charging left,
                     // or low rate and more than 8 hours charging left,
                     // or battery level below 30%
