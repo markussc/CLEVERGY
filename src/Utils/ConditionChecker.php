@@ -9,6 +9,7 @@ use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
+use App\Utils\Connectors\EcarConnector;
 use App\Utils\PriorityManager;
 use Doctrine\Common\Persistence\ObjectManager;
 
@@ -27,9 +28,10 @@ class ConditionChecker
     protected $mystrom;
     protected $shelly;
     protected $pcoWeb;
+    protected $ecar;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
     {
         $this->em = $em;
         $this->prio = $prio;
@@ -40,6 +42,7 @@ class ConditionChecker
         $this->mystrom = $mystrom;
         $this->shelly = $shelly;
         $this->pcoweb = $pcoweb;
+        $this->ecar = $ecar;
         $this->energyLowRate = $energyLowRate;
         $this->deviceClass = null;
         $this->ip = null;
@@ -78,49 +81,8 @@ class ConditionChecker
 
         // check for forceOn condition for carTimer
         if ($type == "forceOn" && array_key_exists('carTimerData', $conf) && is_array($conf['carTimerData']) && array_key_exists('percent', $conf['carTimerData'])) {
-            // get the current percentage for the car
-            $latestEcar = $this->em->getRepository("App:EcarDataStore")->getLatest($conf['carTimerData']['connectorId']);
-            if (is_array($latestEcar) && array_key_exists('data', $latestEcar) && array_key_exists('soc', $latestEcar['data'])) {
-                $currentPercent = $latestEcar['data']['soc'];
-                $targetPercent = $conf['carTimerData']['percent'];
-                $capacity = $conf['carTimerData']['capacity'];
-                $chargingPower = 0.95 * $conf['nominalPower']; // we expect 5% of charging losses
-                $hourlyPercent = 100 / $capacity * $chargingPower / 1000;
-                $percentDiff = $targetPercent - $currentPercent;
-                $now = new \DateTime('now');
-                $deadline = new \DateTime($conf['carTimerData']['deadline']['date']);
-                $diff = $now->diff($deadline);
-                $hours = $diff->h;
-                $hours = $hours + ($diff->days*24);
-                if ($diff->invert) {
-                    $hours *= -1;
-                }
-                if ($hours >= 0 && $percentDiff > 0) {
-                    // the targetPercent and deadline are not reached yet
-                    // check if we need to start charging in order to reach the targetPercent until deadline
-                    $percentDuringDiff = $hourlyPercent * $hours;
-                    if  ($percentDuringDiff < $percentDiff) {
-                        // we need to start immediately
-                        return true;
-                    } elseif (($hours < 24 && $percentDiff > $hourlyPercent*8) || ($this->checkEnergyLowRate() && $percentDiff > $hourlyPercent*8) || $currentPercent < 30) {
-                        // the deadline is within 24 hours from now and we need more than 8 hours charging left,
-                        // or low rate and more than 8 hours charging left,
-                        // or battery level below 30%
-                        // in these cases we want to allow max half of the charging power from the grid
-                        $switchState = $this->em->getRepository("App:MyStromDataStore")->getLatest($conf['ip']);
-                        $powerAverage = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 15);
-                        if ($switchState && $powerAverage < $conf['nominalPower']/2) {
-                            // currently charging, we want at least half of the charging power by self production
-                            return true;
-                        }  elseif (!$switchState && $powerAverage < -1*$conf['nominalPower']/2) {
-                            // currently not charging, we want half of the charging power by self production after switching on
-                            return true;
-                        }
-                    }
-                }
-                if ($this->checkEnergyLowRate() && $currentPercent < 15) {
-                    return true;
-                }
+            if ($this->ecar->checkHighPriority($conf, $this->checkEnergyLowRate())) {
+                return true;
             }
         }
 

@@ -5,22 +5,24 @@ namespace App\Utils;
 use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
+use App\Utils\Connectors\EcarConnector;
 
 class PriorityManager
 {
     private $connectors;
 
-    public function __construct($connectors, EdiMaxConnector $edimax, MyStromConnector $mystrom, ShellyConnector $shelly)
+    public function __construct($connectors, EdiMaxConnector $edimax, MyStromConnector $mystrom, ShellyConnector $shelly, EcarConnector $ecar)
     {
         $this->connectors = $connectors;
         $this->edimax = $edimax;
         $this->mystrom = $mystrom;
         $this->shelly = $shelly;
+        $this->ecar = $ecar;
     }
 
     // check if there is at least one device with priority >= $priority which is currently turned off but ready to be turned on (based on its switchOK check)
     // returns true if found a device, false if there is no waiting device
-    public function checkWaitingDevice($priority, $maxNominalPower)
+    public function checkWaitingDevice($priority, $maxNominalPower, $energyLowRate = false)
     {
         if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
             if($this->checkStartDevice($this->mystrom, $this->connectors['edimax'], $priority, $maxNominalPower)) {
@@ -28,7 +30,7 @@ class PriorityManager
             }
         }
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
-            if($this->checkStartDevice($this->mystrom, $this->connectors['mystrom'], $priority, $maxNominalPower)) {
+            if($this->checkStartDevice($this->mystrom, $this->connectors['mystrom'], $priority, $maxNominalPower, $energyLowRate)) {
                 return true;
             }
         }
@@ -62,19 +64,27 @@ class PriorityManager
         return false;
     }
 
-    private function checkStartDevice($conn, $devices, $priority, $maxNominalPower)
+    private function checkStartDevice($conn, $devices, $priority, $maxNominalPower, $energyLowRate = false)
     {
         foreach ($devices as $deviceId => $dev) {
-            if (array_key_exists('priority', $dev) && intval($dev['priority']) >= intval($priority) && array_key_exists("nominalPower", $dev) && $dev['nominalPower'] <= $maxNominalPower) {
-                // check if currently off
-                $status = $conn->getStatus($dev);
-                if ($status['val']) {
-                    // already running
-                    continue;
+            if(array_key_exists("nominalPower", $dev)) {
+                $nominalPower = $dev['nominalPower'];
+                if (array_key_exists('type', $dev) && $dev['type'] == 'carTimer') {
+                    if ($this->ecar->checkHighPriority($dev, $energyLowRate)) {
+                        $nominalPower = $dev['nominalPower'] / 2;
+                    }
                 }
-                if ($conn->switchOK($deviceId)) {
-                    // switching is OK
-                    return true;
+                if (array_key_exists('priority', $dev) && intval($dev['priority']) >= intval($priority) && $nominalPower <= $maxNominalPower) {
+                    // check if currently off
+                    $status = $conn->getStatus($dev);
+                    if ($status['val']) {
+                        // already running
+                        continue;
+                    }
+                    if ($conn->switchOK($deviceId)) {
+                        // switching is OK
+                        return true;
+                    }
                 }
             }
         }
