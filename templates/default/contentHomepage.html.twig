@@ -195,7 +195,7 @@
                         {% set timerColor =  'green' %}
                         {% set timerClass = 'full' %}
                     {% endif %}
-                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i> {{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h</a>
+                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i>{% if device.timerData['activePercentage']|default(100) < 100 and device.timerData['activeTime']|default(0) > 0 %}&nbsp;&nbsp;{{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h{% endif %}</a>
                 {% endif %}
                 {% if device['type'] == 'carTimer' %}
                     {% if ecarConnector.checkHighPriority(device, conditionChecker.checkEnergyLowRate()) %}
@@ -203,7 +203,7 @@
                     {% else %}
                         {% set timerClass = 'hourglass-half' %}
                     {% endif %}
-                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i> {{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}</a>
+                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i>{% if date(device.carTimerData['deadline']['date']|default(date())) >= date() %}&nbsp;&nbsp;{{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}{% endif %}</a>
                 {% endif %}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
             {% endif %}
