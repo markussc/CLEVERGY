@@ -1221,12 +1221,14 @@ class LogicProcessor
      public function initEcar()
     {
         foreach ($this->ecar->getAll() as $ecar) {
-            $ecarEntity = new EcarDataStore();
-            $ecarEntity->setTimestamp(new \DateTime('now'));
-            $ecarEntity->setConnectorId($ecar['carId']);
-            $ecarEntity->setData($ecar);
-            $this->em->persist($ecarEntity);
-            $this->em->flush();
+            if (is_array($ecar) && array_key_exists('data', $ecar) && is_array($ecar['data']) && array_key_exists('soc', $ecar['data']) && $ecar['data']['soc'] != '') {
+                $ecarEntity = new EcarDataStore();
+                $ecarEntity->setTimestamp(new \DateTime('now'));
+                $ecarEntity->setConnectorId($ecar['carId']);
+                $ecarEntity->setData($ecar);
+                $this->em->persist($ecarEntity);
+                $this->em->flush();
+            }
         }
     }
 
