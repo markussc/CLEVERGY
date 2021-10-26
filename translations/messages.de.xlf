@@ -321,6 +321,10 @@
         <source>label.highrate</source>
         <target>Hochtarif</target>
       </trans-unit>
+      <trans-unit id="vXwW21h" resname="label.lowrate">
+        <source>label.lowrate</source>
+        <target>Niedertarif</target>
+      </trans-unit>
       <trans-unit id="PE4BKDs" resname="label.ecar.battery.unknown">
         <source>label.ecar.battery.unknown</source>
         <target>unbekannt</target>
@@ -412,6 +416,10 @@
       <trans-unit id="xQXPEEf" resname="label.overview.history.set_interval.submit">
         <source>label.overview.history.set_interval.submit</source>
         <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="abc" resname="label.energymix">
+        <source>label.energymix</source>
+        <target>Energiemix heute</target>
       </trans-unit>
     </body>
   </file>

@@ -157,4 +157,18 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
             return $energyCount;
         }
     }
+
+    public function getEnergyMix($ip, $lowRate, $start, $end)
+    {
+        $in = $this->getEnergyInterval($ip, 'energy_in', $start, $end);
+        $inHighrate = $this->getEnergyIntervalHighRate($ip, 'energy_in', $lowRate, $start, $end);
+        $pv = $this->getEnergyInterval($ip, 'PvEnergy', $start, $end);
+        $out = $this->getEnergyInterval($ip, 'energy_out', $start, $end);
+
+        return [
+            'pv' => ($pv-$out)/1000,
+            'low' => ($in - $inHighrate)/1000,
+            'high' => $inHighrate/1000,
+        ];
+    }
 }

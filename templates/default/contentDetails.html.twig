@@ -1,4 +1,32 @@
 {% set contactAvailable = false %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChartEnergymix);
+
+    function drawChartEnergymix() {
+
+      var data = google.visualization.arrayToDataTable([
+        ['Task', 'Hours per Day'],
+        ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
+        ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
+        ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
+      ]);
+
+      var chart = new google.visualization.PieChart(document.getElementById('piechart_energymix'));
+
+      var options = {
+          title: '{% trans %}label.energymix{% endtrans %}'
+      };
+      var formatter = new google.visualization.NumberFormat({
+         suffix: ' kWh'
+      });
+
+      formatter.format(data, 1);
+      chart.draw(data, options);
+    }
+</script>
+
 {% if is_granted('ROLE_OWNER') %}
     <div id="pcowebModeModal" class="reveal" data-reveal>
       <h4 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h4>
@@ -156,7 +184,10 @@
 {% if not refresh|default(false) %}
 {% if currentStat['smartFoxChart']|default(false) %}
 <div class="row">
-    <div class="small-12 medium-8 large-6 columns small-centered refresh">
+    <div class=""small-12 large-4 columns small-centered">
+        <div id="piechart_energymix"></div>
+    </div>
+    <div class="small-12 medium-12 large-8 columns small-centered refresh">
         <canvas id="energyDayCanvas" ></canvas>
     </div>
 </div>

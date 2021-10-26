@@ -71,6 +71,7 @@ class DefaultController extends Controller
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
                 $currentStat['smartFox'] = $this->get('App\Utils\Connectors\SmartFoxConnector')->getAllLatest();
                 $currentStat['smartFoxChart'] = true;
+                $currentStat['smartFox_energy_mix'] = $em->getRepository('App:SmartFoxDataStore')->getEnergyMix($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), $this->getParameter('energy_low_rate'), new \DateTime('today'), new \DateTime('now'));
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
                 $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\PcoWebConnector')->getAllLatest();
