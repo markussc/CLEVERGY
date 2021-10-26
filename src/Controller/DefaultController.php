@@ -83,15 +83,6 @@ class DefaultController extends Controller
             if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
                 $currentStat['mobileAlerts'] = $this->get('App\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
             }
-            if (array_key_exists('edimax', $this->getParameter('connectors'))) {
-                $currentStat['edimax'] = $this->get('App\Utils\Connectors\EdiMaxConnector')->getAllLatest();
-            }
-            if (array_key_exists('mystrom', $this->getParameter('connectors'))) {
-                $currentStat['mystrom'] = $this->get('App\Utils\Connectors\MyStromConnector')->getAllLatest();
-            }
-            if (array_key_exists('shelly', $this->getParameter('connectors'))) {
-                $currentStat['shelly'] = $this->get('App\Utils\Connectors\ShellyConnector')->getAllLatest();
-            }
             if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
                 $currentStat['openweathermap'] = $this->get('App\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
             }

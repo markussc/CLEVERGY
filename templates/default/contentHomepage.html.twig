@@ -96,8 +96,8 @@
 <div class="row">
     <div class="columns small-12 medium-5 large-5 small-centered">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
-        <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
-        <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-exclamation-triangle" style="color: orangered;"></i> <span style="size:small; color: orangered;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
+        <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-running" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
+        <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-door-open" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap" style="display:block; margin-left: auto; margin-right: auto;">{% endif %}
     </div>
 </div>
@@ -167,20 +167,23 @@
         {% for key, device in currentStat['edimax']|default([]) %}
             <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['edimax', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i>&nbsp;&nbsp;{{ device['name']}}</a>
             <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+            <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
+            <ul>\
+                <li>{% trans %}label.edimax.activation_interval_today{% endtrans %}: {{ (device.activeMinutes/60)|round(0, 'floor') }}h {{ device.activeMinutes%60 }}m</li>\
+            </ul>');"><i class="fa fa-info-circle"></i></a>
             {% if not loop.last or currentStat['mystrom']|length > 0 or currentStat['shelly']|length > 0 %}<br/>{% endif %}
         {% endfor %}
         {% for key, device in currentStat['mystrom']|default([]) %}
             {% if device['type']|default('') != 'motion' %}
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i>&nbsp;&nbsp;{{ device['name']}}</a>
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
-                {%  if device.status.power|default(false) is not same as(false) %}
-                    <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
+                <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
                     <ul>\
-                        <li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", '') }} W</li>\
+                        <li>{% trans %}label.edimax.activation_interval_today{% endtrans %}: {{ (device.activeMinutes/60)|round(0, 'floor') }}h {{ device.activeMinutes%60 }}m</li>\
+                        {%  if device.status.power|default(false) is not same as(false) %}<li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", '') }} W</li>\
                         <li>{% trans %}label.device.energy_day{% endtrans %}: {{  device.consumption_day|number_format(1, '.', '') }} kWh</li>\
-                        <li>{% trans %}label.device.energy_yesterday{% endtrans %}: {{  device.consumption_yesterday|number_format(1, '.', '') }} kWh</li>\
+                        <li>{% trans %}label.device.energy_yesterday{% endtrans %}: {{  device.consumption_yesterday|number_format(1, '.', '') }} kWh</li>\{% endif %}
                     </ul>');"><i class="fa fa-info-circle"></i></a>
-                {% endif %}
                 {% if device['type'] == 'battery' %}
                     {% if device.timerData.activePercentage|default(100) < 25 %}
                         {% set timerColor =  'red' %}
@@ -231,6 +234,7 @@
             {%  if device.status.power|default(false) is not same as(false) %}
                 <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
                 <ul>\
+                    <li>{% trans %}label.edimax.activation_interval_today{% endtrans %}: {{ (device.activeMinutes/60)|round(0, 'floor') }}h {{ device.activeMinutes%60 }}m</li>\
                     <li>{% trans %}label.device.power{% endtrans %}: {{  device.status.power|number_format(0, ".", '') }} W</li>\
                     <li>{% trans %}label.device.energy_day{% endtrans %}: {{  device.consumption_day|number_format(1, '.', '') }} kWh</li>\
                     <li>{% trans %}label.device.energy_yesterday{% endtrans %}: {{  device.consumption_yesterday|number_format(1, '.', '') }} kWh</li>\
