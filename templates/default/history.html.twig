@@ -2,9 +2,13 @@
    
 {% block body %}
 {% if history['smartfox']|default(false) %}
+<style>
+    .tableFixHead          { overflow: auto; height:400px; max-height:80%;}
+    .tableFixHead thead th { position: sticky; top: 0; z-index: 1; background:silver;}
+</style>
 <div class="small-12 columns">
     <h4>{% trans %}label.energy{% endtrans %}</h4>
-    <table>
+    <table class="scroll tableFixHead">
         <thead>
             <tr>
                 <th></th>
@@ -40,7 +44,7 @@
 {% if history['conexio']|default(false) %}
 <div class="small-12 columns">
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
-     <table>
+     <table class="scroll tableFixHead">
         <thead>
             <tr>
                 <th></th>
