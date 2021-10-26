@@ -252,7 +252,7 @@
             <div id="alarm" class="refresh">
             {% if connectors['threema']|default([])|length > 0 %}
                 {% set alarmMode = mobilealertsConnector.getAlarmMode()|default(0) %}
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', 'alarm', {{ (alarmMode + 1) % 2 }}]);"{% endif %}><i class="fas {% if alarmMode %}fa-comment{% else %}fa-comment-slash{% endif %}"></i></a> {% trans %}label.alarm.notification{% endtrans %}<br>
+                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', 'alarm', {{ (alarmMode + 1) % 2 }}]);"{% endif %}><i class="fas {% if alarmMode %}fa-comment{% else %}fa-comment-slash{% endif %}"></i>&nbsp;&nbsp;{% trans %}label.alarm.notification{% endtrans %}</a><br>
             {% endif %}
             {% for maSensor in currentStat['mobileAlerts']|default([]) %}
                 {% set maTimestamp = null %}
@@ -296,7 +296,7 @@
         <div id="ecar_container" class="content" style="display:none;">
         <div id="ecar" class="refresh"">
         {% for device in currentStat['ecar'] %}
-            {% trans %}label.ecar.name{% endtrans %}: {{ device['name'] }}<br>
+            {{ device['name'] }}<br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ device['data']['soc']|default('???') }} %<br>
             {% trans %}label.ecar.range{% endtrans %}: {{ device['data']['range']|default('???') }} km
             {% if not loop.last %}<hr>{% endif %}
