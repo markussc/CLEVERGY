@@ -72,7 +72,6 @@ services:
     App\Utils\Connectors\ShellyConnector:
         public: true
         arguments:
-            $browser: "@buzz"
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"

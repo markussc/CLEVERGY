@@ -24,15 +24,12 @@ class ShellyConnector
     private $authkey;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, \Buzz\Browser $browser,Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->client = $client;
         $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
-        $this->browser = $browser;
         $this->connectors = $connectors;
-        // set timeout for buzz browser client
-        $this->browser->getClient()->setTimeout(3);
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
         if (array_key_exists('shellycloud', $connectors)) {
@@ -447,11 +444,11 @@ class ShellyConnector
                     break;
                 case 'configureOpen':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
-                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_open_url='.$triggerUrl.'/4';
+                    $reqUrl = 'settings/actions?index=0&name=roller_close_url&enabled=true&urls[]='.$triggerUrl.'/4';
                     break;
                 case 'configureClose':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
-                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_close_url='.$triggerUrl.'/5';
+                    $reqUrl = 'settings/actions?index=0&name=roller_close_url&enabled=true&urls[]='.$triggerUrl.'/5';
                     break;
             }
         } elseif ($device['type'] == 'relay') {
@@ -477,28 +474,23 @@ class ShellyConnector
                     } else {
                         return false;
                     }
-                case 'configureDark':
+                case 'configureOpen':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?dark_url='.$triggerUrl;
-                    break;
-                case 'configureTwilight':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?twilight_url='.$triggerUrl;
-                    break;
-                case 'configureDaylight':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?open_url='.$triggerUrl;
+                    $reqUrl = 'settings/actions?index=0&name=open_url&enabled=true&urls[]='.$triggerUrl;
                     break;
                 case 'configureClose':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
-                    $reqUrl = 'settings?close_url='.$triggerUrl;
+                    $reqUrl = 'settings/actions?index=0&name=close_url&enabled=true&urls[]='.$triggerUrl;
                     break;
             }
         }
 
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
-            $response = $this->browser->get($url);
+            $response = $this->client->request(
+                'GET',
+                $url
+            );
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;

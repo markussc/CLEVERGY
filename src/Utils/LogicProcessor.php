@@ -1259,9 +1259,17 @@ class LogicProcessor
         }
     }
 
-    public function configureDevice($deviceId)
+    public function configureDevices()
     {
-        // currently only required and available for Shelly Door-Sensors
-        $this->shelly->executeCommand($deviceId, 100);
+        // currently only required and available for Shelly Sensors
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $key => $device) {
+                try {
+                    $this->shelly->executeCommand($key, 100);
+                } catch (\Exception $e) {
+                    // do nothing
+                }
+            }
+        }
     }
 }
