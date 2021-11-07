@@ -1158,12 +1158,14 @@ class LogicProcessor
     {
         if ($this->pcoweb->getIp()) {
             $pcoweb = $this->pcoweb->getAll();
-            $pcowebEntity = new PcoWebDataStore();
-            $pcowebEntity->setTimestamp(new \DateTime('now'));
-            $pcowebEntity->setConnectorId($this->pcoweb->getIp());
-            $pcowebEntity->setData($pcoweb);
-            $this->em->persist($pcowebEntity);
-            $this->em->flush();
+            if ($pcoweb !== false) {
+                $pcowebEntity = new PcoWebDataStore();
+                $pcowebEntity->setTimestamp(new \DateTime('now'));
+                $pcowebEntity->setConnectorId($this->pcoweb->getIp());
+                $pcowebEntity->setData($pcoweb);
+                $this->em->persist($pcowebEntity);
+                $this->em->flush();
+            }
         }
     }
 
