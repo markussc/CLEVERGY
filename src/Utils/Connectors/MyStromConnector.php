@@ -2,10 +2,11 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\MyStromDataStore;
 use App\Utils\Connectors\EcarConnector;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from MyStrom devices
@@ -16,18 +17,15 @@ use App\Utils\Connectors\EcarConnector;
 class MyStromConnector
 {
     protected $em;
-    protected $browser;
     protected $ecar;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->ecar = $ecar;
         $this->connectors = $connectors;
-        // set timeout for buzz browser client
-        $this->browser->getClient()->setTimeout(3);
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
     }
@@ -391,7 +389,7 @@ class MyStromConnector
     
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
-            $response = $this->browser->get($url);
+            $response = $this->client->request('GET', $url);
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;
@@ -407,10 +405,14 @@ class MyStromConnector
     private function postMyStrom($device, $reqUrl, $payload)
     {
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
-        $headers = [];
-        $response = $this->browser->post($url, $headers, http_build_query([$payload]));
         try {
-            $response = $this->browser->post($url, $headers, $payload);
+            $response = $this->client->request(
+                    'POST',
+                    $url,
+                    [
+                        'body' => $payload
+                    ]
+                );
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;
@@ -529,7 +531,7 @@ class MyStromConnector
         if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
             $status = $this->getStatus($deviceConf);
             if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
-                // currently turned on witch substantial power flow
+                // currently turned on with substantial power flow
                 $config = $this->getConfig($deviceConf['ip']);
                 $carId = $config['carTimerData']['carId'];
                 $this->ecar->stopCharging($carId);

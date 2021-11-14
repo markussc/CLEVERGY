@@ -2,8 +2,7 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
-
+use Doctrine\ORM\EntityManagerInterface;
 use Nesk\Puphpeteer\Puppeteer;
 use App\Entity\Settings;
 use ModbusTcpClient\Network\BinaryStreamConnection;
@@ -48,7 +47,7 @@ class WemConnector
     const MODBUSTCP_HC1 = 41108;
     const MODBUSTCP_HC2 = 41208;
 
-    public function __construct(EntityManager $em, Array $connectors)
+    public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
         if (array_key_exists('wem', $connectors)) {

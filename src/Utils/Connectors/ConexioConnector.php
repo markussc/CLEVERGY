@@ -2,7 +2,7 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Connector to retrieve data from the conexio200 web modul (used by Soltop for solar-thermical systems)
@@ -17,7 +17,7 @@ class ConexioConnector
     protected $basePath;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
     {
         $this->em = $em;
         $this->browser = $browser;

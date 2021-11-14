@@ -2,7 +2,8 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from the Siemens Logo7 and Logo8 modules, using LogoControl as intermediate webservice (see www.frickelzeugs.de/logocontrol/ )
@@ -12,14 +13,14 @@ use Doctrine\ORM\EntityManager;
 class LogoControlConnector
 {
     protected $em;
-    protected $browser;
+    protected $client;
     protected $basePath;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->connectors = $connectors;
         $this->ip = null;
         $this->basePath = '';
@@ -53,10 +54,10 @@ class LogoControlConnector
     {
         try {
         $url = $this->basePath . '/rest/devices';
-        $response = $this->browser->get($url);
+        $response = $this->client->request('GET', $url);
         $statusCode = $response->getStatusCode();
         if ($statusCode == 401) {
-            $response = $this->browser->get($url)->getContent();
+            $response = $this->client->get('GET', $url)->getContent();
         } else {
             $response = $response->getContent();
         }

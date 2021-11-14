@@ -128,11 +128,7 @@ class MobileAlertsConnector
         $data = [];
         $this->basePath = 'https://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
         try {
-            $response = $this->client->request(
-                'GET',
-                $this->basePath . $this->connectors['mobilealerts']['phoneid'],
-                []
-            );
+            $response = $this->client->request('GET', $this->basePath . $this->connectors['mobilealerts']['phoneid']);
         } catch (\Exception $e) {
             return $data;
         }

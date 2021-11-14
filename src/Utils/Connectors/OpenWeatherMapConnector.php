@@ -3,7 +3,7 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\OpenWeatherMapDataStore;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  *
@@ -15,7 +15,7 @@ class OpenWeatherMapConnector
     protected $browser;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
     {
         $this->em = $em;
         $this->browser = $browser;

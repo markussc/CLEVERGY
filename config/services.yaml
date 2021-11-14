@@ -51,35 +51,35 @@ services:
             $energyLowRate: "%energy_low_rate%"
             $minInsideTemp: "%min_inside_temp%"
             $connectors: "%connectors%"
-
     App\Utils\Connectors\:
         resource: '../src/Utils/Connectors'
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
             $browser: "@buzz"
             $connectors: "%connectors%"
-
+    App\Utils\Connectors\LogoControlConnector:
+        public: true
+        arguments:
+            $connectors: "%connectors%"
+    App\Utils\Connectors\ChromecastConnector:
+        public: true
+        arguments:
+            $connectors: "%connectors%"
     App\Utils\Connectors\MyStromConnector:
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
-            $browser: "@buzz"
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
-
     App\Utils\Connectors\ShellyConnector:
         public: true
         arguments:
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
-
     App\Utils\Connectors\NetatmoConnector:
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
             $connectors: "%connectors%"
     App\Utils\Connectors\MobileAlertsConnector:
         public: true
@@ -88,12 +88,10 @@ services:
     App\Utils\Connectors\WemConnector:
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
             $connectors: "%connectors%"
     App\Utils\Connectors\EcarConnector:
         public: true
         arguments:
-            $em: "@doctrine.orm.entity_manager"
             $connectors: "%connectors%"
     App\Utils\Connectors\GardenaConnector:
         public: true

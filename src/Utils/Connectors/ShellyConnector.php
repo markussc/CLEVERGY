@@ -17,7 +17,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class ShellyConnector
 {
     protected $em;
-    protected $browser;
     private $client;
     private $baseUrl;
     private $server;
@@ -487,10 +486,7 @@ class ShellyConnector
 
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
-            $response = $this->client->request(
-                'GET',
-                $url
-            );
+            $response = $this->client->request('GET', $url);
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;

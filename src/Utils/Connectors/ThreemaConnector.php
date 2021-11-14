@@ -2,7 +2,7 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  *
@@ -14,7 +14,7 @@ class ThreemaConnector
     protected $browser;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
     {
         $this->em = $em;
         $this->browser = $browser;
