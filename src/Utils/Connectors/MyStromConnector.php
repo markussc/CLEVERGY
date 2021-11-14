@@ -5,6 +5,7 @@ namespace App\Utils\Connectors;
 use Doctrine\ORM\EntityManager;
 use App\Entity\Settings;
 use App\Entity\MyStromDataStore;
+use App\Utils\Connectors\EcarConnector;
 
 /**
  * Connector to retrieve data from MyStrom devices
@@ -16,12 +17,14 @@ class MyStromConnector
 {
     protected $em;
     protected $browser;
+    protected $ecar;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManager $em, \Buzz\Browser $browser, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->browser = $browser;
+        $this->ecar = $ecar;
         $this->connectors = $connectors;
         // set timeout for buzz browser client
         $this->browser->getClient()->setTimeout(3);
@@ -334,6 +337,10 @@ class MyStromConnector
 
     private function setOff($device)
     {
+        $ok = $this->disableCarCharger($device, false);
+        if (!$ok) {
+            return false;
+        }
         $r = $this->queryMyStrom($device, 'off');
         if (!empty($r)) {
             // get the current (new) status and store to database
@@ -507,5 +514,24 @@ class MyStromConnector
         $config['percent'] = intval($timerConf[2]);
         $device->setConfig($config);
         $this->em->flush($device);
+    }
+
+    // if this is a carCharger which is currently charging, turn it off first
+    private function disableCarCharger($deviceConf)
+    {
+        $retVal = true;
+        if (array_key_exists('carTimer', $deviceConf)) {
+            $status = $this->getStatus($deviceConf);
+            if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
+                // currently turned on witch substantial power flow
+                $config = $this->getConfig($deviceConf['ip']);
+                $carId = $config['carTimerData']['carId'];
+                $this->ecar->stopCharging($carId);
+                // we are trying to stop charging, we therefore do not allow immediate switch-off
+                $retVal = false;
+            }
+        }
+
+        return $retVal;
     }
 }

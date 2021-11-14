@@ -4,7 +4,6 @@ namespace App\Utils\Connectors;
 
 use App\Utils\Connectors\WeConnectIdConnector;
 use App\Utils\Connectors\SmartFoxConnector;
-use App\Utils\Connectors\MyStromConnector;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -16,14 +15,12 @@ class EcarConnector
 {
     protected $em;
     protected $smartfox;
-    protected $mystrom;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, SmartFoxConnector $smartfox, MyStromConnector $mystrom, Array $connectors)
+    public function __construct(EntityManagerInterface $em, SmartFoxConnector $smartfox, Array $connectors)
     {
         $this->em = $em;
         $this->smartfox = $smartfox;
-        $this->mystrom = $mystrom;
         $this->connectors = $connectors;
     }
 
@@ -87,11 +84,10 @@ class EcarConnector
         return $this->em->getRepository('App:EcarDataStore')->getLatest($carId);
     }
 
-    public function checkHighPriority($swDev, $energyLowRate)
+    public function checkHighPriority($switchDevice, $energyLowRate)
     {
         $priority = false;
         // get the current percentage for the car
-        $switchDevice = $this->mystrom->getConfig($swDev['ip']);
         $latestEcar = $this->getOneLatest($switchDevice['carTimerData']['connectorId']);
         if (is_array($latestEcar) && array_key_exists('data', $latestEcar) && array_key_exists('soc', $latestEcar['data'])) {
             $currentPercent = $latestEcar['data']['soc'];
@@ -138,5 +134,25 @@ class EcarConnector
         }
 
         return $priority;
+    }
+
+    function startCharging($id)
+    {
+        if ($this->carAvailable() && array_key_exists($id, $this->connectors['ecar']) && array_key_exists('type', $this->connectors['ecar'][$id])) {
+            if ($this->connectors['ecar'][$id]['type'] == 'id3') {
+                $weConnectId = new WeConnectIdConnector($this->connectors['ecar'][$id]);
+                $data = $weConnectId->startCharging();
+            }
+        }
+    }
+
+    function stopCharging($id)
+    {
+        if ($this->carAvailable() && array_key_exists($id, $this->connectors['ecar']) && array_key_exists('type', $this->connectors['ecar'][$id])) {
+            if ($this->connectors['ecar'][$id]['type'] == 'id3') {
+                $weConnectId = new WeConnectIdConnector($this->connectors['ecar'][$id]);
+                $data = $weConnectId->stopCharging();
+            }
+        }
     }
 }
