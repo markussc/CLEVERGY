@@ -325,24 +325,30 @@ class MyStromConnector
     private function setOn($device)
     {
         $r = $this->queryMyStrom($device, 'on');
-        if (!empty($r)) {
+        if (false !== $r) {
             // get the current (new) status and store to database
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
+            $this->enableCarCharger($device);
             return true;
         } else {
             return false;
         }
     }
 
-    private function setOff($device)
+    private function setOff($device, $recursionDepth = 0)
     {
-        $ok = $this->disableCarCharger($device, false);
-        if (!$ok) {
+        $ok = $this->disableCarCharger($device);
+        if ($recursionDepth < 10 && !$ok) {
+            // car is still charging, we do not want to forcibly turn off the switch yet (we wait max. 100 seconds for it to complete)
+            // try again within 10 seconds
+            // wait 10 seconds before continuation
+            sleep(10);
+            $this->setOff($device, $recursionDepth++);
             return false;
         }
         $r = $this->queryMyStrom($device, 'off');
-        if (!empty($r)) {
+        if (false !== $r) {
             // get the current (new) status and store to database
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
@@ -520,7 +526,7 @@ class MyStromConnector
     private function disableCarCharger($deviceConf)
     {
         $retVal = true;
-        if (array_key_exists('carTimer', $deviceConf)) {
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
             $status = $this->getStatus($deviceConf);
             if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
                 // currently turned on witch substantial power flow
@@ -533,5 +539,17 @@ class MyStromConnector
         }
 
         return $retVal;
+    }
+
+    private function enableCarCharger($deviceConf)
+    {
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
+            // turn on the car charcher
+            $config = $this->getConfig($deviceConf['ip']);
+            $carId = $config['carTimerData']['carId'];
+            $this->ecar->startCharging($carId);
+        }
+
+        return true;
     }
 }
