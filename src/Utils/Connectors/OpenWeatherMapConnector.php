@@ -4,6 +4,7 @@ namespace App\Utils\Connectors;
 
 use App\Entity\OpenWeatherMapDataStore;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  *
@@ -12,13 +13,13 @@ use Doctrine\ORM\EntityManagerInterface;
 class OpenWeatherMapConnector
 {
     protected $em;
-    protected $browser;
+    protected $client;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->config = $connectors['openweathermap'];
     }
 
@@ -46,7 +47,7 @@ class OpenWeatherMapConnector
         }
         // we want to store a new forecast not more frequently than every 10 minutes
         if ($force || $diff > 15) {
-            $dataJson = $this->browser->get('http://api.openweathermap.org/data/2.5/weather?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
+            $dataJson = $this->client->request('GET', 'http://api.openweathermap.org/data/2.5/weather?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
             $dataArr = json_decode($dataJson, true);
             $forecast = new OpenWeatherMapDataStore();
             $forecast->setTimestamp(new \DateTime());
@@ -71,7 +72,7 @@ class OpenWeatherMapConnector
         }
         // we want to store a new forecast not more frequently than every 10 minutes
         if ($force || $diff > 15) {
-            $dataJson = $this->browser->get('http://api.openweathermap.org/data/2.5/forecast?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
+            $dataJson = $this->client->request('GET', 'http://api.openweathermap.org/data/2.5/forecast?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
             $dataArr = json_decode($dataJson, true);
             $forecast = new OpenWeatherMapDataStore();
             $forecast->setTimestamp(new \DateTime());

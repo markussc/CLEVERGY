@@ -38,7 +38,7 @@ services:
 
     App\Utils\:
         resource: '../src/Utils'
-        public: true
+        public: false
         arguments:
             $energyLowRate: "%energy_low_rate%"
     App\Utils\PriorityManager:
@@ -53,50 +53,31 @@ services:
             $connectors: "%connectors%"
     App\Utils\Connectors\:
         resource: '../src/Utils/Connectors'
-        public: true
+        public: false
+        arguments:
+            $connectors: "%connectors%"
+    App\Utils\Connectors\EdiMaxConnector:
+        public: false
         arguments:
             $browser: "@buzz"
             $connectors: "%connectors%"
-    App\Utils\Connectors\LogoControlConnector:
-        public: true
+    App\Utils\Connectors\ConexioConnector:
+        public: false
         arguments:
-            $connectors: "%connectors%"
-    App\Utils\Connectors\ChromecastConnector:
-        public: true
-        arguments:
+            $browser: "@buzz"
             $connectors: "%connectors%"
     App\Utils\Connectors\MyStromConnector:
-        public: true
+        public: false
         arguments:
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
     App\Utils\Connectors\ShellyConnector:
-        public: true
+        public: false
         arguments:
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
-    App\Utils\Connectors\NetatmoConnector:
-        public: true
-        arguments:
-            $connectors: "%connectors%"
-    App\Utils\Connectors\MobileAlertsConnector:
-        public: true
-        arguments:
-            $connectors: "%connectors%"
-    App\Utils\Connectors\WemConnector:
-        public: true
-        arguments:
-            $connectors: "%connectors%"
-    App\Utils\Connectors\EcarConnector:
-        public: true
-        arguments:
-            $connectors: "%connectors%"
-    App\Utils\Connectors\GardenaConnector:
-        public: true
-        arguments:
-            $connectors: "%connectors%"
     App\Utils\Connectors\WeConnectIdConnector:
-        public: true
+        public: false
 

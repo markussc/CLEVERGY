@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from the SmartFox device
@@ -13,15 +14,15 @@ use Doctrine\ORM\EntityManagerInterface;
 class SmartFoxConnector
 {
     protected $em;
-    protected $browser;
+    protected $client;
     protected $basePath;
     protected $ip;
     protected $version;
 
-    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->ip = null;
         $this->version = null;
         if (array_key_exists('smartfox', $connectors)) {
@@ -58,7 +59,7 @@ class SmartFoxConnector
 
     private function getFromREG9TE()
     {
-        $arr = json_decode($this->browser->get($this->basePath . '/all')->getContent(), true);
+        $arr = json_decode($this->client->request('GET', $this->basePath . '/all')->getContent(), true);
         $arr['day_energy_in'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in');
         $arr['day_energy_out'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out');
         $arr['energyToday'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip);
@@ -68,7 +69,7 @@ class SmartFoxConnector
 
     private function getFromPRO()
     {
-        $xmlData = $this->browser->get($this->basePath . '/values.xml')->getContent();
+        $xmlData = $this->client->request('GET', $this->basePath . '/values.xml')->getContent();
         $xml = new \SimpleXMLElement($xmlData);
         $data = [];
         foreach ($xml->children() as $value) {

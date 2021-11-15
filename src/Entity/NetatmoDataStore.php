@@ -51,7 +51,7 @@ class NetatmoDataStore extends DataStoreBase
     {
         $data = json_decode($this->getData(), true);
         foreach ($data['body']['devices'][0]['modules'] as $module) {
-            if ($module['_id'] == $id) {
+            if ($module['_id'] == $id && array_key_exists('dashboard_data', $module)) {
                 return [
                     'name' => $module['module_name'],
                     'temp' => $module['dashboard_data']['Temperature'],
@@ -66,11 +66,13 @@ class NetatmoDataStore extends DataStoreBase
         $data = json_decode($this->getData(), true);
         $modulesData = [];
         foreach ($data['body']['devices'][0]['modules'] as $module) {
-            $modulesData[$module['_id']] = [
-                'name' => $module['module_name'],
-                'temp' => $module['dashboard_data']['Temperature'],
-                'humidity' => $module['dashboard_data']['Humidity'],
-            ];
+            if (array_key_exists('dashboard_data', $module)) {
+                $modulesData[$module['_id']] = [
+                    'name' => $module['module_name'],
+                    'temp' => $module['dashboard_data']['Temperature'],
+                    'humidity' => $module['dashboard_data']['Humidity'],
+                ];
+            }
         }
 
         return $modulesData;

@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  *
@@ -11,13 +12,13 @@ use Doctrine\ORM\EntityManagerInterface;
 class ThreemaConnector
 {
     protected $em;
-    protected $browser;
+    protected $client;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
         $this->connectors = $connectors;
         if ($this->getAvailable()) {
             $this->config = $connectors['threema'];
@@ -43,10 +44,12 @@ class ThreemaConnector
             'secret' => $this->config['secret'],
         ];
 
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded',
-        ];
-
-        $response = $this->browser->post($this->apiSendSimple, $headers, http_build_query($payload));
+        $response = $this->client->request(
+                'POST',
+                $this->apiSendSimple,
+                [
+                    'body' => $payload
+                ]
+            );
     }
 }
