@@ -167,6 +167,23 @@ class WemConnector
         $this->status = self::AUTHENTICATED;
     }
 
+    private function getSpecialistDefault()
+    {
+        $data = [];
+        if ($this->status !== self::AUTHENTICATED) {
+            $this->authenticate();
+        }
+
+        // click "Anlagen" button in top navigation
+        $this->page->click("#ctl00_RMTopMenu a.rmLink");
+        $this->page->waitForSelector("#ctl00_SubMenuControl1_subMenu");
+        // click "Fachmann" in sub navigation
+        $this->page->click("#ctl00_SubMenuControl1_subMenu li:nth-of-type(4)>a");
+        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl15_ctl00_lblValue");
+
+        return $data;
+    }
+
     public function close()
     {
         if ($this->browser !== null) {
@@ -204,15 +221,19 @@ class WemConnector
         if ($this->status === self::UNAUTHENTICATED) {
            $this->authenticate();
         }
-        sleep(10);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001707000000004E400074240300110104&readdata=True');
+        sleep(5);
+        $this->getSpecialistDefault();
+        // go to Wärmepumpe section and readout the current rwndrnd value (ASP.NET protection system)
+        $rwndrnd = (explode("=", $this->page->evaluate('document.querySelector(".rwWindowContent > iframe:nth-child(1)").src'))[1]);
+        sleep(5);
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001707000000004E400074240300110104&readdata=True&rwndrnd=' . $rwndrnd);
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
-        $this->currentPage = "command";
         $this->page->evaluate(
             '(() => {
                     document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
                 })()'
         );
+        sleep(5);
         $this->page->click("#ctl00_DialogContent_BtnSave");
     }
 
