@@ -24,15 +24,12 @@ class ShellyConnector
     private $authkey;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, \Buzz\Browser $browser,Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->client = $client;
         $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
-        $this->browser = $browser;
         $this->connectors = $connectors;
-        // set timeout for buzz browser client
-        $this->browser->getClient()->setTimeout(3);
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
         if (array_key_exists('shellycloud', $connectors)) {
@@ -52,7 +49,7 @@ class ShellyConnector
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
                 $result = $this->getOneLatest($device);
-                if (array_key_exists('power', $result['status'])) {
+                if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
                     $connectorId = $device['ip'].'_'.$device['port'];
                     $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('today'), new \DateTime('now'));
                     $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
@@ -290,7 +287,7 @@ class ShellyConnector
         return false;
     }
 
-    private function getStatus($device)
+    public function getStatus($device)
     {
         $r = $this->queryShelly($device, 'status');
         if (!empty($r) && $device['type'] == 'roller') {
@@ -372,7 +369,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'on');
         if (!empty($r)) {
-            $this->storeStatus($device, 1);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -383,7 +381,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'off');
         if (!empty($r)) {
-            $this->storeStatus($device, 0);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -394,7 +393,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'open');
         if (!empty($r)) {
-            $this->storeStatus($device, 4);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -405,7 +405,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'close');
         if (!empty($r)) {
-            $this->storeStatus($device, 5);
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -416,6 +417,8 @@ class ShellyConnector
     {
         $r = $this->queryShelly($device, 'stop');
         if (!empty($r)) {
+            $status = $this->getStatus($device);
+            $this->storeStatus($device, $status);
             return true;
         } else {
             return false;
@@ -441,11 +444,11 @@ class ShellyConnector
                     break;
                 case 'configureOpen':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
-                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_open_url='.$triggerUrl.'/2';
+                    $reqUrl = 'settings/actions?index=0&name=roller_close_url&enabled=true&urls[]='.$triggerUrl.'/4';
                     break;
                 case 'configureClose':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_'.$device['port'];
-                    $reqUrl = 'settings/roller/'.$device['port'].'?roller_close_url='.$triggerUrl.'/3';
+                    $reqUrl = 'settings/actions?index=0&name=roller_close_url&enabled=true&urls[]='.$triggerUrl.'/5';
                     break;
             }
         } elseif ($device['type'] == 'relay') {
@@ -471,28 +474,23 @@ class ShellyConnector
                     } else {
                         return false;
                     }
-                case 'configureDark':
+                case 'configureOpen':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?dark_url='.$triggerUrl;
-                    break;
-                case 'configureTwilight':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?twilight_url='.$triggerUrl;
-                    break;
-                case 'configureDaylight':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
-                    $reqUrl = 'settings?open_url='.$triggerUrl;
+                    $reqUrl = 'settings/actions?index=0&name=open_url&enabled=true&urls[]='.$triggerUrl;
                     break;
                 case 'configureClose':
                     $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
-                    $reqUrl = 'settings?close_url='.$triggerUrl;
+                    $reqUrl = 'settings/actions?index=0&name=close_url&enabled=true&urls[]='.$triggerUrl;
                     break;
             }
         }
 
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
-            $response = $this->browser->get($url);
+            $response = $this->client->request(
+                'GET',
+                $url
+            );
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;

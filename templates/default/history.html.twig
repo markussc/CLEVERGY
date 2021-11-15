@@ -2,9 +2,13 @@
    
 {% block body %}
 {% if history['smartfox']|default(false) %}
+<style>
+    .tableFixHead          { overflow: auto; height:400px; max-height:80%;}
+    .tableFixHead thead th { position: sticky; top: 0; z-index: 1; background:silver;}
+</style>
 <div class="small-12 columns">
     <h4>{% trans %}label.energy{% endtrans %}</h4>
-    <table>
+    <table class="scroll tableFixHead">
         <thead>
             <tr>
                 <th></th>
@@ -20,12 +24,16 @@
         <tbody>
             {% for interval in history['intervals'] %}
             {% set highRateInAbs = (history['smartfox']['energy_in_' ~ interval ~ '_highrate']/1000)|round(1) %}
-            {% set totalIn = (history['smartfox']['energy_in_' ~ interval]/1000)|round(0)|replace({0: 0.001}) %}
-            {% set highRateInPercentage = 100/totalIn*highRateInAbs %}
+            {% set totalIn = (history['smartfox']['energy_in_' ~ interval]/1000)|round(0) %}
+            {% if totalIn > 0 %}
+                {% set highRateInPercentage = 100/totalIn*highRateInAbs %}
+            {% else %}
+                {% set highRateInPercentage = 0 %}
+            {% endif %}
             <tr>
                 <th>{{ ('label.' ~ interval) |trans }}</th>
                 <td>{{ (history['smartfox']['pv_' ~ interval]/1000)|round(1) }} kWh</td>
-                <td>{{ totalIn }} kWh{% if history['smartfox']['energy_in_' ~ interval ~ '_highrate']|default(false) %} ({% trans %}label.highrate{% endtrans %}: {{ highRateInAbs }} kWh = {{ highRateInPercentage|round }}%){% endif %}</td>
+                <td>{{ totalIn }} kWh{% if history['smartfox']['energy_in_' ~ interval ~ '_highrate']|default(false) %} ({% trans %}label.highrate{% endtrans %}: {{ highRateInAbs }} kWh = {{ highRateInPercentage|round }} %){% endif %}</td>
                 <td>{{ (history['smartfox']['energy_out_' ~ interval]/1000)|round(1) }} kWh</td>
                 <td>{{ ((history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
                 <td>{% if history['smartfox']['pv_' ~ interval] and history['smartfox']['pv_' ~ interval] >= history['smartfox']['energy_out_' ~ interval] %}{{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval]) / history['smartfox']['pv_' ~ interval] * 100) |round }} % ( = {{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh){% else %}---{% endif %}</td>
@@ -40,7 +48,7 @@
 {% if history['conexio']|default(false) %}
 <div class="small-12 columns">
     <h4>{% trans %}label.solarheat{% endtrans %}</h4>
-     <table>
+     <table class="scroll tableFixHead">
         <thead>
             <tr>
                 <th></th>

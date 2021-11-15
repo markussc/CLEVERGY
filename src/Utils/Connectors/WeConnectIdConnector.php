@@ -13,9 +13,11 @@ class WeConnectIdConnector
     private $username;
     private $password;
     private $carId;
+    private $energyLowRate;
 
-    public function __construct(Array $config = [])
+    public function __construct(Array $config = [], $energyLowRate = false)
     {
+        $this->energyLowRate = $energyLowRate;
         if (is_array($config) && array_key_exists('username', $config) && array_key_exists('password', $config) && array_key_exists('carId', $config)) {
             $this->username = $config['username'];
             $this->password = $config['password'];

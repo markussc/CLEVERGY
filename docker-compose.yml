@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   www:
@@ -6,6 +6,11 @@ services:
     container_name: www_${INSTANCENAME}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+    volumes:
+      - type: bind
+        source: ./config/parameters.yaml
+        target: /www/config/parameters.yaml
+      - ./var/sessions:/www/var/sessions
     env_file:
       - ./.env.local
     environment:

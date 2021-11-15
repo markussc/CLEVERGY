@@ -83,6 +83,7 @@ parameters:
             -
                 name: my fancy car
                 type: id3 # currently only VW ID3 supported
+                capacity: 58 # battery capacity in kWh
                 username: <<myVWusername>>
                 password: <<myVWpassword>>
         edimax:
@@ -91,6 +92,7 @@ parameters:
                 ip: '192.168.55.2'
                 username: admin
                 password: 1234
+                priority: 0
                 nominalPower: 500 # max. expected power in Watt consumed by the device
                 on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
                     -
@@ -122,6 +124,8 @@ parameters:
                 ip: '192.168.55.3'
                 nominalPower: 100
                 #other parameters such as lowRateOn and forceOn identical to edimax
+                type: carTimer # type for e-car scenario (currently only supported with mystrom switches)
+                priority: 10
             -
                 ip: '192.168.55.6'
                 name: 'presence'
@@ -132,6 +136,7 @@ parameters:
                 ip: 10.12.1.71
                 port: 0
                 type: roller # other types are "relay" and "door"
+                priority: 5 # does make sense only for relay type
                 nominalPower: 100
                 minWaitTime: 120 # in minutes
                 autoIntervals: # several intervals for auto control are possible

@@ -7,7 +7,10 @@ use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
+use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
+use App\Utils\Connectors\EcarConnector;
+use App\Utils\PriorityManager;
 use Doctrine\Common\Persistence\ObjectManager;
 
 /**
@@ -17,23 +20,29 @@ use Doctrine\Common\Persistence\ObjectManager;
 class ConditionChecker
 {
     protected $em;
+    protected $prio;
+    protected $smartfox;
     protected $edimax;
     protected $mobilealerts;
     protected $openweathermap;
     protected $mystrom;
     protected $shelly;
     protected $pcoWeb;
+    protected $ecar;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, $energyLowRate)
+    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
     {
         $this->em = $em;
+        $this->prio = $prio;
+        $this->smartfox = $smartfox;
         $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
         $this->openweathermap = $openweathermap;
         $this->mystrom = $mystrom;
         $this->shelly = $shelly;
         $this->pcoweb = $pcoweb;
+        $this->ecar = $ecar;
         $this->energyLowRate = $energyLowRate;
         $this->deviceClass = null;
         $this->ip = null;
@@ -70,6 +79,13 @@ class ConditionChecker
             return true;
         }
 
+        // check for forceOn condition for carTimer
+        if ($type == "forceOn" && array_key_exists('carTimerData', $conf) && is_array($conf['carTimerData']) && array_key_exists('percent', $conf['carTimerData'])) {
+            if ($this->ecar->checkHighPriority($conf, $this->checkEnergyLowRate())) {
+                return true;
+            }
+        }
+
         // check for minimum runtime conditions during low energy rate and in first night half (before midnight)
         $now = new \DateTime("now");
         if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
@@ -96,11 +112,22 @@ class ConditionChecker
                 return true;
             }
         }
+        // check for prioritized forceOn
+        if ($type == 'forceOn' && $this->checkPriorityForceOn($this->deviceClass, $conf)) {
+            // there is a device with lower priority ready to be stopped
+            return true;
+        }
+        // check forceOff
         if ($type == 'forceOff' && isset($conf['forceOff'])) {
             if ($this->processConditions($conf['forceOff'])) {
 
                 return true;
             }
+        }
+        // check for prioritized forceOff
+        if ($type == 'forceOn' && !$this->checkPriorityForceOff($this->deviceClass, $conf)) {
+            // there is a device with higher priority ready to be started
+            return true;
         }
         if ($type == 'forceOpen' && isset($conf['forceOpen'])) {
             if ($this->processConditions($conf['forceOpen'])) {
@@ -327,5 +354,69 @@ class ConditionChecker
         }
 
         return $fulfilled;
+    }
+
+    /*
+     * returns true, if we have priority (i.e. no force off required)
+     */
+    private function checkPriorityForceOff($deviceClass, $device)
+    {
+        // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
+        if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
+            $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+            // check if device is currently running
+            $status = [];
+            if ($deviceClass == "EdiMax") {
+                $status = $this->edimax->getStatus($device);
+            } elseif ($deviceClass == "MyStrom") {
+                $status = $this->mystrom->getStatus($device);
+            } elseif ($deviceClass == "Shelly") {
+                $status = $this->shelly->getStatus($device);
+            }
+            // check if we should turn off or prevent to turn on (forceOff)
+            if (array_key_exists('val', $status) && $status['val'] && array_key_exists('power', $status)) {
+                // currently turned on, calculate using effective current power used by the device
+                $maxNominalPower = -1*($currentAveragePower - $status['power']);
+            } elseif (array_key_exists('val', $status) && $status['val']) {
+                // currently turned on, calculate using 90% of nominalPower
+                $maxNominalPower = -1*($currentAveragePower - 0.9 * $device['nominalPower']);
+            } else {
+                // currently turned off, check with current averagePower
+                $maxNominalPower = -1*($currentAveragePower);
+            }
+            return !$this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
+        } else {
+            // we do not have any priority set, so we have priority
+            return true;
+        }
+    }
+
+    /*
+     * returns true, if we have priority (i.e. forceOn required)
+     */
+    private function checkPriorityForceOn($deviceClass, $device)
+    {
+        // check if there is a device with lower priority to be turned off first
+        if (array_key_exists('priority', $device) && $device['priority'] > 0 && array_key_exists('nominalPower', $device)) {
+            // check if device is currently running
+            $status = [];
+            if ($deviceClass == "EdiMax") {
+                $status = $this->edimax->getStatus($device);
+            } elseif ($deviceClass == "MyStrom") {
+                $status = $this->mystrom->getStatus($device);
+            } elseif ($deviceClass == "Shelly") {
+                $status = $this->shelly->getStatus($device);
+            }
+            if (array_key_exists('val', $status) && $status['val']) {
+                $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+                if ($currentAveragePower < $device['nominalPower']/4) {
+                    // currently running and only small part of nominalPower is currently imported
+                    // check if there is another device with lower priority that could be turned off first
+                    return $this->prio->checkStoppingDevice($device['priority']-1);
+                }
+            }
+        }
+        // we do not have any priority set or not currently running, so we have no priority
+        return false;
     }
 }

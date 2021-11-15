@@ -1036,12 +1036,7 @@ class LogicProcessor
     public function initEdimax()
     {
         foreach ($this->edimax->getAll() as $edimax) {
-            $edimaxEntity = new EdiMaxDataStore();
-            $edimaxEntity->setTimestamp(new \DateTime('now'));
-            $edimaxEntity->setConnectorId($edimax['ip']);
-            $edimaxEntity->setData($edimax['status']['val']);
-            $this->em->persist($edimaxEntity);
-            $this->em->flush();
+            $this->edimax->storeStatus($edimax, $edimax['status']['val']);
         }
     }
 
@@ -1051,27 +1046,13 @@ class LogicProcessor
             $device = $this->mystrom->getConfig($deviceId);
             if ($device) {
                 $mystrom = $this->mystrom->getOne($device);
-                $mystromEntity = new MyStromDataStore();
-                $mystromEntity->setTimestamp(new \DateTime('now'));
-                $mystromEntity->setConnectorId($mystrom['ip']);
-                $mystromEntity->setData($mystrom['status']['val']);
-                if (array_key_exists('power', $mystrom['status'])) {
-                    $mystromEntity->setExtendedData($mystrom['status']);
-                }
-                $this->em->persist($mystromEntity);
+                $this->mystrom->storeStatus($mystrom, $mystrom['status']);
+            }
+        } else {
+            foreach ($this->mystrom->getAll() as $mystrom) {
+                $this->mystrom->storeStatus($mystrom, $mystrom['status']);
             }
         }
-        foreach ($this->mystrom->getAll() as $mystrom) {
-            $mystromEntity = new MyStromDataStore();
-            $mystromEntity->setTimestamp(new \DateTime('now'));
-            $mystromEntity->setConnectorId($mystrom['ip']);
-            $mystromEntity->setData($mystrom['status']['val']);
-            if (array_key_exists('power', $mystrom['status'])) {
-                $mystromEntity->setExtendedData($mystrom['status']);
-            }
-            $this->em->persist($mystromEntity);
-        }
-        $this->em->flush();
     }
 
     public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port
@@ -1177,12 +1158,14 @@ class LogicProcessor
     {
         if ($this->pcoweb->getIp()) {
             $pcoweb = $this->pcoweb->getAll();
-            $pcowebEntity = new PcoWebDataStore();
-            $pcowebEntity->setTimestamp(new \DateTime('now'));
-            $pcowebEntity->setConnectorId($this->pcoweb->getIp());
-            $pcowebEntity->setData($pcoweb);
-            $this->em->persist($pcowebEntity);
-            $this->em->flush();
+            if ($pcoweb !== false) {
+                $pcowebEntity = new PcoWebDataStore();
+                $pcowebEntity->setTimestamp(new \DateTime('now'));
+                $pcowebEntity->setConnectorId($this->pcoweb->getIp());
+                $pcowebEntity->setData($pcoweb);
+                $this->em->persist($pcowebEntity);
+                $this->em->flush();
+            }
         }
     }
 
@@ -1240,12 +1223,14 @@ class LogicProcessor
      public function initEcar()
     {
         foreach ($this->ecar->getAll() as $ecar) {
-            $ecarEntity = new EcarDataStore();
-            $ecarEntity->setTimestamp(new \DateTime('now'));
-            $ecarEntity->setConnectorId($ecar['carId']);
-            $ecarEntity->setData($ecar);
-            $this->em->persist($ecarEntity);
-            $this->em->flush();
+            if (is_array($ecar) && array_key_exists('data', $ecar) && is_array($ecar['data']) && array_key_exists('soc', $ecar['data']) && $ecar['data']['soc'] != '') {
+                $ecarEntity = new EcarDataStore();
+                $ecarEntity->setTimestamp(new \DateTime('now'));
+                $ecarEntity->setConnectorId($ecar['carId']);
+                $ecarEntity->setData($ecar);
+                $this->em->persist($ecarEntity);
+                $this->em->flush();
+            }
         }
     }
 
@@ -1276,9 +1261,17 @@ class LogicProcessor
         }
     }
 
-    public function configureDevice($deviceId)
+    public function configureDevices()
     {
-        // currently only required and available for Shelly Door-Sensors
-        $this->shelly->executeCommand($deviceId, 100);
+        // currently only required and available for Shelly Sensors
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $key => $device) {
+                try {
+                    $this->shelly->executeCommand($key, 100);
+                } catch (\Exception $e) {
+                    // do nothing
+                }
+            }
+        }
     }
 }

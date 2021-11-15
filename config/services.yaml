@@ -41,7 +41,10 @@ services:
         public: true
         arguments:
             $energyLowRate: "%energy_low_rate%"
-
+    App\Utils\PriorityManager:
+        public: false
+        arguments:
+            $connectors: "%connectors%"
     App\Utils\LogicProcessor:
         public: true
         arguments:
@@ -69,7 +72,6 @@ services:
     App\Utils\Connectors\ShellyConnector:
         public: true
         arguments:
-            $browser: "@buzz"
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
