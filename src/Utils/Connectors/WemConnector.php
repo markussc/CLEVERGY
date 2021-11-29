@@ -226,7 +226,7 @@ class WemConnector
         // go to Wärmepumpe section and readout the current rwndrnd value (ASP.NET protection system)
         $rwndrnd = (explode("=", $this->page->evaluate('document.querySelector(".rwWindowContent > iframe:nth-child(1)").src'))[1]);
         sleep(5);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=64001707000000000A400074240300110104&readdata=True&rwndrnd=' . $rwndrnd);
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640017070000000032400074240300110104&readdata=True&rwndrnd=' . $rwndrnd);
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
