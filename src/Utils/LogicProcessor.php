@@ -869,7 +869,7 @@ class LogicProcessor
             if ($hc2TempDiff > 5) {
                 $minPpPower = min(100,  $ppLevel + 5);
             } elseif ($hc2TempDiff > 3) {
-                $minPpPower = min(100, $ppLevel + 2);
+                $minPpPower = min(100, $ppLevel + 3);
             } elseif ($hc2TempDiff > 1) {
                 $minPpPower = $ppLevel;
             } elseif ($hc2TempDiff <= 0) {
@@ -1016,7 +1016,7 @@ class LogicProcessor
 
         // set ppPower
         $newPpPower = min(100, max($minPpPower, $ppPower));
-        if ($doWemPortal && $ppLevel != 0 && ($newPpPower > $ppLevel + 3 || $newPpPower < $ppLevel - 3)) {
+        if ($doWemPortal && $ppLevel != 0 && ($newPpPower >= $ppLevel + 3 || $newPpPower < $ppLevel - 3)) {
             $log[] = "send ppPower command to device: " . $newPpPower;
             $this->wem->executeCommand('ppPower', $newPpPower);
         }
