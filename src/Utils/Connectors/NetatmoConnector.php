@@ -2,7 +2,7 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -20,7 +20,7 @@ class NetatmoConnector
     private $baseUrl;
     private $token;
 
-    public function __construct(EntityManager $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
         $this->connectors = $connectors;

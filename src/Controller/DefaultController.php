@@ -4,6 +4,19 @@ namespace App\Controller;
 
 use App\Entity\Settings;
 use App\Utils\LogicProcessor;
+use App\Utils\Connectors\ConexioConnector;
+use App\Utils\Connectors\EcarConnector;
+use App\Utils\Connectors\EdiMaxConnector;
+use App\Utils\Connectors\GardenaConnector;
+use App\Utils\Connectors\LogoControlConnector;
+use App\Utils\Connectors\MobileAlertsConnector;
+use App\Utils\Connectors\MyStromConnector;
+use App\Utils\Connectors\NetatmoConnector;
+use App\Utils\Connectors\OpenWeatherMapConnector;
+use App\Utils\Connectors\PcoWebConnector;
+use App\Utils\Connectors\ShellyConnector;
+use App\Utils\Connectors\SmartFoxConnector;
+use App\Utils\Connectors\WemConnector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +27,39 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class DefaultController extends Controller
 {
+    protected $edimax;
+
+    public function __construct(
+            EdiMaxConnector $edimax,
+            MyStromConnector $mystrom,
+            ShellyConnector $shelly,
+            SmartFoxConnector $smartfox, 
+            PcoWebConnector $pcoweb,
+            WemConnector $wem,
+            ConexioConnector $conexio,
+            GardenaConnector $gardena,
+            NetatmoConnector $netatmo,
+            MobileAlertsConnector $mobilealerts,
+            LogoControlConnector $logocontrol,
+            OpenWeatherMapConnector $openweather,
+            EcarConnector $ecar
+        )
+    {
+       $this->edimax = $edimax;
+       $this->mystrom = $mystrom;
+       $this->shelly = $shelly;
+       $this->smartfox = $smartfox;
+       $this->pcoweb = $pcoweb;
+       $this->wem = $wem;
+       $this->conexio = $conexio;
+       $this->gardena = $gardena;
+       $this->netatmo = $netatmo;
+       $this->mobilealerts = $mobilealerts;
+       $this->logocontrol = $logocontrol;
+       $this->openweather = $openweather;
+       $this->ecar = $ecar;
+    }
+
     /**
      * @Route("/", name="homepage")
      */
@@ -69,29 +115,29 @@ class DefaultController extends Controller
             $em = $this->getDoctrine()->getManager();
             // get current values
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-                $currentStat['smartFox'] = $this->get('App\Utils\Connectors\SmartFoxConnector')->getAllLatest();
+                $currentStat['smartFox'] = $this->smartfox->getAllLatest();
                 $currentStat['smartFoxChart'] = true;
-                $currentStat['smartFox_energy_mix'] = $em->getRepository('App:SmartFoxDataStore')->getEnergyMix($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), $this->getParameter('energy_low_rate'), new \DateTime('today'), new \DateTime('now'));
+                $currentStat['smartFox_energy_mix'] = $em->getRepository('App:SmartFoxDataStore')->getEnergyMix($this->smartfox->getIp(), $this->getParameter('energy_low_rate'), new \DateTime('today'), new \DateTime('now'));
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-                $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\PcoWebConnector')->getAllLatest();
+                $currentStat['pcoWeb'] = $this->pcoweb->getAllLatest();
             } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
-                $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\WemConnector')->getAllLatest(); // we store the wem data to the pcoWeb data structure for simplicity
+                $currentStat['pcoWeb'] = $this->wem->getAllLatest(); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-                $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAllLatest();
+                $currentStat['conexio'] = $this->conexio->getAllLatest();
             }
             if (array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
-                $currentStat['mobileAlerts'] = $this->get('App\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+                $currentStat['mobileAlerts'] = $this->mobilealerts->getAllLatest();
             }
             if (array_key_exists('openweathermap', $this->getParameter('connectors'))) {
-                $currentStat['openweathermap'] = $this->get('App\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+                $currentStat['openweathermap'] = $this->openweather->getAllLatest();
             }
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-                $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAllLatest();
+                $currentStat['logoControl'] = $this->logocontrol->getAllLatest();
             }
             if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
-                $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();
+                $currentStat['netatmo'] = $this->netatmo->getAllLatest();
             }
 
             // get history
@@ -103,21 +149,21 @@ class DefaultController extends Controller
                 $history['mobileAlerts'] = $mobileAlertsHistory;
             }
             if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
-                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistory($this->get('App\Utils\Connectors\NetatmoConnector')->getId(), $from, $to);
+                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistory($this->netatmo->getId(), $from, $to);
             }
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-                $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistory($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), $from, $to);
+                $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistory($this->smartfox->getIp(), $from, $to);
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistory($this->get('App\Utils\Connectors\PcoWebConnector')->getIp(), $from, $to);
+                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistory($this->pcoweb->getIp(), $from, $to);
             } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistory($this->get('App\Utils\Connectors\WemConnector')->getUsername(), $from, $to); // we store the wem data to the pcoWeb data structure for simplicity
+                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistory($this->wem->getUsername(), $from, $to); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-                $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistory($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $from, $to);
+                $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistory($this->conexio->getIp(), $from, $to);
             }
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-                $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistory($this->get('App\Utils\Connectors\LogoControlConnector')->getIp(), $from, $to);
+                $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistory($this->logocontrol->getIp(), $from, $to);
             }
             if (array_key_exists('ecar', $this->getParameter('connectors'))) {
                 foreach ($this->getParameter('connectors')['ecar'] as $ecar) {
@@ -169,28 +215,28 @@ class DefaultController extends Controller
         $command = json_decode($jsonCommand);
         switch ($command[0]) {
             case 'edimax':
-                return $this->get('App\Utils\Connectors\EdiMaxConnector')->executeCommand($command[1], $command[2]);
+                return $this->edimax->executeCommand($command[1], $command[2]);
             case 'mystrom':
-                return $this->get('App\Utils\Connectors\MyStromConnector')->executeCommand($command[1], $command[2]);
+                return $this->mystrom->executeCommand($command[1], $command[2]);
             case 'shelly':
-                return $this->get('App\Utils\Connectors\ShellyConnector')->executeCommand($command[1], $command[2]);
+                return $this->shelly->executeCommand($command[1], $command[2]);
             case 'pcoweb':
-                return $this->get('App\Utils\Connectors\PcoWebConnector')->executeCommand($command[1], $command[2]);
+                return $this->pcoweb->executeCommand($command[1], $command[2]);
             case 'wem':
-                return $this->get('App\Utils\Connectors\WemConnector')->executeCommand($command[1], $command[2]);
+                return $this->wem->executeCommand($command[1], $command[2]);
             case 'settings':
                 if ($command[1] == 'mode') {
                     if ($command[2] == 'pcoweb') {
-                        $connectorId = $this->get('App\Utils\Connectors\PcoWebConnector')->getIp();
+                        $connectorId = $this->pcoweb->getIp();
                     } elseif ($command[2] == 'wem') {
-                        $connectorId = $this->get('App\Utils\Connectors\WemConnector')->getUsername();
+                        $connectorId = $this->wem->getUsername();
                     } else {
                         $connectorId = $command[2];
                     }
                     if ($connectorId == 'alarm')
                     {
                         // make sure all mystrom PIR devices have their action URL set correctly
-                        $this->get('App\Utils\Connectors\MyStromConnector')->activateAllPIR();
+                        $this->mystrom->activateAllPIR();
                     }
                     $settings = $this->getDoctrine()->getManager()->getRepository('App:Settings')->findOneByConnectorId($connectorId);
                     if (!$settings) {
@@ -208,7 +254,7 @@ class DefaultController extends Controller
                 exec($connectors['command'][$command[1]]['cmd']);
                 return true;
             case 'gardena':
-                return $this->get('App\Utils\Connectors\GardenaConnector')->executeCommand($command[1], $command[2]);
+                return $this->gardena->executeCommand($command[1], $command[2]);
         }
 
         // no known device
@@ -274,51 +320,53 @@ class DefaultController extends Controller
             'lastYear',
         ];
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $ip = $this->smartfox->getIp();
             $history['smartfox'] = [
-                'pv_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $today, $now),
-                'pv_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $yesterday, $today),
-                'pv_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisWeek, $now),
-                'pv_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisMonth, $now),
-                'pv_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYearMonth, $lastYearPart),
-                'pv_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $thisYear, $now),
-                'pv_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $lastYearPart),
-                'pv_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'PvEnergy', $lastYear, $thisYear),
-                'energy_in_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $today, $now),
-                'energy_in_today_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $today, $now),
-                'energy_out_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $today, $now),
-                'energy_in_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $yesterday, $today),
-                'energy_in_yesterday_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $yesterday, $today),
-                'energy_out_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $yesterday, $today),
-                'energy_in_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisWeek, $now),
-                'energy_in_week_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $thisWeek, $now),
-                'energy_out_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisWeek, $now),
-                'energy_in_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisMonth, $now),
-                'energy_in_month_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $thisMonth, $now),
-                'energy_out_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisMonth, $now),
-                'energy_in_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYearMonth, $lastYearPart),
-                'energy_in_lastYearMonth_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $lastYearMonth, $lastYearPart),
-                'energy_out_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYearMonth, $lastYearPart),
-                'energy_in_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $thisYear, $now),
-                'energy_in_year_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
-                'energy_out_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $thisYear, $now),
-                'energy_in_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYear, $lastYearPart),
-                'energy_in_lastYearPart_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $lastYearPart),
-                'energy_out_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYear, $lastYearPart),
-                'energy_in_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $lastYear, $thisYear),
-                'energy_in_lastYear_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $thisYear),
-                'energy_out_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\SmartFoxConnector')->getIp(), 'energy_out', $lastYear, $thisYear),
+                'pv_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $today, $now),
+                'pv_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $yesterday, $today),
+                'pv_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisWeek, $now),
+                'pv_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisMonth, $now),
+                'pv_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYearMonth, $lastYearPart),
+                'pv_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisYear, $now),
+                'pv_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYear, $lastYearPart),
+                'pv_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYear, $thisYear),
+                'energy_in_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $today, $now),
+                'energy_in_today_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $today, $now),
+                'energy_out_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $today, $now),
+                'energy_in_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $yesterday, $today),
+                'energy_in_yesterday_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $yesterday, $today),
+                'energy_out_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $yesterday, $today),
+                'energy_in_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisWeek, $now),
+                'energy_in_week_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisWeek, $now),
+                'energy_out_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisWeek, $now),
+                'energy_in_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisMonth, $now),
+                'energy_in_month_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisMonth, $now),
+                'energy_out_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisMonth, $now),
+                'energy_in_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYearMonth, $lastYearPart),
+                'energy_in_lastYearMonth_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYearMonth, $lastYearPart),
+                'energy_out_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
+                'energy_in_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisYear, $now),
+                'energy_in_year_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
+                'energy_out_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisYear, $now),
+                'energy_in_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYear, $lastYearPart),
+                'energy_in_lastYearPart_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $lastYearPart),
+                'energy_out_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYear, $lastYearPart),
+                'energy_in_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYear, $thisYear),
+                'energy_in_lastYear_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $thisYear),
+                'energy_out_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYear, $thisYear),
             ];
         }
         if (array_key_exists('conexio', $this->getParameter('connectors'))) {
+            $ip = $this->conexio->getIp();
             $history['conexio'] = [
-                'energy_today' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $today, $now),
-                'energy_yesterday' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $yesterday, $today),
-                'energy_week' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $thisWeek, $now),
-                'energy_month' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $thisMonth, $now),
-                'energy_lastYearMonth' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $lastYearMonth, $lastYearPart),
-                'energy_year' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $thisYear, $now),
-                'energy_lastYearPart' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $lastYearPart),
-                'energy_lastYear' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($this->get('App\Utils\Connectors\ConexioConnector')->getIp(), $lastYear, $thisYear),
+                'energy_today' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $today, $now),
+                'energy_yesterday' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $yesterday, $today),
+                'energy_week' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisWeek, $now),
+                'energy_month' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisMonth, $now),
+                'energy_lastYearMonth' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYearMonth, $lastYearPart),
+                'energy_year' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisYear, $now),
+                'energy_lastYearPart' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYear, $lastYearPart),
+                'energy_lastYear' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYear, $thisYear),
             ];
         }
 
@@ -361,23 +409,23 @@ class DefaultController extends Controller
         }
 
         if (isset($currentStat['netatmo'])) {
-            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('inside')) {
+            if ($netatmoValues = $this->netatmo->getLatestByLocation('inside')) {
                 $climateValues['insidetemp'] = $netatmoValues['temp'];
                 $climateValues['insidehumidity'] = $netatmoValues['humidity'];
             }
-            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('firstfloor')) {
+            if ($netatmoValues = $this->netatmo->getLatestByLocation('firstfloor')) {
                 $climateValues['firstfloortemp'] = $netatmoValues['temp'];
                 $climateValues['firstfloorhumidity'] = $netatmoValues['humidity'];
             }
-            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('secondfloor')) {
+            if ($netatmoValues = $this->netatmo->getLatestByLocation('secondfloor')) {
                 $climateValues['secondfloortemp'] = $netatmoValues['temp'];
                 $climateValues['secondfloorhumidity'] = $netatmoInside['humidity'];
             }
-            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('basement')) {
+            if ($netatmoValues = $this->netatmo->getLatestByLocation('basement')) {
                 $climateValues['basementtemp'] = $netatmoValues['temp'];
                 $climateValues['basementhumidity'] = $netatmoValues['humidity'];
             }
-            if ($netatmoValues = $this->get('App\Utils\Connectors\NetatmoConnector')->getLatestByLocation('outside')) {
+            if ($netatmoValues = $this->netatmo->getLatestByLocation('outside')) {
                 $climateValues['outsidetemp'] = $netatmoValues['temp'];
                 $climateValues['outsidehumidity'] = $netatmoValues['humidity']; // currently not displaied
             }
@@ -543,39 +591,39 @@ class DefaultController extends Controller
     {
         $currentStat = [];
         if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $currentStat['smartFox'] = $this->get('App\Utils\Connectors\SmartFoxConnector')->getAll();
+            $currentStat['smartFox'] = $this->smartfox->getAll();
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-            $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\PcoWebConnector')->getAllLatest();
+            $currentStat['pcoWeb'] = $this->pcoweb->getAllLatest();
         } elseif (($fullSet === true || isset($fullSet['wem'])) && array_key_exists('wem', $this->getParameter('connectors'))) {
-            $currentStat['pcoWeb'] = $this->get('App\Utils\Connectors\WemConnector')->getAllLatest();  // we store the wem data to the pcoWeb data structure for simplicity
+            $currentStat['pcoWeb'] = $this->wem->getAllLatest();  // we store the wem data to the pcoWeb data structure for simplicity
         }
         if (($fullSet === true || isset($fullSet['conexio'])) && array_key_exists('conexio', $this->getParameter('connectors'))) {
-            $currentStat['conexio'] = $this->get('App\Utils\Connectors\ConexioConnector')->getAllLatest();
+            $currentStat['conexio'] = $this->conexio->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['edimax'])) && array_key_exists('edimax', $this->getParameter('connectors'))) {
-            $currentStat['edimax'] = $this->get('App\Utils\Connectors\EdiMaxConnector')->getAllLatest();
+            $currentStat['edimax'] = $this->edimax->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['mystrom'])) && array_key_exists('mystrom', $this->getParameter('connectors'))) {
-            $currentStat['mystrom'] = $this->get('App\Utils\Connectors\MyStromConnector')->getAllLatest();
+            $currentStat['mystrom'] = $this->mystrom->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['shelly'])) && array_key_exists('shelly', $this->getParameter('connectors'))) {
-            $currentStat['shelly'] = $this->get('App\Utils\Connectors\ShellyConnector')->getAllLatest();
+            $currentStat['shelly'] = $this->shelly->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['mobilealerts'])) && array_key_exists('mobilealerts', $this->getParameter('connectors'))) {
-            $currentStat['mobileAlerts'] = $this->get('App\Utils\Connectors\MobileAlertsConnector')->getAllLatest();
+            $currentStat['mobileAlerts'] = $this->mobilealerts->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['openweathermap'])) && array_key_exists('openweathermap', $this->getParameter('connectors'))) {
-            $currentStat['openweathermap'] = $this->get('App\Utils\Connectors\OpenWeatherMapConnector')->getAllLatest();
+            $currentStat['openweathermap'] = $this->openweather->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['logocontrol'])) && array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-            $currentStat['logoControl'] = $this->get('App\Utils\Connectors\LogoControlConnector')->getAllLatest();
+            $currentStat['logoControl'] = $this->logocontrol->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
-            $currentStat['netatmo'] = $this->get('App\Utils\Connectors\NetatmoConnector')->getAllLatest();
+            $currentStat['netatmo'] = $this->netatmo->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['ecar'])) && array_key_exists('ecar', $this->getParameter('connectors'))) {
-            $currentStat['ecar'] = $this->get('App\Utils\Connectors\EcarConnector')->getAllLatest();
+            $currentStat['ecar'] = $this->ecar->getAllLatest();
         }
         return $currentStat;
     }
@@ -608,11 +656,11 @@ class DefaultController extends Controller
      * currently only supports requests for netPower
      * @Route("/stat/{variable}", name="stat")
      */
-    public function statAction(Request $request, $variable)
+    public function statAction($variable)
     {
         $value = null;
-        if ($variable === 'netPower' && $this->get('App\Utils\Connectors\SmartFoxConnector')->getIp()) {
-            $smartFox = $this->get('App\Utils\Connectors\SmartFoxConnector')->getAll();
+        if ($variable === 'netPower' && $this->smartfox->getIp()) {
+            $smartFox = $this->smartfox->getAll();
             $value = $smartFox['power_io'];
         }
 

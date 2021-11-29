@@ -2,8 +2,9 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
 use App\Entity\Settings;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from the PCO Web device
@@ -19,15 +20,14 @@ class PcoWebConnector
     const MODE_PARTY = 3;
     const MODE_2ND = 4;
     protected $em;
-    protected $browser;
+    protected $client;
     protected $basePath;
     protected $ip;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
-        $this->browser->getClient()->setTimeout(10);
+        $this->client = $client;
         $this->ip = null;
         if (array_key_exists('pcoweb', $connectors)) {
             $this->ip = $connectors['pcoweb']['ip'];
@@ -44,7 +44,7 @@ class PcoWebConnector
     {
         // get analog, digital and integer values
         try {
-        $responseXml = $this->browser->get($this->basePath . '/usr-cgi/xml.cgi?|A|1|127|D|1|127|I|1|127')->getContent();
+        $responseXml = $this->client->request('GET', $this->basePath . '/usr-cgi/xml.cgi?|A|1|127|D|1|127|I|1|127')->getContent();
         $ob = simplexml_load_string($responseXml);
         $json  = json_encode($ob);
         $responseArr = json_decode($json, true);
@@ -107,81 +107,68 @@ class PcoWebConnector
     {
         // set mode
         $data['?script:var(0,3,14,0,4)'] = $mode;
- 
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded;',
-        ];
+        $url = $this->basePath . '/http/index/j_modus.html';
 
-        // post request
-        try {
-            $response = $this->browser->post($this->basePath . '/http/index/j_modus.html', $headers, http_build_query($data))->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->postRequest($url, $data);
     }
 
     private function setHotWaterHysteresis($value)
     {
         // set mode
         $data['?script:var(0,3,44,2,15)'] = $value;
- 
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded;',
-        ];
+        $url = $this->basePath . '/http/index/j_settings_hotwater.html';
 
-        // post request
-        try {
-            $response = $this->browser->post($this->basePath . '/http/index/j_settings_hotwater.html', $headers, http_build_query($data))->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->postRequest($url, $data);
     }
 
     private function setHeatCircle1($value)
     {
-        try {
-            $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
     }
 
     private function setHeatCircle2($value)
     {
-        try {
-            $response = $this->browser->get($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
     }
 
     private function setCpAutoMode($value)
     {
         // set mode
         $data['?script:var(0,1,131,0,1)'] = $value;
+        $url = $this->basePath . '/http/index/j_settings_pumpcontrol.html';
 
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded;',
-        ];
-        // post request
-        try {
-            $response = $this->browser->post($this->basePath . '/http/index/j_settings_pumpcontrol.html', $headers, http_build_query($data))->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->postRequest($url, $data);
     }
 
     private function setWaterTemp($value)
     {
         // set mode
         $data['?script:var(0,3,46,30,85)'] = $value;
+        $url = $this->basePath . '/http/index/j_hotwater.html';
 
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded;',
-        ];
+        $this->postRequest($url, $data);
+    }
+
+    private function getRequest($url)
+    {
+        try {
+            $response = $this->client->request('GET', $url)->getContent();
+        } catch (\Exception $e) {
+        // do nothing
+        }
+    }
+
+    private function postRequest($url, $data)
+    {
         // post request
         try {
-            $response = $this->browser->post($this->basePath . '/http/index/j_hotwater.html', $headers, http_build_query($data))->getContent();
+            $response = $this->client->request(
+                    'POST',
+                    $url,
+                    [
+                        'body' => $data
+                    ]
+                )->getContent();
         } catch (\Exception $e) {
         // do nothing
         }

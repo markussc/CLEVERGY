@@ -16,7 +16,7 @@ class ChromecastConnector
     protected $em;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, Array $connectors, $browser)
+    public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
         $this->connectors = $connectors;

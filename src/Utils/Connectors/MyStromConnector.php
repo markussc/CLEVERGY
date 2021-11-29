@@ -2,9 +2,11 @@
 
 namespace App\Utils\Connectors;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\MyStromDataStore;
+use App\Utils\Connectors\EcarConnector;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Connector to retrieve data from MyStrom devices
@@ -15,16 +17,15 @@ use App\Entity\MyStromDataStore;
 class MyStromConnector
 {
     protected $em;
-    protected $browser;
+    protected $ecar;
     protected $connectors;
 
-    public function __construct(EntityManager $em, \Buzz\Browser $browser, Array $connectors, $host, $session_cookie_path)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
-        $this->browser = $browser;
+        $this->client = $client;
+        $this->ecar = $ecar;
         $this->connectors = $connectors;
-        // set timeout for buzz browser client
-        $this->browser->getClient()->setTimeout(3);
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
     }
@@ -322,20 +323,30 @@ class MyStromConnector
     private function setOn($device)
     {
         $r = $this->queryMyStrom($device, 'on');
-        if (!empty($r)) {
+        if (false !== $r) {
             // get the current (new) status and store to database
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
+            $this->enableCarCharger($device);
             return true;
         } else {
             return false;
         }
     }
 
-    private function setOff($device)
+    private function setOff($device, $recursionDepth = 0)
     {
+        $ok = $this->disableCarCharger($device);
+        if ($recursionDepth < 10 && !$ok) {
+            // car is still charging, we do not want to forcibly turn off the switch yet (we wait max. 100 seconds for it to complete)
+            // try again within 10 seconds
+            // wait 10 seconds before continuation
+            sleep(10);
+            $this->setOff($device, $recursionDepth++);
+            return false;
+        }
         $r = $this->queryMyStrom($device, 'off');
-        if (!empty($r)) {
+        if (false !== $r) {
             // get the current (new) status and store to database
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
@@ -378,7 +389,7 @@ class MyStromConnector
     
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
         try {
-            $response = $this->browser->get($url);
+            $response = $this->client->request('GET', $url);
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;
@@ -394,10 +405,14 @@ class MyStromConnector
     private function postMyStrom($device, $reqUrl, $payload)
     {
         $url = 'http://' . $device['ip'] . '/' . $reqUrl;
-        $headers = [];
-        $response = $this->browser->post($url, $headers, http_build_query([$payload]));
         try {
-            $response = $this->browser->post($url, $headers, $payload);
+            $response = $this->client->request(
+                    'POST',
+                    $url,
+                    [
+                        'body' => $payload
+                    ]
+                );
             $statusCode = $response->getStatusCode();
             if ($statusCode != 200) {
                 return false;
@@ -507,5 +522,36 @@ class MyStromConnector
         $config['percent'] = intval($timerConf[2]);
         $device->setConfig($config);
         $this->em->flush($device);
+    }
+
+    // if this is a carCharger which is currently charging, turn it off first
+    private function disableCarCharger($deviceConf)
+    {
+        $retVal = true;
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
+            $status = $this->getStatus($deviceConf);
+            if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
+                // currently turned on with substantial power flow
+                $config = $this->getConfig($deviceConf['ip']);
+                $carId = $config['carTimerData']['carId'];
+                $this->ecar->stopCharging($carId);
+                // we are trying to stop charging, we therefore do not allow immediate switch-off
+                $retVal = false;
+            }
+        }
+
+        return $retVal;
+    }
+
+    private function enableCarCharger($deviceConf)
+    {
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
+            // turn on the car charcher
+            $config = $this->getConfig($deviceConf['ip']);
+            $carId = $config['carTimerData']['carId'];
+            $this->ecar->startCharging($carId);
+        }
+
+        return true;
     }
 }
