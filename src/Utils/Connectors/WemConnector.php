@@ -367,7 +367,7 @@ class WemConnector
         $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($this->getUsername());
         if ($device) {
             $config = $device->getConfig();
-            if(is_array($config) && array_key_exists('ppLevel')) {
+            if(is_array($config) && array_key_exists('ppLevel', $config)) {
                 $ppLevel = $config['ppLevel'];
             }
         }
