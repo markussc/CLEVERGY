@@ -243,8 +243,12 @@ class WemConnector
     private function readTempModbusTcp($address)
     {
         $bytes = $this->readBytesFc4ModbusTcp($address);
-
-        return Types::parseUInt16(Types::byteArrayToByte($bytes)) / 10;
+        $uint = Types::parseUInt16(Types::byteArrayToByte($bytes));
+        $int = $uint;
+        if ($uint > 65535/2) { // 65535 is the max value for a uint16
+            $int = -1*(65535-$uint);
+        }
+        return $int/10;
     }
 
     /*
