@@ -28,7 +28,6 @@ class WemConnector
     private $password;
     private $ip;
     private $port;
-    private $currentPath;
     private $status;
     private $modbusConnection;
     const UNAUTHENTICATED = 0;
@@ -226,7 +225,7 @@ class WemConnector
         // go to Wärmepumpe section and readout the current rwndrnd value (ASP.NET protection system)
         $rwndrnd = (explode("=", $this->page->evaluate('document.querySelector(".rwWindowContent > iframe:nth-child(1)").src'))[1]);
         sleep(5);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=640017070000000032400074240300110104&readdata=True&rwndrnd=' . $rwndrnd);
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=6400170700000000' . $this->toHex($this->getPpLevel()) . '400074240300110104&readdata=True&rwndrnd=' . $rwndrnd);
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
@@ -235,6 +234,7 @@ class WemConnector
         );
         sleep(5);
         $this->page->click("#ctl00_DialogContent_BtnSave");
+        $this->storePpLevel($value);
     }
 
     /*
@@ -338,5 +338,46 @@ class WemConnector
         $response = ResponseFactory::parseResponseOrThrow($binaryData);
 
         return $response->getWord()->getInt16;
+    }
+
+    private function storePpLevel($ppLevel)
+    {
+        $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($this->getUsername());
+        if (!$device) {
+            $device = new Settings();
+            $device->setConnectorId($this->getUsername());
+            $this->em->persist($device);
+        }
+        $config = $device->getConfig();
+        if(!$config) {
+            $config = [];
+        }
+        $config['ppLevel'] = $ppLevel;
+        $device->setConfig($config);
+        $this->em->flush();
+    }
+
+    private function getPpLevel()
+    {
+        $ppLevel = 100;
+        $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($this->getUsername());
+        if ($device) {
+            $config = $device->getConfig();
+            if(is_array($config) && array_key_exists('ppLevel')) {
+                $ppLevel = $config['ppLevel'];
+            }
+        }
+
+        return $ppLevel;
+    }
+
+    private function toHex($dec)
+    {
+        $hex = strtoupper(dechex($dec));
+        if ($dec < 16) {
+            $hex .= '0';
+        }
+
+        return $hex;
     }
 }
