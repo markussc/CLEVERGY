@@ -147,7 +147,14 @@ class WemConnector
         // initialize
         $this->status = self::UNAVAILABLE;
         $puppeteer = new Puppeteer;
-        $this->browser = $puppeteer->launch(['args' => ['--no-sandbox']]);
+        $this->browser = $puppeteer->launch([
+            'args' => [
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-setuid-sandbox',
+                '--no-sandbox',
+            ]
+        ]);
         $this->page = $this->browser->newPage();
 
         // authenticate
