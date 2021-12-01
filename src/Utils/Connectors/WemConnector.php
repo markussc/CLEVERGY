@@ -377,9 +377,9 @@ class WemConnector
 
     private function toHex($dec)
     {
-        $hex = strtoupper(dechex($dec));
+        $hex = strtoupper(dechex(intval($dec)));
         if ($dec < 16) {
-            $hex .= '0';
+            $hex = '0' . $hex;
         }
 
         return $hex;
