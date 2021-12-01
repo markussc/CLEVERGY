@@ -147,7 +147,7 @@ class WemConnector
         // initialize
         $this->status = self::UNAVAILABLE;
         $puppeteer = new Puppeteer;
-        $this->browser = $puppeteer->launch();
+        $this->browser = $puppeteer->launch(['args' => ['--no-sandbox']]);
         $this->page = $this->browser->newPage();
 
         // authenticate
