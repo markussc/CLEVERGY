@@ -93,7 +93,7 @@ class EcarConnector
             $currentPercent = $latestEcar['data']['soc'];
             $targetPercent = $switchDevice['carTimerData']['percent'];
             $capacity = $switchDevice['carTimerData']['capacity'];
-            $chargingPower = 0.95 * $switchDevice['nominalPower']; // we expect 5% of charging losses
+            $chargingPower = 0.90 * $switchDevice['nominalPower']; // we expect 5% of charging losses
             $hourlyPercent = 100 / $capacity * $chargingPower / 1000;
             $percentDiff = $targetPercent - $currentPercent;
             $now = new \DateTime('now');
