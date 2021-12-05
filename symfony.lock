@@ -29,6 +29,9 @@
     "doctrine/dbal": {
         "version": "2.10.2"
     },
+    "doctrine/deprecations": {
+        "version": "v0.5.3"
+    },
     "doctrine/doctrine-bundle": {
         "version": "1.12",
         "recipe": {
@@ -87,6 +90,9 @@
     "egulias/email-validator": {
         "version": "2.1.19"
     },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.5"
+    },
     "friendsofsymfony/user-bundle": {
         "version": "v2.1.2"
     },
@@ -104,6 +110,9 @@
             "version": "1.0",
             "ref": "1da7c9584a9face8cc2a9ee42a04ae33c284bea8"
         }
+    },
+    "laminas/laminas-code": {
+        "version": "4.4.3"
     },
     "nesk/puphpeteer": {
         "version": "1.6.0"
@@ -189,6 +198,9 @@
     },
     "symfony/dependency-injection": {
         "version": "v3.4.43"
+    },
+    "symfony/deprecation-contracts": {
+        "version": "v2.5.0"
     },
     "symfony/doctrine-bridge": {
         "version": "v3.4.44"
@@ -292,6 +304,9 @@
     },
     "symfony/polyfill-php80": {
         "version": "v1.18.1"
+    },
+    "symfony/polyfill-php81": {
+        "version": "v1.23.0"
     },
     "symfony/process": {
         "version": "v4.4.18"
