@@ -287,24 +287,24 @@ class MobileAlertsConnector
                     case '01':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['t2']);
-                        continue;
+                        break;
                     case '08':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['r']);
-                        continue;
+                        break;
                     case '09':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['t2']);
                         $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['h']);
-                        continue;
+                        break;
                     case '0B':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['ws']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['wg']);
                         $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['wd']);
-                        continue;
+                        break;
                     case '0E':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['h']);
-                        continue;
+                        break;
                 }
             }
         }
