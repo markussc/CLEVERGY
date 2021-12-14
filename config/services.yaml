@@ -56,16 +56,6 @@ services:
         public: false
         arguments:
             $connectors: "%connectors%"
-    App\Utils\Connectors\EdiMaxConnector:
-        public: false
-        arguments:
-            $browser: "@buzz"
-            $connectors: "%connectors%"
-    App\Utils\Connectors\ConexioConnector:
-        public: false
-        arguments:
-            $browser: "@buzz"
-            $connectors: "%connectors%"
     App\Utils\Connectors\MyStromConnector:
         public: false
         arguments:
@@ -80,4 +70,11 @@ services:
             $session_cookie_path: "%session_cookie_path%"
     App\Utils\Connectors\WeConnectIdConnector:
         public: false
-
+    App\Utils\Connectors\EdiMaxConnector:
+        public: false
+        arguments:
+            $connectors: "%connectors%"
+    App\Utils\Connectors\ConexioConnector:
+        public: false
+        arguments:
+            $connectors: "%connectors%"

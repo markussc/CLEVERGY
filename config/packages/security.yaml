@@ -10,16 +10,17 @@ security:
         ROLE_SUPER_ADMIN:   ROLE_ADMIN
 
     providers:
-        fos_userbundle:
-            id: fos_user.user_provider.username
+        users:
+            entity:
+                class: 'App\Entity\User'
+                property: 'username'
 
     firewalls:
         main:
             pattern: ^/
             form_login:
-                provider: fos_userbundle
+                provider: users
                 csrf_token_generator: security.csrf.token_manager
-            logout_on_user_change: true
             logout:       true
             anonymous:    true
 
