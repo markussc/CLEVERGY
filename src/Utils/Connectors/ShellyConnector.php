@@ -124,7 +124,7 @@ class ShellyConnector
             'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
             'timestamp' => new \DateTime('now'),
         ];
-        if (array_key_exists('power', $result['status'])) {
+        if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
             $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, $today, $now);
             $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
         }
