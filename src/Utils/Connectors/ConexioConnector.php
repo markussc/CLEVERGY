@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Nesk\Puphpeteer\Puppeteer;
 
 /**
  * Connector to retrieve data from the conexio200 web modul (used by Soltop for solar-thermical systems)
@@ -13,14 +14,12 @@ use Doctrine\ORM\EntityManagerInterface;
 class ConexioConnector
 {
     protected $em;
-    protected $browser;
     protected $basePath;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, \Buzz\Browser $browser, Array $connectors)
+    public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
-        $this->browser = $browser;
         $this->connectors = $connectors;
         $this->ip = null;
         $this->basePath = '';
@@ -55,20 +54,29 @@ class ConexioConnector
      */
     public function getAll($calculatedData = false)
     {
-        // digest authentication
-        $this->browser->setListener(new \Buzz\Listener\DigestAuthListener($this->connectors['conexio']['username'], $this->connectors['conexio']['password']));
-        $url = $this->basePath . '/medius_val.xml';
-        $response = $this->browser->get($url);
-        $statusCode = $response->getStatusCode();
-        $data = null;
         try {
-            if ($statusCode == 401) {
-                $response = $this->browser->get($url)->getContent(); // TODO: this does not work correctly if invoked from the command (digest auth not working)
-            } else {
-                $response = $response->getContent();
-            }
+            $url = $this->basePath . '/medius_val.xml';
+            $puppeteer = new Puppeteer;
+            $browser = $puppeteer->launch([
+                'args' => [
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--disable-setuid-sandbox',
+                    '--no-sandbox',
+                ]
+            ]);
+            $page = $browser->newPage();
 
-            $data = $this->extractData($response);
+            // authenticate
+            $page->authenticate(['username' => $this->connectors['conexio']['username'], 'password' => $this->connectors['conexio']['password']]);
+
+            // get data-string
+            $page->goto($url);
+            $rawData = $page->evaluate('document.querySelector("data").innerHTML');
+            $browser->close();
+
+            // extract the required data
+            $data = $this->extractData($rawData);
 
             // if requested, add calculated data
             if ($calculatedData) {
@@ -77,7 +85,6 @@ class ConexioConnector
         } catch (\Exception $e) {
             return false;
         }
-
         return $data;
     }
 
@@ -86,9 +93,8 @@ class ConexioConnector
         return $this->ip;
     }
 
-    private function extractData($xmlData)
+    private function extractData($str)
     {
-        $str = substr($xmlData, 11);
         $size = $this->convertAtoH($str, 2);
         $str = substr($str, 2);
         $str = substr($str, 8); // Timestamp übergehen
