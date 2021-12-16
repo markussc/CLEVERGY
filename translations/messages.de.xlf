@@ -261,8 +261,8 @@
         <source>label.smartfox.self_suff_degree_today</source>
         <target>Autarkie heute</target>
       </trans-unit>
-      <trans-unit id="aVBh3q5" resname="label.edimax.activation_interval_today">
-        <source>label.edimax.activation_interval_today</source>
+      <trans-unit id="aVBh3q5" resname="label.device.activation_interval_today">
+        <source>label.device.activation_interval_today</source>
         <target>Aktivierungszeitraum heute</target>
       </trans-unit>
       <trans-unit id="9M8adh." resname="label.details.header">
