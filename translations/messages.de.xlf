@@ -261,7 +261,7 @@
         <source>label.smartfox.self_suff_degree_today</source>
         <target>Autarkie heute</target>
       </trans-unit>
-      <trans-unit id="aVBh3q5" resname="label.device.activation_interval_today">
+      <trans-unit id="3pbl5FM" resname="label.device.activation_interval_today">
         <source>label.device.activation_interval_today</source>
         <target>Aktivierungszeitraum heute</target>
       </trans-unit>
@@ -417,13 +417,21 @@
         <source>label.overview.history.set_interval.submit</source>
         <target>Aktualisieren</target>
       </trans-unit>
-      <trans-unit id="abc" resname="label.energymix">
+      <trans-unit id="4fp77vC" resname="label.energymix">
         <source>label.energymix</source>
         <target>Energiemix heute</target>
       </trans-unit>
-      <trans-unit id="def" resname="security.login.submit">
+      <trans-unit id="tuAV77Z" resname="security.login.submit">
         <source>security.login.submit</source>
         <target>Login</target>
+      </trans-unit>
+      <trans-unit id="3IGOm9D" resname="form.email">
+        <source>form.email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="N_kLMwm" resname="security.login.password">
+        <source>security.login.password</source>
+        <target>Passwort</target>
       </trans-unit>
     </body>
   </file>
