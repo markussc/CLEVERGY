@@ -2,7 +2,6 @@
 
 namespace App\Utils;
 
-use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\EcarConnector;
@@ -11,10 +10,9 @@ class PriorityManager
 {
     private $connectors;
 
-    public function __construct($connectors, EdiMaxConnector $edimax, MyStromConnector $mystrom, ShellyConnector $shelly, EcarConnector $ecar)
+    public function __construct($connectors, MyStromConnector $mystrom, ShellyConnector $shelly, EcarConnector $ecar)
     {
         $this->connectors = $connectors;
-        $this->edimax = $edimax;
         $this->mystrom = $mystrom;
         $this->shelly = $shelly;
         $this->ecar = $ecar;
@@ -24,11 +22,6 @@ class PriorityManager
     // returns true if found a device, false if there is no waiting device
     public function checkWaitingDevice($priority, $maxNominalPower, $energyLowRate = false)
     {
-        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
-            if($this->checkStartDevice($this->mystrom, $this->connectors['edimax'], $priority, $maxNominalPower)) {
-                return true;
-            }
-        }
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
             if($this->checkStartDevice($this->mystrom, $this->connectors['mystrom'], $priority, $maxNominalPower, $energyLowRate)) {
                 return true;
@@ -46,11 +39,6 @@ class PriorityManager
     // returns true if found a device, false if there is no stopping-ready device
     public function checkStoppingDevice($priority)
     {
-        if (array_key_exists('edimax', $this->connectors) && is_array($this->connectors['edimax'])) {
-            if($this->checkStopDevice($this->mystrom, $this->connectors['edimax'], $priority)) {
-                return true;
-            }
-        }
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
             if($this->checkStopDevice($this->mystrom, $this->connectors['mystrom'], $priority)) {
                 return true;

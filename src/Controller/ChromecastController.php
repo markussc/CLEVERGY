@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Utils\Connectors\ChromecastConnector;
-use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -20,7 +19,7 @@ class ChromecastController extends Controller
     /**
      * @Route("/power/{ccId}/{power}", name="chromecast_power")
      */
-    public function powerAction(EdiMaxConnector $edimax, MyStromConnector $mystrom, $ccId, $power)
+    public function powerAction(MyStromConnector $mystrom, $ccId, $power)
     {
         $em = $this->getDoctrine()->getManager();
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
@@ -33,11 +32,6 @@ class ChromecastController extends Controller
         if ($power) {
             // turn on
             $settings->setMode(1);
-            if (array_key_exists('edimax', $chromecast)) {
-                foreach ($chromecast['edimax'] as $edimaxId) {
-                    $edimax->executeCommand($edimaxId, 1);
-                }
-            }
             if (array_key_exists('mystrom', $chromecast)) {
                 foreach ($chromecast['mystrom'] as $mystromId) {
                     $mystrom->executeCommand($mystromId, 1);
@@ -52,11 +46,6 @@ class ChromecastController extends Controller
                 'url' => false,
                 'state' => 'stopped',
             ]);
-            if (array_key_exists('edimax', $chromecast)) {
-                foreach ($chromecast['edimax'] as $edimaxId) {
-                    $edimax->executeCommand($edimaxId, 0);
-                }
-            }
             if (array_key_exists('mystrom', $chromecast)) {
                 foreach ($chromecast['mystrom'] as $mystromId) {
                     $mystrom->executeCommand($mystromId, 0);

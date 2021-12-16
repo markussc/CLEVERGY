@@ -6,7 +6,6 @@ use App\Entity\Settings;
 use App\Utils\LogicProcessor;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\EcarConnector;
-use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\GardenaConnector;
 use App\Utils\Connectors\LogoControlConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
@@ -27,10 +26,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class DefaultController extends Controller
 {
-    protected $edimax;
-
     public function __construct(
-            EdiMaxConnector $edimax,
             MyStromConnector $mystrom,
             ShellyConnector $shelly,
             SmartFoxConnector $smartfox, 
@@ -45,7 +41,6 @@ class DefaultController extends Controller
             EcarConnector $ecar
         )
     {
-       $this->edimax = $edimax;
        $this->mystrom = $mystrom;
        $this->shelly = $shelly;
        $this->smartfox = $smartfox;
@@ -173,7 +168,6 @@ class DefaultController extends Controller
             }
         } else {
             $currentStat = $this->getCurrentStat([
-                'edimax' => true,
                 'mystrom' => true,
                 'shelly' => true,
                 'pcoweb' => true,
@@ -214,8 +208,6 @@ class DefaultController extends Controller
     {
         $command = json_decode($jsonCommand);
         switch ($command[0]) {
-            case 'edimax':
-                return $this->edimax->executeCommand($command[1], $command[2]);
             case 'mystrom':
                 return $this->mystrom->executeCommand($command[1], $command[2]);
             case 'shelly':
@@ -275,7 +267,6 @@ class DefaultController extends Controller
             $currentStat = $this->getCurrentStat(true);
         } else {
             $currentStat = $this->getCurrentStat([
-                'edimax' => true,
                 'mystrom' => true,
                 'shelly' => true,
                 'openweathermap' => true,
@@ -601,9 +592,6 @@ class DefaultController extends Controller
         if (($fullSet === true || isset($fullSet['conexio'])) && array_key_exists('conexio', $this->getParameter('connectors'))) {
             $currentStat['conexio'] = $this->conexio->getAllLatest();
         }
-        if (($fullSet === true || isset($fullSet['edimax'])) && array_key_exists('edimax', $this->getParameter('connectors'))) {
-            $currentStat['edimax'] = $this->edimax->getAllLatest();
-        }
         if (($fullSet === true || isset($fullSet['mystrom'])) && array_key_exists('mystrom', $this->getParameter('connectors'))) {
             $currentStat['mystrom'] = $this->mystrom->getAllLatest();
         }
@@ -641,7 +629,6 @@ class DefaultController extends Controller
         $logic->initShelly($deviceId, $action);
 
         // execute auto actions where reasonable
-        $logic->autoActionsEdimax();
         $logic->autoActionsMystrom();
         $logic->autoActionsShelly();
 

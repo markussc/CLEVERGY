@@ -110,8 +110,8 @@
                 <source>label.history.header</source>
                 <target>History</target>
             </trans-unit>
-            <trans-unit id="label.edimax.activation_interval_today">
-                <source>label.edimax.activation_interval_today</source>
+            <trans-unit id="label.device.activation_interval_today">
+                <source>label.device.activation_interval_today</source>
                 <target>Activation interval today</target>
             </trans-unit>
             <trans-unit id="label.details.header">
