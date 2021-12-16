@@ -88,6 +88,7 @@ parameters:
                 password: <<myVWpassword>>
         mystrom:
             -
+                name: 'My Switch'
                 ip: '192.168.55.3'
                 #other parameters such as lowRateOn and forceOn identical to edimax
                 type: carTimer # type for e-car scenario (currently only supported with mystrom switches)
