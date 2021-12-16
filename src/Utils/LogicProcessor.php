@@ -28,8 +28,8 @@ use App\Utils\Connectors\NetatmoConnector;
 use App\Utils\Connectors\GardenaConnector;
 use App\Utils\Connectors\EcarConnector;
 use App\Utils\ConditionChecker;
-use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  *
@@ -55,7 +55,7 @@ class LogicProcessor
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;

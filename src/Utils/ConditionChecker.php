@@ -10,7 +10,7 @@ use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\EcarConnector;
 use App\Utils\PriorityManager;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  *
@@ -29,7 +29,7 @@ class ConditionChecker
     protected $ecar;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
+    public function __construct(EntityManagerInterface $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
     {
         $this->em = $em;
         $this->prio = $prio;
