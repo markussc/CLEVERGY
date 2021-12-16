@@ -11,6 +11,8 @@ parameters:
     instancetitle: '%env(INSTANCETITLE)%'
     host: '%env(HOST)%'
     session_cookie_path: '%env(SESSION_COOKIE_PATH)%'
+    MAILER_SENDER_EMAIL: '%env(MAILER_SENDER_EMAIL)%'
+    MAILER_SENDER_NAME: '%env(MAILER_SENDER_NAME)%'
 
 services:
     # default configuration for services in *this* file
