@@ -2,15 +2,22 @@
 
 namespace App\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Utils\LogicProcessor;
 
-class ConfigureDeviceCommand extends ContainerAwareCommand
+class ConfigureDeviceCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'oshans:devices:configure';
+
+    public function __construct(LogicProcessor $logic)
+    {
+        $this->logic = $logic;
+
+        parent::__construct();
+    }
 
     protected function configure()
     {
@@ -27,6 +34,8 @@ class ConfigureDeviceCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->getContainer()->get(LogicProcessor::class)->configureDevices();
+        $this->logic->configureDevices();
+
+        return 0;
     }
 }

@@ -38,7 +38,7 @@
                     <li {% if activePage == 'overview' %}class="active"{% endif %}><a href="{{ path('overview') }}">{% trans %}label.dashboard.header{% endtrans %}</a></li>
                     <li {% if activePage == 'details' %}class="active"{% endif %}><a href="{{ path('overview') }}?details=true">{% trans %}label.details.header{% endtrans %}</a></li>
                     <li class="align-right{% if activePage == 'history' %} active{% endif %}"><a href="{{ path('history') }}">{% trans %}label.history.header{% endtrans %}</a></li>
-                    <li class="align-right"><a href="{{ path('fos_user_security_logout') }}"><i class="fa fa-sign-out-alt fa-lg"></i></a></li>
+                    <li class="align-right"><a href="{{ path('app_logout') }}"><i class="fa fa-sign-out-alt fa-lg"></i></a></li>
                 </ul>
             </div>
             {% endif %}

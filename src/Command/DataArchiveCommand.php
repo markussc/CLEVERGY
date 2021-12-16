@@ -50,5 +50,7 @@ class DataArchiveCommand extends Command
                 $this->em->flush();
             }
         }
+
+        return 0;
     }
 }

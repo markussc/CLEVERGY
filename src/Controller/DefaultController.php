@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DefaultController extends AbstractController
 {
@@ -372,7 +373,7 @@ class DefaultController extends AbstractController
      * Create the visual dashboard
      * @Route("/visualdashboard", name="visual_dashboard")
      */
-    public function visualDashboardAction(Request $request)
+    public function visualDashboardAction(Request $request, TranslatorInterface $translator)
     {
         $currentStat = $this->getCurrentStat([
             'smartfox' => true,
@@ -482,7 +483,7 @@ class DefaultController extends AbstractController
         if(is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
             $effDistrTemp = $currentStat['pcoWeb']['effDistrTemp']."°C";
         } elseif(is_array($currentStat['pcoWeb']) && isset($currentStat['pcoWeb'])) {
-            $effDistrTemp = $this->get('translator')->trans($currentStat['pcoWeb']['cpStatus']);
+            $effDistrTemp = $translator->trans($currentStat['pcoWeb']['cpStatus']);
         } else {
             $effDistrTemp = '';
         }
@@ -498,10 +499,10 @@ class DefaultController extends AbstractController
             $outsideTemp = $currentStat['pcoWeb']['outsideTemp']."°C";
             $waterTemp = $currentStat['pcoWeb']['waterTemp']."°C";
             if ($currentStat['pcoWeb']['ppStatus'] === 0 || $currentStat['pcoWeb']['ppStatus'] == 'Aus' || $currentStat['pcoWeb']['ppStatus'] == 'label.device.status.off') {
-                $ppStatus = $this->get('translator')->trans('label.device.status.off');
+                $ppStatus = $translator->trans('label.device.status.off');
             } else {
                 if (is_string($currentStat['pcoWeb']['ppStatus'])) {
-                    $ppStatus = $this->get('translator')->trans($currentStat['pcoWeb']['ppStatus']);
+                    $ppStatus = $translator->trans($currentStat['pcoWeb']['ppStatus']);
                 } else {
                     $ppStatus = str_replace(' %', '', $currentStat['pcoWeb']['ppStatus']) . '%';
                 }

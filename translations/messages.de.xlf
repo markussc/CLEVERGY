@@ -421,6 +421,10 @@
         <source>label.energymix</source>
         <target>Energiemix heute</target>
       </trans-unit>
+      <trans-unit id="def" resname="security.login.submit">
+        <source>security.login.submit</source>
+        <target>Login</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

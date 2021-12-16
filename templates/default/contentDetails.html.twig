@@ -161,7 +161,7 @@
                 {% endif %}
                 {% if currentStat['pcoWeb']|default(false) %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
             {% for maSensor in currentStat['mobileAlerts']|default([]) %}
-                {% for measurement in maSensor if measurement['label'] != 'timestamp' %}
+                {% for measurement in maSensor|filter(measurement => measurement['label'] != 'timestamp') %}
                     {% if measurement['usage']|default('') == 'contact' %}
                         {% set contactAvailable = true %}
                     {% else %}
@@ -483,7 +483,7 @@
             }
             {% endif %}
             {% endif %}
-            {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor if dataSet[2]|default(false) %}
+            {% for idx, sensor in connectors['mobilealerts']['sensors']|default([]) %}{% for dataSetKey, dataSet in sensor|filter(dataSet => dataSet[2]|default(false)) %}
             {% if not firstDataset24  %},{% endif %}
             {% set firstDataset24 = false %}
             {
@@ -573,7 +573,7 @@
             }
             {% endfor %}
             {% endif %}
-            {% for idx, sensor in connectors['conexio']['sensors']|default([]) if sensor[2] is defined %}
+            {% for idx, sensor in connectors['conexio']['sensors']|default([])|filter(sensor => sensor[2] is defined) %}
             {% if not firstDataset24  %},{% endif %}
             {% set firstDataset24 = false %}
             {
@@ -581,7 +581,7 @@
                 borderColor: ['{{ sensor[2] }}'],
                 fill: false,
                 data: [
-                {% for coData in history['conexio'] if coData.getData() %}
+                {% for coData in history['conexio']|filter(coData => coData.getData()) %}
                     {% if not loop.first %},{% endif %} 
                     {
                         x: new Date("{{ coData.timestamp|date('c') }}"),
@@ -596,7 +596,7 @@
                 {% endif %}
             }
             {% endfor %}
-            {% for idx, sensor in connectors['logocontrol']['sensors']|default([]) if sensor[2] is defined %}
+            {% for idx, sensor in connectors['logocontrol']['sensors']|default([])|filter(sensor => sensor[2] is defined) %}
             {% if not firstDataset24  %},{% endif %}
             {% set firstDataset24 = false %}
             {
@@ -604,7 +604,7 @@
                 borderColor: ['{{ sensor[2] }}'],
                 fill: false,
                 data: [
-                {% for coData in history['logoControl'] if coData.getData() %}
+                {% for coData in history['logoControl']|filter(coData => coData.getData()) %}
                     {% if not loop.first %},{% endif %}
                     {
                         x: new Date("{{ coData.timestamp|date('c') }}"),

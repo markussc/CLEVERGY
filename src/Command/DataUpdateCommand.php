@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Utils\LogicProcessor;
@@ -11,8 +11,18 @@ use App\Utils\LogicProcessor;
  * Retrieves data from connectors and stores it into the database
  *
  */
-class DataUpdateCommand extends ContainerAwareCommand
+class DataUpdateCommand extends Command
 {
+    // the name of the command (the part after "bin/console")
+    protected static $defaultName = 'oshans:data:update';
+
+    public function __construct(LogicProcessor $logic)
+    {
+        $this->logic = $logic;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -30,6 +40,8 @@ class DataUpdateCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->getContainer()->get(LogicProcessor::class)->execute();
+        $this->logic->execute();
+
+        return 0;
     }
 }

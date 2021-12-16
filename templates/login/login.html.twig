@@ -1,8 +1,7 @@
-{% extends "@FOSUser/layout.html.twig" %}
-{% trans_default_domain 'FOSUserBundle' %}
-{% block fos_user_content %}
+{% extends "securityBase.html.twig" %}
+{% block body %}
     <div class="columns small-12 medium-3 large-centered">
-        <form class="log-in-form" action="{{ path("fos_user_security_check") }}" method="post" id="loginForm">
+        <form class="log-in-form" action="{{ path('login') }}" method="post" id="loginForm">
             <h4 class="text-center">{% trans %}security.login.submit{% endtrans %}</h4>
              {% if error %}<span style="color:red;">{{ error.messageKey|trans(error.messageData, 'security') }}</span>{% endif %}
             <label>
@@ -11,9 +10,10 @@
             <label>
                 <input type="password" id="password" name="_password" required="required" autocomplete="current-password" placeholder="{{ 'security.login.password'|trans }}">
             </label>
+            <input type="hidden" name="_target_path" value="/"/>
 
-            <p><input type="submit" id="_submit" name="_submit" class="button expanded" value="{{ 'security.login.submit'|trans }}"></p>
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}" />
+            <p><input type="submit" class="button expanded" value="{{ 'security.login.submit'|trans }}"></p>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
         </form>
     </div>
     <script>
@@ -21,4 +21,4 @@
             showSpinner();
         });
     </script>
-{% endblock fos_user_content %}
+{% endblock body %}

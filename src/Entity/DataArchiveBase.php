@@ -28,7 +28,7 @@ abstract class DataArchiveBase
      * @var string
      *
      * @ORM\Column(type="string", name="connector_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     private $connectorId;
 
