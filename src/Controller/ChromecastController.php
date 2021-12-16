@@ -6,7 +6,7 @@ use App\Utils\Connectors\ChromecastConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Entity\Settings;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  *
  * @Route("/cc")
  */
-class ChromecastController extends Controller
+class ChromecastController extends AbstractController
 {
     /**
      * @Route("/power/{ccId}/{power}", name="chromecast_power")

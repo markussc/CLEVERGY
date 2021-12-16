@@ -17,14 +17,14 @@ use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\WemConnector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-class DefaultController extends Controller
+class DefaultController extends AbstractController
 {
     public function __construct(
             MyStromConnector $mystrom,
