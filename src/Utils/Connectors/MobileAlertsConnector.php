@@ -129,37 +129,37 @@ class MobileAlertsConnector
         $this->basePath = 'https://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
         try {
             $response = $this->client->request('GET', $this->basePath . $this->connectors['mobilealerts']['phoneid']);
-        } catch (\Exception $e) {
-            return $data;
-        }
-        $crawler = new Crawler();
-        $crawler->addContent($response->getContent());
-        $sensorComponents = $crawler->filter('.sensor-component');
+            $crawler = new Crawler();
+            $crawler->addContent($response->getContent());
+            $sensorComponents = $crawler->filter('.sensor-component');
 
-        $currentSensor = '';
-        $measurementCounter = 0;
-        foreach ($sensorComponents as $sensorComponent) {
-            $cr = new Crawler($sensorComponent);
-            $label = $cr->filter('h5')->text();
-            $value = $cr->filter('h4')->text();
-            if ($label == 'ID') {
-                // next sensor
-                $currentSensor = $value;
-                $measurementCounter = 0;
-            } elseif (!$this->checkProSensor($currentSensor) && array_key_exists($currentSensor, $this->connectors['mobilealerts']['sensors'])) {
-                if ($this->validateDate($value)) {
-                    // this is the timestamp
-                    $data[$currentSensor][] = [
-                        'label' => 'timestamp',
-                        'value' => $value,
-                        'datetime' => \DateTime::createFromFormat('d.m.Y H:i:s', $value),
-                    ];
-                } else {
-                    // next measurement
-                    $data[$currentSensor][] = $this->createStorageData($currentSensor, $measurementCounter, $value);
-                    $measurementCounter++;
+            $currentSensor = '';
+            $measurementCounter = 0;
+            foreach ($sensorComponents as $sensorComponent) {
+                $cr = new Crawler($sensorComponent);
+                $label = $cr->filter('h5')->text();
+                $value = $cr->filter('h4')->text();
+                if ($label == 'ID') {
+                    // next sensor
+                    $currentSensor = $value;
+                    $measurementCounter = 0;
+                } elseif (!$this->checkProSensor($currentSensor) && array_key_exists($currentSensor, $this->connectors['mobilealerts']['sensors'])) {
+                    if ($this->validateDate($value)) {
+                        // this is the timestamp
+                        $data[$currentSensor][] = [
+                            'label' => 'timestamp',
+                            'value' => $value,
+                            'datetime' => \DateTime::createFromFormat('d.m.Y H:i:s', $value),
+                        ];
+                    } else {
+                        // next measurement
+                        $data[$currentSensor][] = $this->createStorageData($currentSensor, $measurementCounter, $value);
+                        $measurementCounter++;
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            return $data;
         }
 
         return $data;
