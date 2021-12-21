@@ -363,7 +363,7 @@ class LogicProcessor
 
     private function forceOpenShelly($deviceId, $shelly)
     {
-        if ($shelly['status']['position'] < 100 && $this->shelly->switchOK($deviceId)) {
+        if (is_array($shelly) && array_key_exists('status', $shelly) && is_array($shelly['status']) && array_key_exists('position', $shelly['status']) && $shelly['status']['position'] < 100 && $this->shelly->switchOK($deviceId)) {
             // force open if we are allowed to
             $this->shelly->executeCommand($deviceId, 2);
             return true;
@@ -374,7 +374,7 @@ class LogicProcessor
 
     private function forceCloseShelly($deviceId, $shelly)
     {
-        if ($shelly['status']['position'] > 0 && $this->shelly->switchOK($deviceId)) {
+        if (is_array($shelly) && array_key_exists('status', $shelly) && is_array($shelly['status']) && array_key_exists('position', $shelly['status']) && $shelly['status']['position'] > 0 && $this->shelly->switchOK($deviceId)) {
             // force open if we are allowed to
             $this->shelly->executeCommand($deviceId, 3);
             return true;
