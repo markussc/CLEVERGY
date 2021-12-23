@@ -546,8 +546,8 @@ class LogicProcessor
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
-                } elseif ($pcoMode !== Settings::MODE_HOLIDAY) {
-                    // only warmWater is too cold
+                } elseif ($pcoMode !== Settings::MODE_HOLIDAY && $nowDateTime->format('H') < 5) {
+                    // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
                     $this->pcoweb->executeCommand('waterTemp', 45);
                     $this->pcoweb->executeCommand('hwHysteresis', 5);
                     $log[] = "set hwHysteresis to 5 and reduce waterTemp due to emergency action: we only want minimal water heating";
