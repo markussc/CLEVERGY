@@ -93,14 +93,13 @@ class EcarConnector
             $currentPercent = $latestEcar['data']['soc'];
             $targetPercent = $switchDevice['carTimerData']['percent'];
             $capacity = $switchDevice['carTimerData']['capacity'];
-            $chargingPower = 0.90 * $switchDevice['nominalPower']; // we expect 5% of charging losses
+            $chargingPower = 0.90 * $switchDevice['nominalPower']; // we expect 10% of charging losses
             $hourlyPercent = 100 / $capacity * $chargingPower / 1000;
             $percentDiff = $targetPercent - $currentPercent;
             $now = new \DateTime('now');
             $deadline = new \DateTime($switchDevice['carTimerData']['deadline']['date']);
             $diff = $now->diff($deadline);
-            $hours = $diff->h;
-            $hours = $hours + ($diff->days*24);
+            $hours = $diff->h + $diff->days*24;
             if ($diff->invert) {
                 $hours *= -1;
             }
@@ -108,7 +107,7 @@ class EcarConnector
             if ($hours >= 0 && $percentDiff > 0) {
                 // the targetPercent and deadline are not reached yet
                 // check if we need to start charging in order to reach the targetPercent until deadline
-                $percentDuringDiff = $hourlyPercent * $hours;
+                $percentDuringDiff = $hourlyPercent * ($hours - 1);
                 if  ($percentDuringDiff < $percentDiff) {
                     // we need to start immediately
                     $priority = true;
