@@ -13,7 +13,7 @@ class DataStoreBaseRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
-            ->orderBy('e.timestamp', 'desc')
+            ->orderBy('e.id', 'desc')
             ->setParameter('ip', $ip)
             ->setMaxResults(1);
 
@@ -29,7 +29,7 @@ class DataStoreBaseRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
-            ->orderBy('e.timestamp', 'desc')
+            ->orderBy('e.id', 'desc')
             ->setParameter('ip', $ip)
             ->setMaxResults(1);
 
