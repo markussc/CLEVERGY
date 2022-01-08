@@ -3,7 +3,6 @@
 namespace App\Utils;
 
 use App\Entity\Settings;
-use App\Entity\EdiMaxDataStore;
 use App\Entity\MyStromDataStore;
 use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
@@ -15,7 +14,6 @@ use App\Entity\ShellyDataStore;
 use App\Entity\NetatmoDataStore;
 use App\Entity\EcarDataStore;
 use App\Entity\CommandLog;
-use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
@@ -40,7 +38,6 @@ use Symfony\Component\Translation\TranslatorInterface;
 class LogicProcessor
 {
     protected $em;
-    protected $edimax;
     protected $mobilealerts;
     protected $openweathermap;
     protected $mystrom;
@@ -58,10 +55,9 @@ class LogicProcessor
     protected $energyLowRate;
     protected $connectors;
 
-    public function __construct(ObjectManager $em, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(ObjectManager $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
-        $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
         $this->openweathermap = $openweathermap;
         $this->mystrom = $mystrom;
@@ -84,9 +80,6 @@ class LogicProcessor
 
     public function execute()
     {
-        // edimax
-        $this->initEdimax();
-
         // mystrom
         $this->initMystrom();
 
@@ -137,9 +130,6 @@ class LogicProcessor
         $this->openweathermap->save5DayForecastToDb();
         $this->openweathermap->saveCurrentWeatherToDb();
 
-        // execute auto actions for edimax devices
-        $this->autoActionsEdimax();
-
         // execute auto actions for mystrom devices
         $this->autoActionsMystrom();
 
@@ -171,101 +161,6 @@ class LogicProcessor
         $this->processAlarms();
 
         return 0;
-    }
-
-    /**
-     * Based on the available values in the DB, decide whether any commands should be sent to attached edimax devices
-     */
-    public function autoActionsEdimax()
-    {
-        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
-
-        // get current net_power
-        $smartfox = $this->smartfox->getAllLatest();
-        $netPower = $smartfox['power_io'];
-
-        // auto actions for devices which have a nominalPower
-        if ($netPower > 0) {
-            if ($avgPower > 0) {
-                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
-                foreach ($this->edimax->getAllLatest() as $deviceId => $edimax) {
-                    if ($edimax['nominalPower'] > 0) {
-                        // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
-                        if ($this->forceOnEdimax($deviceId, $edimax)) {
-                            continue;
-                        }
-                        // check if the device is on and allowed to be turned off
-                        if ($edimax['status']['val'] && $this->edimax->switchOK($deviceId)) {
-                            $this->edimax->executeCommand($deviceId, 0);
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
-            foreach ($this->edimax->getAllLatest() as $deviceId => $edimax) {
-                if ($edimax['nominalPower'] > 0) {
-                    // check for "forceOff" conditions (if true, try to turn it off and skip
-                    if ($this->conditionchecker->checkCondition($edimax, 'forceOff')) {
-                        $this->forceOffEdimax($deviceId, $edimax);
-                        continue;
-                    }
-                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                    if ($this->forceOnEdimax($deviceId, $edimax)) {
-                        continue;
-                    }
-                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
-                    if (!$edimax['status']['val'] && $edimax['nominalPower'] < -1*$netPower && $edimax['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($edimax, 'on') && $this->edimax->switchOK($deviceId)) {
-                        if($this->edimax->executeCommand($deviceId, 1)) {
-                            break;
-                        } else {
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
-
-        // auto actions for devices without nominal power
-        foreach ($this->edimax->getAllLatest() as $deviceId => $edimax) {
-            if ($edimax['nominalPower'] == 0) {
-                if($this->conditionchecker->checkCondition($edimax, 'forceOff')) {
-                    if ($this->forceOffEdimax($deviceId, $edimax)) {
-                        break;
-                    }
-                } elseif ($this->conditionchecker->checkCondition($edimax, 'forceOn')) {
-                    // we only try to activate if we disable not close just before (disable wins)
-                    if ($this->forceOnEdimax($deviceId, $edimax)) {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private function forceOnEdimax($deviceId, $edimax)
-    {
-        $forceOn = $this->conditionchecker->checkCondition($edimax, 'forceOn');
-        if ($forceOn && $this->edimax->switchOK($deviceId)) {
-            // force turn it on if we are allowed to
-            if (!$edimax['status']['val']) {
-                $this->edimax->executeCommand($deviceId, 1);
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private function forceOffEdimax($deviceId, $edimax)
-    {
-        if ($edimax['status']['val'] && $this->edimax->switchOK($deviceId)) {
-            // force turn it on if we are allowed to
-            $this->edimax->executeCommand($deviceId, 0);
-        }
-
-        return true;
     }
 
     /**
@@ -1031,13 +926,6 @@ class LogicProcessor
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);
         $this->em->flush();
-    }
-
-    public function initEdimax()
-    {
-        foreach ($this->edimax->getAll() as $edimax) {
-            $this->edimax->storeStatus($edimax, $edimax['status']['val']);
-        }
     }
 
     public function initMystrom($deviceId = null)

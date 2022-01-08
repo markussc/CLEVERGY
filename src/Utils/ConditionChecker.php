@@ -2,7 +2,6 @@
 
 namespace App\Utils;
 
-use App\Utils\Connectors\EdiMaxConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
@@ -22,7 +21,6 @@ class ConditionChecker
     protected $em;
     protected $prio;
     protected $smartfox;
-    protected $edimax;
     protected $mobilealerts;
     protected $openweathermap;
     protected $mystrom;
@@ -31,12 +29,11 @@ class ConditionChecker
     protected $ecar;
     protected $energyLowRate;
 
-    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, EdiMaxConnector $edimax, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
+    public function __construct(ObjectManager $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
     {
         $this->em = $em;
         $this->prio = $prio;
         $this->smartfox = $smartfox;
-        $this->edimax = $edimax;
         $this->mobilealerts = $mobilealerts;
         $this->openweathermap = $openweathermap;
         $this->mystrom = $mystrom;
@@ -51,19 +48,17 @@ class ConditionChecker
 
     public function checkCondition($device, $type='forceOn')
     {
-        $this->deviceClass = "EdiMax";
+        $this->deviceClass = "MyStrom";
         $this->ip = $device['ip'];
-        $conf = $this->edimax->getConfig($this->ip);
-        if (null === $conf) {
-            // there is no edimax device with this IP. We check if there is a mystrom device instead
-            $conf = $this->mystrom->getConfig($this->ip);
+        $conf = $this->mystrom->getConfig($this->ip);
+        if (null !== $conf) {
+            // this is a mystrom device
             if (array_key_exists('forceOff', $device)) {
                 $conf['forceOff'] = $device['forceOff'];
             }
-            $this->deviceClass = "MyStrom";
         }
         if (null === $conf) {
-            // there is no edimax and mystrom device with this IP. We check if there is a shelly device instead
+            // there is no mystrom device with this IP. We check if there is a shelly device instead
             $conf = $this->shelly->getConfig($this->ip, $device['port']);
             $this->port = $device['port'];
             $this->deviceClass = "Shelly";
@@ -90,9 +85,7 @@ class ConditionChecker
         $now = new \DateTime("now");
         if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
             $runTime = null;
-            if ($this->deviceClass == "EdiMax") {
-                $runTime = $this->em->getRepository("App:EdiMaxDataStore")->getActiveDuration($this->ip);
-            } elseif($this->deviceClass == "MyStrom") {
+            if($this->deviceClass == "MyStrom") {
                 $runTime = $this->em->getRepository("App:MyStromDataStore")->getActiveDuration($this->ip);
             } elseif($this->deviceClass == "Shelly") {
                 $runTime = $this->em->getRepository("App:ShellyDataStore")->getActiveDuration($this->ip);
@@ -335,9 +328,6 @@ class ConditionChecker
             }
             if ($condArr[0] == 'runTime') {
                 $runTime = null;
-                if ($this->deviceClass == 'EdiMax') {
-                    $runTime = $this->em->getRepository("App:EdiMaxDataStore")->getActiveDuration($this->ip);
-                }
                 if ($this->deviceClass == 'MyStrom') {
                     $runTime = $this->em->getRepository("App:MyStromDataStore")->getActiveDuration($this->ip);
                 }
@@ -366,9 +356,7 @@ class ConditionChecker
             $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
             // check if device is currently running
             $status = [];
-            if ($deviceClass == "EdiMax") {
-                $status = $this->edimax->getStatus($device);
-            } elseif ($deviceClass == "MyStrom") {
+            if ($deviceClass == "MyStrom") {
                 $status = $this->mystrom->getStatus($device);
             } elseif ($deviceClass == "Shelly") {
                 $status = $this->shelly->getStatus($device);
@@ -400,9 +388,7 @@ class ConditionChecker
         if (array_key_exists('priority', $device) && $device['priority'] > 0 && array_key_exists('nominalPower', $device)) {
             // check if device is currently running
             $status = [];
-            if ($deviceClass == "EdiMax") {
-                $status = $this->edimax->getStatus($device);
-            } elseif ($deviceClass == "MyStrom") {
+            if ($deviceClass == "MyStrom") {
                 $status = $this->mystrom->getStatus($device);
             } elseif ($deviceClass == "Shelly") {
                 $status = $this->shelly->getStatus($device);
