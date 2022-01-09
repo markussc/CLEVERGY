@@ -475,7 +475,7 @@ class MyStromConnector
             $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
             if ($device) {
                 $config = $device->getConfig();
-                if (is_array($config) && array_key_exists('carId', $config)  && array_key_exists('deadline', $config)  && array_key_exists('percent', $config)) {
+                if (array_key_exists('ecar', $this->connectors) && is_array($config) && array_key_exists('carId', $config)  && array_key_exists('deadline', $config)  && array_key_exists('percent', $config) && array_key_exists($config['carId'], $this->connectors['ecar'])) {
                     $carTimerData = [
                         'carId' => $config['carId'],
                         'connectorId' => $this->connectors['ecar'][$config['carId']]['carId'],
