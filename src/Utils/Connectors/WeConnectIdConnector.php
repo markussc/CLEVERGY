@@ -32,14 +32,16 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $output = shell_exec('weconnect-cli --interval 900 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/status/batteryStatus');
+            $output = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/charging/batteryStatus');
             // find cruisingRange
             $output = str_replace("\t", "", $output);
             $outputArr = explode("\n", $output);
             $data['soc'] = str_replace("%", "", str_replace("Current SoC: ", "", $outputArr[1]));
             $data['range'] = str_replace("km", "", str_replace("Range: ", "", $outputArr[2]));
+            dump($data);
         } catch (\Exception $e) {
             // do nothing
+            dump("exception");
         }
 
         return $data;
