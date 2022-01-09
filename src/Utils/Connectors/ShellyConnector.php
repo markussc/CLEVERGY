@@ -542,7 +542,7 @@ class ShellyConnector
                         $status = $this->createStatus(2); // status = open
                         $timestamp = 0;
                     }
-                    if ($status['val'] !== 3) {
+                    if (is_array($status) && array_key_exists('val', $status) && $status['val'] !== 3) {
                         // status = 3 means closed
                         $alarms[] = [
                             'name' => $deviceConf['name'],
