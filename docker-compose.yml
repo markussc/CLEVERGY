@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   www:
-    image: oshans/www:0.0.1
+    image: oshans/www_${INSTANCENAME}:0.0.1
     container_name: www_${INSTANCENAME}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
