@@ -291,7 +291,7 @@
     {% if ecarConnector.carAvailable() %}
     <div class="columns small-12 medium-8 large-6 small-centered">
         <div id="ecar_container" class="content" style="display:none;">
-        <div id="ecar" class="refresh"">
+        <div id="ecar" class="refresh">
         {% for device in currentStat['ecar'] %}
             {{ device['name'] }}<br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ device['data']['soc']|default('???') }} %<br>

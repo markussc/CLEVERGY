@@ -4,6 +4,7 @@ twig:
     strict_variables: '%kernel.debug%'
     globals:
         locale: '%locale%'
+        secure_scheme: '%env(SECURE_SCHEME)%'
         connectors: '%connectors%'
         instancetitle: '%instancetitle%'
         chromecastConnector: '@App\Utils\Connectors\ChromecastConnector'
