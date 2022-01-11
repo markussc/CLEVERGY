@@ -10,7 +10,6 @@ parameters:
     locale: '%env(LOCALE)%'
     instancetitle: '%env(INSTANCETITLE)%'
     host: '%env(HOST)%'
-    secure_scheme: '%env(SECURE_SCHEME)%'
     session_cookie_path: '%env(SESSION_COOKIE_PATH)%'
     MAILER_SENDER_EMAIL: '%env(MAILER_SENDER_EMAIL)%'
     MAILER_SENDER_NAME: '%env(MAILER_SENDER_NAME)%'
