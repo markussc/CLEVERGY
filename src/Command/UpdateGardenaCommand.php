@@ -33,7 +33,7 @@ class UpdateGardenaCommand extends Command
      * @param OutputInterface $output
      * @return boolean
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // forcibly update the devices by requesting information from the gardena API
         $this->gardena->updateDevices(true);

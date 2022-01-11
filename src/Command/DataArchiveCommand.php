@@ -26,7 +26,7 @@ class DataArchiveCommand extends Command
             ->setHelp('This command moves all archiveable data to the archive which is older than the year before. Not archiveable data will be deleted.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $archiveClasses = [
             // with archive functionality

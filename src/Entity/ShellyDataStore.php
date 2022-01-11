@@ -12,7 +12,7 @@ class ShellyDataStore extends DataStoreBase
     /**
      * @var array
      *
-     * @ORM\Column(type="json_array")
+     * @ORM\Column(type="json")
      */
     private $jsonValue;
 

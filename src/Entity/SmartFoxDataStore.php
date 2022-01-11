@@ -14,7 +14,7 @@ class SmartFoxDataStore extends DataStoreBase
     /**
      * @var bool
      *
-     * @ORM\Column(type="json_array")
+     * @ORM\Column(type="json")
      */
     private $jsonValue;
 

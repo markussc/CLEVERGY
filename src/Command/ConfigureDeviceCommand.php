@@ -32,7 +32,7 @@ class ConfigureDeviceCommand extends Command
      * @param OutputInterface $output
      * @return boolean
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->logic->configureDevices();
 
