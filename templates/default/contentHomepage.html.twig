@@ -305,7 +305,7 @@
     {% if connectors['command']|default([])|length > 0 %}
     <div class="columns small-12 medium-8 large-6 small-centered">
         <div id="command_container" class="content" style="display:none;">
-        <div id="command" class="refresh"">
+        <div id="command" class="refresh">
         {% for key, command in connectors['command'] %}
             <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['command', {{ key }}]);"{% endif %}><i class="{{ command['icon']}}"></i>&nbsp;&nbsp;{{ command['name']}}</a>
             {% if not loop.last %}<br/>{% endif %}
