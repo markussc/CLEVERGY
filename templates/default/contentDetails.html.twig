@@ -31,7 +31,7 @@
     <div id="pcowebModeModal" class="reveal" data-reveal>
       <h4 id="pcowebModeModalTitle">{% trans %}label.pco.mode{% endtrans %}</h4>
       <p class="lead">{% trans %}label.pco.select_pcoweb_mode_lead{% endtrans %}</p>
-      <select class="select2" id="pcowebModeSelect">
+      <select id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
           {% if pcowebConnector.getIp() %}<option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>{% endif %}
@@ -45,7 +45,7 @@
     <div id="ppModeModal" class="reveal" data-reveal>
       <h4 id="ppModeModalTitle">{% trans %}label.pco.pp_status{% endtrans %}</h4>
       <p class="lead">{% trans %}label.pco.select_pp_mode_lead{% endtrans %}</p>
-      <select class="select2" id="ppModeSelect">
+      <select id="ppModeSelect">
           <option value="0">{% trans %}label.pco.ppmode.summer{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.ppmode.auto{% endtrans %}</option>
           <option value="2">{% trans %}label.pco.ppmode.holiday{% endtrans %}</option>
