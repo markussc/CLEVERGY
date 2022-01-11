@@ -23,7 +23,7 @@
                 if ($(data).find('#loginForm').length > 0) {
                     // logged out, we should redirect to the login page now
                     showSpinner();
-                    window.location.href = "{{ path('homepage') }}";
+                    window.location.href = "{{ absolute_url(path('homepage')) }}";
                 } else {
                     $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
                 }
