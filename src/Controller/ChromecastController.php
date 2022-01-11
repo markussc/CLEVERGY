@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Utils\Connectors\ChromecastConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Entity\Settings;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

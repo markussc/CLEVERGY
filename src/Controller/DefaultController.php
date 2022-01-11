@@ -16,7 +16,7 @@ use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\WemConnector;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
