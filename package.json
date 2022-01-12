@@ -1,10 +1,14 @@
 {
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
     "@popperjs/core": "^2.11.2",
     "@symfony/webpack-encore": "^1.7.0",
+    "chart.js": "^2.7.0",
     "file-loader": "^6.2.0",
-    "foundation-sites": "^6.7.4",
+    "foundation-sites": "^6.6.3",
     "jquery": "^3.6.0",
+    "moment": "^2.29.1",
+    "sass": "^1.47.0",
     "sass-loader": "^12.4.0",
     "webpack-notifier": "^1.15.0"
   }

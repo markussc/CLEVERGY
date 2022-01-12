@@ -16,7 +16,14 @@ import $ from 'jquery';
 global.$ = global.jQuery = $;
 
 // foundation
-require('foundation')
+require('foundation-sites');
+
+// moment.js
+var moment = require('moment');
+moment().format();
+
+// chart.js
+require('chart.js');
 
 require('../css/base.css');
 require('../css/modal.css');

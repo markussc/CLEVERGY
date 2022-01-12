@@ -1,2 +1,8 @@
 // foundation
-@import "~foundation-sites/scss/foundation";
+@import "~foundation-sites/dist/css/foundation-float.min";
+
+// font-awesome
+@import "~@fortawesome/fontawesome-free/css/all.min";
+
+// chart.js
+@import "~chart.js/dist/Chart";
