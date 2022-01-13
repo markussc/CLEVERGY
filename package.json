@@ -11,5 +11,8 @@
     "sass": "^1.47.0",
     "sass-loader": "^12.4.0",
     "webpack-notifier": "^1.15.0"
+  },
+  "dependencies": {
+    "@nesk/puphpeteer": "^2.0.0"
   }
 }
