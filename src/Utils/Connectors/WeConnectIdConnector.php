@@ -38,10 +38,8 @@ class WeConnectIdConnector
             $outputArr = explode("\n", $output);
             $data['soc'] = str_replace("%", "", str_replace("Current SoC: ", "", $outputArr[1]));
             $data['range'] = str_replace("km", "", str_replace("Range: ", "", $outputArr[2]));
-            dump($data);
         } catch (\Exception $e) {
             // do nothing
-            dump("exception");
         }
 
         return $data;
