@@ -41,6 +41,7 @@ class DataArchiveCommand extends Command
             // without archive functionality
             \App\Entity\MyStromDataStore::class,
             \App\Entity\ShellyDataStore::class,
+            \App\Entity\EcarDataStore::class,
         ];
         foreach ($archiveClasses as $archiveClass) {
             $items = $this->em->getRepository($archiveClass)->getArchiveable(100);
