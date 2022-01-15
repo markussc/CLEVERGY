@@ -299,7 +299,7 @@ class MyStromConnector
         $mystromEntity->setData($status['val']);
         if (array_key_exists('power', $status)) {
             $mystromEntity->setExtendedData($status);
-            if (array_key_exists('nominalPower', $device) && $status['power'] > 0) {
+            if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
                 // update nominalPower with the current power of the device if consumption is detected
                 $this->cm->updateConfig($device['ip'], ['nominalPower' => $status['power']]);
             }
