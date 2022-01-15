@@ -76,6 +76,9 @@ class ConfigManager {
         $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
         if ($settings) {
             $config = $settings->getConfig();
+            if ($config === null) {
+                $config = [];
+            }
             if (is_array($newConfig)) {
                 $config = array_merge($config, $newConfig);
             }
