@@ -5,6 +5,7 @@ namespace App\Utils\Connectors;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\ShellyDataStore;
+use App\Utils\ConfigManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -16,6 +17,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class ShellyConnector
 {
+    protected $cm;
     protected $em;
     private $client;
     private $baseUrl;
@@ -23,8 +25,9 @@ class ShellyConnector
     private $authkey;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
+    public function __construct(ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
+        $this->cm = $cm;
         $this->em = $em;
         $this->client = $client;
         $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
@@ -35,6 +38,13 @@ class ShellyConnector
             $this->server = $connectors['shellycloud']['server'];
             $this->authkey = $connectors['shellycloud']['authkey'];
         }
+    }
+
+    public function getConfig($connectorId)
+    {
+        $config = $this->cm->getConfig('shelly', $connectorId);
+
+        return $config;
     }
 
     /**
@@ -101,22 +111,26 @@ class ShellyConnector
         $status = $this->getStatus($device);
         $connectorId = $device['ip'].'_'.$device['port'];
         $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
-        if (isset($device['nominalPower'])) {
-            $nominalPower = $device['nominalPower'];
+        $config = $this->cm->getConfig('shelly', $connectorId);
+        if (!isset($config['port'])) {
+            $config['port'] = 0;
+        }
+        if (isset($config['nominalPower'])) {
+            $nominalPower = $config['nominalPower'];
         } else {
             $nominalPower = 0;
         }
-        if (isset($device['autoIntervals'])) {
-            $autoIntervals = $device['autoIntervals'];
+        if (isset($config['autoIntervals'])) {
+            $autoIntervals = $config['autoIntervals'];
         } else {
             $autoIntervals = [];
         }
 
         $result = [
-            'ip' => $device['ip'],
-            'port' => $device['port'],
-            'name' => $device['name'],
-            'type' => $device['type'],
+            'ip' => $config['ip'],
+            'port' => $config['port'],
+            'name' => $config['name'],
+            'type' => $config['type'],
             'status' => $status,
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
@@ -136,19 +150,23 @@ class ShellyConnector
     {
         $today = new \DateTime('today');
         $now = new \DateTime();
-
         if (!array_key_exists('port', $device)) {
             $device['port'] = 0;
         }
+
         $connectorId = $device['ip'].'_'.$device['port'];
         $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
-        if (isset($device['nominalPower'])) {
-            $nominalPower = $device['nominalPower'];
+        $config = $this->cm->getConfig('shelly', $connectorId);
+        if (!isset($config['port'])) {
+            $config['port'] = 0;
+        }
+        if (isset($config['nominalPower'])) {
+            $nominalPower = $config['nominalPower'];
         } else {
             $nominalPower = 0;
         }
-        if (isset($device['autoIntervals'])) {
-            $autoIntervals = $device['autoIntervals'];
+        if (isset($config['autoIntervals'])) {
+            $autoIntervals = $config['autoIntervals'];
         } else {
             $autoIntervals = [];
         }
@@ -161,10 +179,10 @@ class ShellyConnector
             $timestamp = 0;
         }
         return [
-            'ip' => $device['ip'],
-            'port' => $device['port'],
-            'name' => $device['name'],
-            'type' => $device['type'],
+            'ip' => $config['ip'],
+            'port' => $config['port'],
+            'name' => $config['name'],
+            'type' => $config['type'],
             'status' => $status,
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
@@ -499,29 +517,28 @@ class ShellyConnector
         }
     }
 
-    public function getConfig($ip, $port = null)
-    {
-        foreach ($this->connectors['shelly'] as $device) {
-            if ($device['ip'] == $ip && ($port === null || $device['port'] == $port)) {
-                return $device;
-            }
-        }
-        return null;
-    }
-
-    private function storeStatus($device, $status)
+    public function storeStatus($device, $status)
     {
         $connectorId = $this->getId($device);
         $shellyEntity = new ShellyDataStore();
         $shellyEntity->setTimestamp(new \DateTime('now'));
         $shellyEntity->setConnectorId($connectorId);
         $shellyEntity->setData($status);
+        if (array_key_exists('power', $status)) {
+            if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
+                // update nominalPower with the current power of the device if consumption is detected
+                $this->cm->updateConfig($connectorId, ['nominalPower' => $status['power']]);
+            }
+        }
         $this->em->persist($shellyEntity);
         $this->em->flush();
     }
 
     private function getId($device)
     {
+        if (!isset($device['port'])) {
+            $device['port'] = 0;
+        }
         return $device['ip'].'_'.$device['port'];
     }
 

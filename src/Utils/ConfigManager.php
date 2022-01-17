@@ -31,6 +31,15 @@ class ConfigManager {
                             $connectorIds[] = $device['ip'];
                         }
                         break;
+                    case $type === 'shelly':
+                        if (is_array($device) && array_key_exists('ip', $device) && array_key_exists('port', $device)) {
+                            // valid connectorId for switches/rollers contain ip and port
+                            $connectorIds[] = $device['ip'].'_'.$device['port'];
+                        } elseif (is_array($device) && array_key_exists('ip', $device)) {
+                            // valid connectorId for doors contain ip only
+                            $connectorIds[] = $device['ip'];
+                        }
+                        break;
                 }
             }
         }
@@ -50,6 +59,13 @@ class ConfigManager {
                             $config = $device;
                             break 2;
                         }
+                        break;
+                    case $type === 'shelly':
+                        if (is_array($device) && array_key_exists('ip', $device) && ($device['ip'].'_0' === $connectorId || (array_key_exists('port', $device) && $device['ip'].'_'.$device['port'] === $connectorId))) {
+                            $config = $device;
+                            break 2;
+                        }
+                        break;
                 }
             }
         }

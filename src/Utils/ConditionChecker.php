@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class ConditionChecker
 {
+    protected $cm;
     protected $em;
     protected $prio;
     protected $smartfox;
@@ -52,14 +53,14 @@ class ConditionChecker
         $this->ip = $device['ip'];
         $conf = $this->mystrom->getConfig($this->ip);
         if (null !== $conf) {
-            // this is a mystrom device
+            // this is a mystrom device; it's possible that there is an additional forceOff condition set, which is not part of the static/dynamic configuration!
             if (array_key_exists('forceOff', $device)) {
                 $conf['forceOff'] = $device['forceOff'];
             }
         }
         if (null === $conf) {
             // there is no mystrom device with this IP. We check if there is a shelly device instead
-            $conf = $this->shelly->getConfig($this->ip, $device['port']);
+            $conf = $this->shelly->getConfig($this->ip.'_'.$device['port']);
             $this->port = $device['port'];
             $this->deviceClass = "Shelly";
         }

@@ -962,27 +962,12 @@ class LogicProcessor
                 } else {
                     $shelly = $this->shelly->getOne($device);
                 }
-                if (!array_key_exists('port', $shelly)) {
-                    $shelly['port'] = 0;
-                }
-                $shellyEntity = new ShellyDataStore();
-                $shellyEntity->setTimestamp(new \DateTime('now'));
-                $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
-                $shellyEntity->setData($shelly['status']);
-                $this->em->persist($shellyEntity);
+                $this->shelly->storeStatus($shelly, $shelly['status']);
             }
         }
         else {
             foreach ($this->shelly->getAll() as $shelly) {
-                if (!array_key_exists('port', $shelly)) {
-                    $shelly['port'] = 0;
-                }
-
-                $shellyEntity = new ShellyDataStore();
-                $shellyEntity->setTimestamp(new \DateTime('now'));
-                $shellyEntity->setConnectorId($shelly['ip'].'_'.$shelly['port']);
-                $shellyEntity->setData($shelly['status']);
-                $this->em->persist($shellyEntity);
+                $this->shelly->storeStatus($shelly, $shelly['status']);
             }
         }
         $this->em->flush();
