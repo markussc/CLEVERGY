@@ -412,11 +412,6 @@ class LogicProcessor
      */
     private function autoActionsPcoWeb($pcoMode)
     {
-        if ($pcoMode === Settings::MODE_HOLIDAY) {
-            $autoMode = PcoWebConnector::MODE_HOLIDAY;
-        } else {
-            $autoMode = PcoWebConnector::MODE_AUTO;
-        }
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $smartfox = $this->smartfox->getAllLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
@@ -436,14 +431,17 @@ class LogicProcessor
             $tempOffset = (1 +(0-$outsideTemp)/10);
         }
 
-        // set the emergency temperature levels
+        // set the target and emergency temperature levels
+        $targetWaterTemp = 52;
         $minWaterTemp = 38;
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         if ($pcoMode == Settings::MODE_HOLIDAY) {
             $minInsideTemp = $minInsideTemp - 2;
+            $targetWaterTemp = $targetWaterTemp - 10;
+            $minWaterTemp = $minWaterTemp - 10;
         }
         // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = $this->minInsideTemp+1.7+$tempOffset;
+            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
@@ -493,7 +491,7 @@ class LogicProcessor
             if ($ppMode == PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] == 2) {
                 $log[] = "normalize hwHysteresis and hotWater after switching to MODE_SUMMER";
                 $this->pcoweb->executeCommand('hwHysteresis', 12);
-                $this->pcoweb->executeCommand('waterTemp', 52);
+                $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
             }
 
             // high PV power handling
@@ -542,13 +540,13 @@ class LogicProcessor
                     $insideEmergency = true;
                     $this->pcoweb->executeCommand('hc2', 30);
                     $log[] = "set hc2=30 as emergency action";
-                    if (($ppMode !== Settings::MODE_AUTO || $ppMode !== Settings::MODE_HOLIDAY) && $heatStorageMidTemp < 36 && $pcoweb['effDistrTemp'] < 25) {
+                    if (($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $heatStorageMidTemp < 36 && $pcoweb['effDistrTemp'] < 25) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
                 } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 5 && $nowDateTime->format('H') < 22)) {
                     // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
-                    $this->pcoweb->executeCommand('waterTemp', 45);
+                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp-7);
                     $this->pcoweb->executeCommand('hwHysteresis', 5);
                     $log[] = "set hwHysteresis to 5 and reduce waterTemp due to emergency action: we only want minimal water heating";
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
@@ -571,17 +569,17 @@ class LogicProcessor
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
                     // 2 hours before end of energyLowRate, we decrease the hwHysteresis to make sure the warm water can be be heated up (only warm water will be heated during this hour!)
-                    $this->pcoweb->executeCommand('hwHysteresis', 5);
-                    $log[] = "diffToEndOfLowEnergyRate <= 2. reduce hwHysteresis (5)";
                     if ($pcoMode !== Settings::MODE_HOLIDAY) {
                         $warmWater = true;
+                        $this->pcoweb->executeCommand('hwHysteresis', 5);
+                        $log[] = "diffToEndOfLowEnergyRate <= 2. reduce hwHysteresis (5)";
                     }
                     $activateHeating = true;
                 }
                 if ($warmWater && $ppMode !== PcoWebConnector::MODE_SUMMER && ($waterTemp < 50 || $heatStorageMidTemp < 36)) {
                     // warm water generation only
                     $this->pcoweb->executeCommand('hwHysteresis', 10);
-                    $this->pcoweb->executeCommand('waterTemp', 52);
+                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                 }
@@ -590,7 +588,7 @@ class LogicProcessor
                     $activateHeating = true;
                     if ((!$ppStatus || (PcoWebConnector::MODE_SUMMER && $waterTemp > $minWaterTemp + 4)) && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY)) {
                         $this->pcoweb->executeCommand('hwHysteresis', 10);
-                        $this->pcoweb->executeCommand('waterTemp', 52);
+                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY for storage only heating during low energy rate";
                     }
@@ -608,8 +606,8 @@ class LogicProcessor
                     $log[] = "set MODE_SUMMER in final low energy rate";
                 }
                 $this->pcoweb->executeCommand('hwHysteresis', 10);
-                $this->pcoweb->executeCommand('waterTemp', 52);
-                $log[] = "set hwHysteresis to default (10) and normalize waterTemp (52)";
+                $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                $log[] = "set hwHysteresis to default (10) and normalize waterTemp (".$targetWaterTemp.")";
             }
 
             // deactivate 2nd heating circle if insideTemp is > $maxInsideTemp
@@ -683,8 +681,8 @@ class LogicProcessor
                 } elseif ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp <= ($minInsideTemp + 1)) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $this->pcoweb->executeCommand('hwHysteresis', 10);
-                    $this->pcoweb->executeCommand('waterTemp', 52);
-                    $log[] = "set MODE_2ND and normalize hwHysteresis during low energy rate and lower inside temperature";
+                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                    $log[] = "set MODE_2ND and normalize hwHysteresis during low energy rate and lower inside temperature; set waterTemp = ".$targetWaterTemp;
                 }
             }
         }

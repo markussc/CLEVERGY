@@ -131,6 +131,11 @@ class PcoWebConnector
         $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
     }
 
+    /*
+     * Optimierung Heizungsumwälzpumpe
+     * 0: Ja
+     * 1: Nein
+     */
     private function setCpAutoMode($value)
     {
         // set mode
