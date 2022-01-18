@@ -508,10 +508,10 @@ class LogicProcessor
                 }
             }
 
-            // heat storage is low or net power is not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
-            if ($heatStorageMidTemp < 33 || ($avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
+            // heat storage is low or net power is negative or at least not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
+            if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 45 || $waterTemp < 45 )) || $avgPower < 0) {
                 $power = $this->pcoweb->getPower();
-                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
+                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2 && $avgPower < $power) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
                     // - winter, cloudy or later than 10am together with avgPvPower > power/2
