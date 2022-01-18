@@ -15,6 +15,7 @@ parameters:
             version: pro # optional parameter. Only needs to be set for the SmartFox PRO. If not set, the REG 9TE is assumed.
         pcoweb:
             ip: 192.168.178.20
+            power: 2900 # relevant electrical power requirement in watts
         wem: # connector for WEM Portal (Weishaupt Energy Manager)
             username: me@you.com
             password:  mysecret

@@ -3,14 +3,12 @@
 namespace App\Utils;
 
 use App\Entity\Settings;
-use App\Entity\MyStromDataStore;
 use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
 use App\Entity\PcoWebDataStore;
 use App\Entity\WemDataStore;
 use App\Entity\SmartFoxDataStore;
 use App\Entity\MobileAlertsDataStore;
-use App\Entity\ShellyDataStore;
 use App\Entity\NetatmoDataStore;
 use App\Entity\EcarDataStore;
 use App\Entity\CommandLog;
@@ -512,11 +510,13 @@ class LogicProcessor
 
             // heat storage is low or net power is not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
             if ($heatStorageMidTemp < 33 || ($avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 55 || $waterTemp < 62 ))) {
-                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 10) || \date('G') > 12) && $avgPvPower > 1300) || ($isSummer && $avgPvPower > 3000) )) {
+                $power = $this->pcoweb->getPower();
+                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
-                    // - winter, cloudy or later than 12am together with avgPvPower > 1300 W
-                    // - summer and avgPvPower > 3000 W
+                    // - winter, cloudy or later than 10am together with avgPvPower > power/2
+                    // - summer and avgPvPower > power*1.2
+                    // - power + avgPower < 0
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
                     $this->pcoweb->executeCommand('hwHysteresis', 10);
