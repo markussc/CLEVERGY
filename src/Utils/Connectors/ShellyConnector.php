@@ -40,6 +40,21 @@ class ShellyConnector
         }
     }
 
+    public function hasConnectorId($connectorId)
+    {
+        $exists = false;
+        if (array_key_exists('shelly', $this->connectors)) {
+            foreach ($this->connectors['shelly'] as $deviceConf) {
+                if ($this->getId($deviceConf) == $connectorId) {
+                    $exists = true;
+                    break;
+                }
+            }
+        }
+
+        return $exists;
+    }
+
     public function getConfig($connectorId)
     {
         $config = $this->cm->getConfig('shelly', $connectorId);

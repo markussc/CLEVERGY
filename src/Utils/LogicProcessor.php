@@ -52,6 +52,11 @@ class LogicProcessor
     protected $translator;
     protected $energyLowRate;
     protected $connectors;
+    private $smartfoxLatest;
+    private $avgPower;
+    private $avgPvPower;
+    private $shellyLatest;
+    private $mystromLatest;
 
     public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
@@ -74,18 +79,24 @@ class LogicProcessor
         $this->minInsideTemp = $minInsideTemp;
         $this->connectors = $connectors;
         $this->translator = $translator;
+
+        $this->smartfoxLatest = null;
+        $this->avgPower = null;
+        $this->avgPvPower = null;
+        $this->shellyLatest = null;
+        $this->mystromLatest = null;
     }
 
     public function execute()
     {
+        // smartfox
+        $smartfox = $this->initSmartfox();
+
         // mystrom
         $this->initMystrom();
 
         // shelly
         $this->initShelly();
-
-        // smartfox
-        $smartfox = $this->initSmartfox();
 
         // conexio
         $this->initConexio();
@@ -164,84 +175,86 @@ class LogicProcessor
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached mystrom devices
      */
-    public function autoActionsMystrom()
+    public function autoActionsMystrom($connectorId = null)
     {
-        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+        if ($connectorId === null || $this->mystrom->hasConnectorId($connectorId)) {
+            $avgPower = $this->getAvgPower();
 
-        // get current net_power
-        $smartfox = $this->smartfox->getAllLatest();
-        $netPower = $smartfox['power_io'];
+            // get current net_power
+            $smartfox = $this->getSmartfoxLatest();
+            $netPower = $smartfox['power_io'];
 
-        // get  mystrom values
-        $mystromDevices = $this->mystrom->getAllLatest();
+            // get  mystrom values
+            $mystromDevices = $this->getMystromLatest();
 
-        // if device is of type battery, calculate the remaining required total runtime and store temporarily as "forceOff --> runTime" condition). It will then turn off if the accumulated activeDuration (over several days) has reached the requested activeTime
-        foreach ($mystromDevices as $deviceId => $mystrom) {
-            if ($mystrom['type'] == 'battery') {
-                if (array_key_exists('activeTime', $mystrom['timerData']) && array_key_exists('activeDuration', $mystrom['timerData']) && $mystrom['timerData']['activeTime']*60 > $mystrom['timerData']['activeDuration']) {
-                    // we have not reached the activeTime we need for this battery
-                    $mystromDevices[$deviceId]['forceOff'][]['runTime'] = 24*60;
-                } else {
-                    // we have reached the activeTime we need for this battery
-                    $mystromDevices[$deviceId]['forceOff'][]['runTime'] = 0;
+            // if device is of type battery, calculate the remaining required total runtime and store temporarily as "forceOff --> runTime" condition). It will then turn off if the accumulated activeDuration (over several days) has reached the requested activeTime
+            foreach ($mystromDevices as $deviceId => $mystrom) {
+                if ($mystrom['type'] == 'battery') {
+                    if (array_key_exists('activeTime', $mystrom['timerData']) && array_key_exists('activeDuration', $mystrom['timerData']) && $mystrom['timerData']['activeTime']*60 > $mystrom['timerData']['activeDuration']) {
+                        // we have not reached the activeTime we need for this battery
+                        $mystromDevices[$deviceId]['forceOff'][]['runTime'] = 24*60;
+                    } else {
+                        // we have reached the activeTime we need for this battery
+                        $mystromDevices[$deviceId]['forceOff'][]['runTime'] = 0;
+                    }
                 }
             }
-        }
 
-        // auto actions for devices which have a nominalPower
-        if ($netPower > 0) {
-            if ($avgPower > 0) {
-                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+            // auto actions for devices which have a nominalPower
+            if ($netPower > 0) {
+                if ($avgPower > 0) {
+                    // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                    foreach ($mystromDevices as $deviceId => $mystrom) {
+                        if ($mystrom['nominalPower'] > 0) {
+                            // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                            if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                                continue;
+                            }
+                            // check if the device is on and allowed to be turned off
+                            if ($mystrom['status']['val'] && $this->mystrom->switchOK($deviceId)) {
+                                $this->mystrom->executeCommand($deviceId, 0);
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
                 foreach ($mystromDevices as $deviceId => $mystrom) {
                     if ($mystrom['nominalPower'] > 0) {
-                        // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
+                        // check for "forceOff" conditions (if true, try to turn it off and skip
+                        if ($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
+                            $this->forceOffMystrom($deviceId, $mystrom);
+                            continue;
+                        }
+                        // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
                         if ($this->forceOnMystrom($deviceId, $mystrom)) {
                             continue;
                         }
-                        // check if the device is on and allowed to be turned off
-                        if ($mystrom['status']['val'] && $this->mystrom->switchOK($deviceId)) {
-                            $this->mystrom->executeCommand($deviceId, 0);
-                            break;
+                        // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                        if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($mystrom, 'on') && $this->mystrom->switchOK($deviceId)) {
+                            if($this->mystrom->executeCommand($deviceId, 1)) {
+                                break;
+                            } else {
+                                continue;
+                            }
                         }
                     }
                 }
             }
-        } else {
-            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+
+            // auto actions for devices without nominal power
             foreach ($mystromDevices as $deviceId => $mystrom) {
-                if ($mystrom['nominalPower'] > 0) {
-                    // check for "forceOff" conditions (if true, try to turn it off and skip
-                    if ($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
-                        $this->forceOffMystrom($deviceId, $mystrom);
-                        continue;
-                    }
-                    // if a "forceOn" condition is set, check it (if true, try to turn it on and skip)
-                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
-                        continue;
-                    }
-                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
-                    if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($mystrom, 'on') && $this->mystrom->switchOK($deviceId)) {
-                        if($this->mystrom->executeCommand($deviceId, 1)) {
-                            break;
-                        } else {
+                if ($mystrom['nominalPower'] == 0) {
+                    if($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
+                        if ($this->forceOffMystrom($deviceId, $mystrom)) {
                             continue;
                         }
-                    }
-                }
-            }
-        }
-
-        // auto actions for devices without nominal power
-        foreach ($mystromDevices as $deviceId => $mystrom) {
-            if ($mystrom['nominalPower'] == 0) {
-                if($this->conditionchecker->checkCondition($mystrom, 'forceOff')) {
-                    if ($this->forceOffMystrom($deviceId, $mystrom)) {
-                        continue;
-                    }
-                } elseif ($this->conditionchecker->checkCondition($mystrom, 'forceOn')) {
-                    // we only try to activate if we disable not close just before (disable wins)
-                    if ($this->forceOnMystrom($deviceId, $mystrom)) {
-                        continue;
+                    } elseif ($this->conditionchecker->checkCondition($mystrom, 'forceOn')) {
+                        // we only try to activate if we disable not close just before (disable wins)
+                        if ($this->forceOnMystrom($deviceId, $mystrom)) {
+                            continue;
+                        }
                     }
                 }
             }
@@ -278,14 +291,14 @@ class LogicProcessor
      */
     public function autoActionsShelly()
     {
-        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+        $avgPower = $this->getAvgPower();
 
         // get current net_power
-        $smartfox = $this->smartfox->getAllLatest();
+        $smartfox = $this->getSmartfoxLatest();
         $netPower = $smartfox['power_io'];
 
         // get  shelly values
-        $shellyDevices = $this->shelly->getAllLatest();
+        $shellyDevices = $this->getShellyLatest();
 
         foreach ($shellyDevices as $deviceId => $shelly) {
             $shellyConfig = $this->connectors['shelly'][$deviceId];
@@ -411,10 +424,10 @@ class LogicProcessor
     private function autoActionsPcoWeb($pcoMode)
     {
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
-        $smartfox = $this->smartfox->getAllLatest();
+        $smartfox = $this->getSmartfoxLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
-        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
-        $avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+        $avgPower = $this->getAvgPower();
+        $avgPvPower = $this->getAvgPvPower();
         $nowDateTime = new \DateTime();
         $diffToEndOfLowEnergyRate = $this->energyLowRate['end'] - $nowDateTime->format('H');
         if ($diffToEndOfLowEnergyRate < 0) {
@@ -514,7 +527,7 @@ class LogicProcessor
                 if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2 && $avgPower < $power) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
                     // detected high PV power (independently of current use), but SmartFox is not forcing heating
                     // and either
-                    // - winter, cloudy or later than 10am together with avgPvPower > power/2
+                    // - winter, cloudy or later than 10h or later than 13h together with avgPvPower > power/2 and avgPower < power
                     // - summer and avgPvPower > power*1.2
                     // - power + avgPower < 0
                     $activateHeating = true;
@@ -699,11 +712,11 @@ class LogicProcessor
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $wem = $this->wem->getAllLatest();
         $outsideTemp = $wem['outsideTemp'];
-        $smartfox = $this->smartfox->getAllLatest();
+        $smartfox = $this->getSmartfoxLatest();
         $smartFoxHighPower = $smartfox['digital'][1]['state'];
         $netPower = $smartfox['power_io'];
-        $avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
-        $avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+        $avgPower = $this->getAvgPower()();
+        $avgPvPower = $this->getAvgPvPower();
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
         // readout current temperature values
@@ -935,7 +948,8 @@ class LogicProcessor
                 $this->mystrom->storeStatus($mystrom, $mystrom['status']);
             }
         } else {
-            foreach ($this->mystrom->getAll() as $mystrom) {
+            $this->mystromLatest = $this->mystrom->getAll();
+            foreach ($this->mystromLatest as $mystrom) {
                 $this->mystrom->storeStatus($mystrom, $mystrom['status']);
             }
         }
@@ -964,7 +978,8 @@ class LogicProcessor
             }
         }
         else {
-            foreach ($this->shelly->getAll() as $shelly) {
+            $this->shellyLatest = $this->shelly->getAll();
+            foreach ($this->shellyLatest as $shelly) {
                 $this->shelly->storeStatus($shelly, $shelly['status']);
             }
         }
@@ -988,6 +1003,7 @@ class LogicProcessor
             $smartfoxEntity->setData($smartfox);
             $this->em->persist($smartfoxEntity);
             $this->em->flush();
+            $this->smartfoxLatest = $smartfox;
         }
 
         return $smartfox;
@@ -1144,5 +1160,50 @@ class LogicProcessor
                 }
             }
         }
+    }
+
+    private function getSmartfoxLatest()
+    {
+        if ($this->smartfoxLatest === null) {
+            $this->smartfoxLatest = $this->smartfox->getAllLatest();
+        }
+
+        return $this->smartfoxLatest;
+    }
+
+    private function getAvgPower()
+    {
+        if ($this->avgPower === null) {
+            $this->avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+        }
+
+        return $this->avgPower;
+    }
+
+    private function getAvgPvPower()
+    {
+        if ($this->avgPvPower === null) {
+            $this->avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+        }
+
+        return $this->avgPvPower;
+    }
+
+    private function getMystromLatest()
+    {
+        if ($this->mystromLatest === null) {
+            $this->mystromLatest = $this->mystrom->getAllLatest();
+        }
+
+        return $this->mystromLatest;
+    }
+
+    private function getShellyLatest()
+    {
+        if ($this->shellyLatest === null) {
+            $this->shellyLatest = $this->shelly->getAllLatest();
+        }
+
+        return $this->shellyLatest;
     }
 }

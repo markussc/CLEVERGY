@@ -33,6 +33,21 @@ class MyStromConnector
         $this->session_cookie_path = $session_cookie_path;
     }
 
+    public function hasConnectorId($connectorId)
+    {
+        $exists = false;
+        if (array_key_exists('mystrom', $this->connectors)) {
+            foreach ($this->connectors['mystrom'] as $deviceConf) {
+                if (isset($deviceConf['ip']) && $deviceConf['ip'] == $connectorId) {
+                    $exists = true;
+                    break;
+                }
+            }
+        }
+
+        return $exists;
+    }
+
     public function getAlarms()
     {
         $alarms = [];
