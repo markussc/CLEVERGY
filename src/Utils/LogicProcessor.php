@@ -445,7 +445,7 @@ class LogicProcessor
         // set the target and emergency temperature levels
         $targetWaterTemp = 52;
         $minWaterTemp = 38;
-        $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
+        $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
         if ($pcoMode == Settings::MODE_HOLIDAY) {
             $minInsideTemp = $minInsideTemp - 2;
             $targetWaterTemp = $targetWaterTemp - 10;
