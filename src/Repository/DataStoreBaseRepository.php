@@ -25,17 +25,6 @@ class DataStoreBaseRepository extends EntityRepository
         }
     }
 
-    public function getLatestElement($ip)
-    {
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
-            ->orderBy('e.timestamp', 'desc')
-            ->setParameter('ip', $ip)
-            ->setMaxResults(1);
-
-        return $qb->getQuery()->getResult();
-    }
-
     public function getHistoryLast24h($ip)
     {
         $start = new \DateTime();
