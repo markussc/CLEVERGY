@@ -958,15 +958,7 @@ class LogicProcessor
     public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port
     {
         if ($deviceId !== null) {
-            $port = null;
-            $ip_port = explode("_", $deviceId);
-            $ip = $ip_port[0];
-            if (count($ip_port) > 1) {
-                $port = $ip_port[1];
-            } else {
-                $port = null;
-            }
-            $device = $this->shelly->getConfig($ip, $port);
+            $device = $this->shelly->getConfig($deviceId);
             if ($device) {
                 if ($action !== null) {
                     $shelly = $device;
