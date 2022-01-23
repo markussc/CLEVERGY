@@ -507,11 +507,11 @@ class ShellyConnector
                         return false;
                     }
                 case 'configureOpen':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/2';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_0/2';
                     $reqUrl = 'settings/actions?index=0&name=open_url&enabled=true&urls[]='.$triggerUrl;
                     break;
                 case 'configureClose':
-                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'/3';
+                    $triggerUrl = 'http://'.$this->host.$this->session_cookie_path.'trigger/'.$device['ip'].'_0/3';
                     $reqUrl = 'settings/actions?index=0&name=close_url&enabled=true&urls[]='.$triggerUrl;
                     break;
             }
