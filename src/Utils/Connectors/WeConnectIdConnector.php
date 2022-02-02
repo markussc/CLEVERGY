@@ -32,7 +32,7 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $output = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/charging/batteryStatus');
+            $output = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging/batteryStatus');
             // find cruisingRange
             $output = str_replace("\t", "", $output);
             $outputArr = explode("\n", $output);
