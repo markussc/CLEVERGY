@@ -5,6 +5,7 @@ namespace App\Utils\Connectors;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\MyStromDataStore;
+use App\Utils\ConfigManager;
 use App\Utils\Connectors\EcarConnector;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -16,18 +17,35 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class MyStromConnector
 {
+    protected $cm;
     protected $em;
     protected $ecar;
     protected $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
+    public function __construct(ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
     {
+        $this->cm = $cm;
         $this->em = $em;
         $this->client = $client;
         $this->ecar = $ecar;
         $this->connectors = $connectors;
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
+    }
+
+    public function hasConnectorId($connectorId)
+    {
+        $exists = false;
+        if (array_key_exists('mystrom', $this->connectors)) {
+            foreach ($this->connectors['mystrom'] as $deviceConf) {
+                if (isset($deviceConf['ip']) && $deviceConf['ip'] == $connectorId) {
+                    $exists = true;
+                    break;
+                }
+            }
+        }
+
+        return $exists;
     }
 
     public function getAlarms()
@@ -74,38 +92,39 @@ class MyStromConnector
         $today = new \DateTime('today');
         $now = new \DateTime();
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
-            foreach ($this->connectors['mystrom'] as $device) {
-                $mode = $this->em->getRepository('App:Settings')->getMode($device['ip']);
-                if (isset($device['nominalPower'])) {
-                    $nominalPower = $device['nominalPower'];
+            foreach ($this->cm->getConnectorIds('mystrom') as $connectorId) {
+                $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
+                $config = $this->cm->getConfig('mystrom', $connectorId);
+                if (isset($config['nominalPower'])) {
+                    $nominalPower = $config['nominalPower'];
                 } else {
                     $nominalPower = 0;
                 }
-                if (isset($device['autoIntervals'])) {
-                    $autoIntervals = $device['autoIntervals'];
+                if (isset($config['autoIntervals'])) {
+                    $autoIntervals = $config['autoIntervals'];
                 } else {
                     $autoIntervals = [];
                 }
-                if (isset($device['type'])) {
-                    $type = $device['type'];
+                if (isset($config['type'])) {
+                    $type = $config['type'];
                 } else {
                     $type = 'relay';
                 }
                 $result = [
-                    'ip' => $device['ip'],
-                    'name' => $device['name'],
+                    'ip' => $config['ip'],
+                    'name' => $config['name'],
                     'type' => $type,
-                    'status' => $this->createStatus($this->em->getRepository('App:MyStromDataStore')->getLatestExtended($device['ip'])),
+                    'status' => $this->createStatus($this->em->getRepository('App:MyStromDataStore')->getLatestExtended($connectorId)),
                     'nominalPower' => $nominalPower,
                     'autoIntervals' => $autoIntervals,
                     'mode' => $mode,
-                    'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
-                    'timerData' => $this->getTimerData($device),
-                    'carTimerData' => $this->getCarTimerData($device),
+                    'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($connectorId, $today, $now),
+                    'timerData' => $this->getTimerData($config),
+                    'carTimerData' => $this->getCarTimerData($config),
                 ];
                 if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
-                    $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
-                    $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), $today);
+                    $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($connectorId, $today, $now);
+                    $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), $today);
                 }
                 $results[] = $result;
             }
@@ -134,37 +153,38 @@ class MyStromConnector
 
         $status = $this->getStatus($device);
         $mode = $this->em->getRepository('App:Settings')->getMode($device['ip']);
-        if (isset($device['nominalPower'])) {
-            $nominalPower = $device['nominalPower'];
+        $config = $this->cm->getConfig('mystrom', $device['ip']);
+        if (isset($config['nominalPower'])) {
+            $nominalPower = $config['nominalPower'];
         } else {
             $nominalPower = 0;
         }
-        if (isset($device['autoIntervals'])) {
-            $autoIntervals = $device['autoIntervals'];
+        if (isset($config['autoIntervals'])) {
+            $autoIntervals = $config['autoIntervals'];
         } else {
             $autoIntervals = [];
         }
-        if (isset($device['type'])) {
-            $type = $device['type'];
+        if (isset($config['type'])) {
+            $type = $config['type'];
         } else {
             $type = 'relay';
         }
 
         $result = [
-            'ip' => $device['ip'],
-            'name' => $device['name'],
+            'ip' => $config['ip'],
+            'name' => $config['name'],
             'type' => $type,
             'status' => $status,
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
-            'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($device['ip'], $today, $now),
+            'activeMinutes' => $this->em->getRepository('App:MyStromDataStore')->getActiveDuration($config['ip'], $today, $now),
             'timerData' => $this->getTimerData($device),
             'carTimerData' => $this->getCarTimerData($device),
         ];
         if (array_key_exists('power', $result['status'])) {
-            $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], $today, $now);
-            $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($device['ip'], new \DateTime('yesterday'), $today);
+            $result['consumption_day'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($config['ip'], $today, $now);
+            $result['consumption_yesterday'] = $this->em->getRepository('App:MyStromDataStore')->getConsumption($config['ip'], new \DateTime('yesterday'), $today);
         }
 
         return $result;
@@ -294,6 +314,10 @@ class MyStromConnector
         $mystromEntity->setData($status['val']);
         if (array_key_exists('power', $status)) {
             $mystromEntity->setExtendedData($status);
+            if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
+                // update nominalPower with the current power of the device if consumption is detected
+                $this->cm->updateConfig($device['ip'], ['nominalPower' => $status['power']]);
+            }
         }
         $this->em->persist($mystromEntity);
         $this->em->flush();
@@ -427,15 +451,12 @@ class MyStromConnector
 
     public function getConfig($ip)
     {
-        foreach ($this->connectors['mystrom'] as $device) {
-            if ($device['ip'] == $ip) {
-                if (array_key_exists('type', $device) && $device['type'] == 'carTimer') {
-                    $device['carTimerData'] = $this->getCarTimerData($device);
-                }
-                return $device;
-            }
+        $config = $this->cm->getConfig('mystrom', $ip);
+        if (is_array($config) && array_key_exists('type', $config) && $config['type'] == 'carTimer') {
+            $config['carTimerData'] = $this->getCarTimerData($config);
         }
-        return null;
+
+        return $config;
     }
 
     private function getTimerData($device)

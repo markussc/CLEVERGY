@@ -72,3 +72,7 @@ services:
             $session_cookie_path: "%session_cookie_path%"
     App\Utils\Connectors\WeConnectIdConnector:
         public: false
+    App\Utils\ConfigManager:
+        public: false
+        arguments:
+            $connectors: "%connectors%"

@@ -3,7 +3,6 @@
 namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -111,68 +110,21 @@ class MobileAlertsConnector
      */
     public function getAll()
     {
-        $rest = $this->getAllRest();
-        $web = $this->getAllWeb();
-        $all = array_merge($rest, $web);
-
-        return $all;
-    }
-
-    /**
-     * @return array
-     * 
-     * Retrieves the available data using the 
-     */
-    public function getAllWeb()
-    {
-        $data = [];
-        $this->basePath = 'https://measurements.mobile-alerts.eu/Home/SensorsOverview?phoneid=';
-        try {
-            $response = $this->client->request('GET', $this->basePath . $this->connectors['mobilealerts']['phoneid']);
-            $crawler = new Crawler();
-            $crawler->addContent($response->getContent());
-            $sensorComponents = $crawler->filter('.sensor-component');
-
-            $currentSensor = '';
-            $measurementCounter = 0;
-            foreach ($sensorComponents as $sensorComponent) {
-                $cr = new Crawler($sensorComponent);
-                $label = $cr->filter('h5')->text();
-                $value = $cr->filter('h4')->text();
-                if ($label == 'ID') {
-                    // next sensor
-                    $currentSensor = $value;
-                    $measurementCounter = 0;
-                } elseif (!$this->checkProSensor($currentSensor) && array_key_exists($currentSensor, $this->connectors['mobilealerts']['sensors'])) {
-                    if ($this->validateDate($value)) {
-                        // this is the timestamp
-                        $data[$currentSensor][] = [
-                            'label' => 'timestamp',
-                            'value' => $value,
-                            'datetime' => \DateTime::createFromFormat('d.m.Y H:i:s', $value),
-                        ];
-                    } else {
-                        // next measurement
-                        $data[$currentSensor][] = $this->createStorageData($currentSensor, $measurementCounter, $value);
-                        $measurementCounter++;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            return $data;
-        }
-
-        return $data;
+        return $this->getAllRest();
     }
 
     private function checkProSensor($id)
     {
         $proSensors = [
             '01', # MA10120
+            '02', # Temperature
+            '03', # Temperature + Humidity
+            '07', # Base station
             '08', # MA10650
             '09', # MA10320
             '0B', # MA10660
             '0E', # MA10241
+            '10', # Window/Door
         ];
         foreach ($proSensors as $proSensor) {
             if (strpos($id, $proSensor) === 0) {
@@ -181,12 +133,6 @@ class MobileAlertsConnector
         }
 
         return false;
-    }
-
-    private function validateDate($date, $format = 'd.m.Y H:i:s') 
-    {    
-        $d = \DateTime::createFromFormat($format, $date);    
-        return $d && $d->format($format) == $date; 
     }
 
     private function createStorageData($currentSensor, $measurementCounter, $value)
@@ -207,11 +153,17 @@ class MobileAlertsConnector
         }
         if (array_key_exists(4, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) && $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][4] === 'contact') {
             if (!array_key_exists(5, $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter]) || $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][5] !== 'inverted') {
-                $value = str_replace('Geschlossen', 'label.device.status.closed', $value);
-                $value = str_replace('Offen', 'label.device.status.open', $value);
+                if ($value) {
+                    $value = 'label.device.status.open';
+                } else {
+                    $value = 'label.device.status.closed';
+                }
             } else {
-                $value = str_replace('Geschlossen', 'label.device.status.open', $value);
-                $value = str_replace('Offen', 'label.device.status.closed', $value);
+                if (!$value) {
+                    $value = 'label.device.status.open';
+                } else {
+                    $value = 'label.device.status.closed';
+                }
             }
         } else {
             $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
@@ -238,12 +190,12 @@ class MobileAlertsConnector
     private function getAllRest()
     {
         // executes a post request containing deviceids + phoneid to the REST API
-        //curl -d deviceids=XXXXXXXXXXXX -d phoneid=XXXXXXXXXXXX http://www.data199.com:8080/api/pv1/device/lastmeasurement
-        // available for sensors of types ID01, ID08, ID09, ID0B and ID0E 
+        //curl -d deviceids=XXXXXXXXXXXX http://www.data199.com:8080/api/pv1/device/lastmeasurement
+        // available for sensors according to https://mobile-alerts.eu/info/public_server_api_documentation.pdf
 
         $this->basePath = "https://www.data199.com/api/pv1/device/lastmeasurement";
 
-        // get proSensors only
+        // get proSensors only (this is to check if the sensor is in the list of supported sensors). Previously, the REST API was available only for the Pro sensors.
         $deviceIds = [];
         foreach ($this->connectors['mobilealerts']['sensors'] as $id => $sensor) {
             if ($this->checkProSensor($id)) {
@@ -267,6 +219,14 @@ class MobileAlertsConnector
         }
 
         // prepare return
+        return $this->extractData($responseArr);
+    }
+
+    /**
+     * takes the response array as delivered by either the REST or APP API and returns the entries ready for storage
+     */
+    private function extractData($responseArr)
+    {
         $assocArr = [];
         if (array_key_exists('devices', $responseArr)) {
             foreach ($responseArr['devices'] as $device) {
@@ -284,24 +244,40 @@ class MobileAlertsConnector
                 // use the function createStorageData to create the array backwards compatible
                 $type = substr($id, 0, 2);
                 switch ($type) {
-                    case '01':
+                    case '01': // pro
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['t2']);
                         break;
-                    case '08':
+                    case '02':
+                        $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
+                        break;
+                    case '03':
+                        $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
+                        $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['h']);
+                        break;
+                    case '07':
+                        $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
+                        $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['h']);
+                        $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['t2']);
+                        $assocArr[$id][] = $this->createStorageData($id, 3, $device['measurement']['h2']);
+                        break;
+                    case '08': // pro
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['r']);
                         break;
-                    case '09':
+                    case '09': // pro
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['t2']);
                         $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['h']);
                         break;
-                    case '0B':
+                    case '10':
+                        $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['w']);
+                        break;
+                    case '0B': // pro
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['ws']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['wg']);
                         $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['wd']);
                         break;
-                    case '0E':
+                    case '0E': // pro
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['h']);
                         break;
@@ -331,5 +307,74 @@ class MobileAlertsConnector
         } else {
             return false;
         }
+    }
+
+    /**
+     *
+     * @return array
+     *
+     * Retrieves the available data using the APP API (NOTE: This method is currently not required as all sensors may be queried via the public REST API)
+     * Refer to: https://github.com/sarnau/MMMMobileAlerts/blob/master/MobileAlertsGatewayApplicationAPI.markdown
+     */
+    private function getAllApp()
+    {
+        $this->basePath = "https://www.data199.com/api/pv1/device/lastmeasurement";
+
+        // get proSensors only
+        $deviceIds = [];
+        foreach ($this->connectors['mobilealerts']['sensors'] as $id => $sensor) {
+            if (!$this->checkProSensor($id)) {
+                $deviceIds[] = $id;
+            }
+        }
+
+        $url = 'http://www.data199.com:8080/api/v1/dashboard';
+        $request = 'devicetoken=empty';
+        $request .= '&vendorid=BE60BB85-EAC9-4C5B-8885-1A54A9D51E29';
+        $request .= '&phoneid='.$this->connectors['mobilealerts']['phoneid'];
+        $request .= '&version=1.21';
+        $request .= '&build=248';
+        $request .= '&executable=Mobile Alerts';
+        $request .= '&bundle=de.synertronixx.remotemonitor';
+        $request .= '&lang=en';
+        $request .= '&timezoneoffset=60';
+        $request .= '&timeampm=true';
+        $request .= '&usecelsius=true';
+        $request .= '&usemm=true';
+        $request .= '&speedunit=0';
+        $request .= '&timestamp='.time();
+
+        $requestMD5 = $request.'uvh2r1qmbqk8dcgv0hc31a6l8s5cnb0ii7oglpfj'; # SALT for the MD5
+        $requestMD5 = str_replace('-', '', $requestMD5);
+        $requestMD5 = str_replace(',', '', $requestMD5);
+        $requestMD5 = str_replace('.', '', $requestMD5);
+        $requestMD5 = strtolower($requestMD5);
+        $requestMD5 = utf8_encode($requestMD5);
+        $hexdig = md5($requestMD5);
+
+        $request .= '&requesttoken='.$hexdig;
+        $request .= '&deviceids='.join(',', $deviceIds);
+
+        // try to post request
+        try {
+            $responseJson = $this->client->request(
+                'POST',
+                $this->basePath,
+                [
+                    'headers' => [
+                        'User-Agent' => 'remotemonitor/248 CFNetwork/758.2.8 Darwin/15.0.0',
+                        'Accept-Language' => 'en-us',
+                        'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
+                        'Host' => 'www.data199.com:8080'
+                    ],
+                    'body' => $request
+                ])->getContent(false);
+            $responseArr = json_decode($responseJson, true);
+        } catch (\Exception $e) {
+            $responseArr =  [];
+        }
+
+        // prepare return
+        return $this->extractData($responseArr);
     }
 }

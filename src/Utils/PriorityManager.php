@@ -9,6 +9,9 @@ use App\Utils\Connectors\EcarConnector;
 class PriorityManager
 {
     private $connectors;
+    private $mystrom;
+    private $shelly;
+    private $ecar;
 
     public function __construct($connectors, MyStromConnector $mystrom, ShellyConnector $shelly, EcarConnector $ecar)
     {

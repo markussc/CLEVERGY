@@ -16,7 +16,6 @@
 {% block javascriptsembedded %}
     <script>
         (function worker() {
-            $("#visualDashboardMap").attr("src", "{{ path('visual_dashboard') }}?timestamp="  + new Date().getTime());
             $.ajax({
               url: '{{ path('refresh', {'details': details}) }}', 
               success: function(data) {

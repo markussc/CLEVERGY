@@ -23,14 +23,16 @@ class PcoWebConnector
     protected $client;
     protected $basePath;
     protected $ip;
+    protected $connectors;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
         $this->client = $client;
         $this->ip = null;
-        if (array_key_exists('pcoweb', $connectors)) {
-            $this->ip = $connectors['pcoweb']['ip'];
+        $this->connectors = $connectors;
+        if (array_key_exists('pcoweb', $this->connectors)) {
+            $this->ip = $this->connectors['pcoweb']['ip'];
         }
         $this->basePath = 'http://' . $this->ip;
     }
@@ -74,6 +76,15 @@ class PcoWebConnector
     public function getIp()
     {
         return $this->ip;
+    }
+
+    public function getPower()
+    {
+        if (array_key_exists('pcoweb', $this->connectors) && array_key_exists('power', $this->connectors['pcoweb'])) {
+            return $this->connectors['pcoweb']['power'];
+        } else {
+            return 3000;
+        }
     }
 
     public function executeCommand($type, $command)
@@ -131,6 +142,11 @@ class PcoWebConnector
         $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
     }
 
+    /*
+     * Optimierung Heizungsumwälzpumpe
+     * 0: Ja
+     * 1: Nein
+     */
     private function setCpAutoMode($value)
     {
         // set mode
