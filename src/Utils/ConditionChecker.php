@@ -354,7 +354,7 @@ class ConditionChecker
     {
         // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
         if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
-            $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+            $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 2);
             // check if device is currently running
             $status = [];
             if ($deviceClass == "MyStrom") {
@@ -396,10 +396,18 @@ class ConditionChecker
             }
             if (array_key_exists('val', $status) && $status['val']) {
                 $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+                if (array_key_exists('power', $status)) {
+                    // if we have a valid power value, use this instead of the nominal power
+                    $device['nominalPower'] = $status['power'];
+                }
                 if ($currentAveragePower < $device['nominalPower']/4) {
                     // currently running and only small part of nominalPower is currently imported
                     // check if there is another device with lower priority that could be turned off first
-                    return $this->prio->checkStoppingDevice($device['priority']-1);
+                    $otherDeviceStopReady = $this->prio->checkStoppingDevice($device['priority']-1);
+                    if ($otherDeviceStopReady) {
+                        // Another device with lower priority is ready to be stopped. This means, we have priority.
+                        return true;
+                    }
                 }
             }
         }
