@@ -1,15 +1,15 @@
-FROM ubuntu:21.04
+FROM ubuntu:21.10
 LABEL maintainer="markus.schafroth@3084.ch"
 LABEL description="OSHANS"
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update && apt-get install -y \
-        php7.4 \
-        php7.4-zip \
-        php7.4-xml \
-        php7.4-mysql \
-        php7.4-intl \
-        php7.4-gmp \
-        php7.4-curl \
+        php \
+        php-zip \
+        php-xml \
+        php-mysql \
+        php-intl \
+        php-gmp \
+        php-curl \
         wget \
         curl \
         gnupg \
@@ -48,7 +48,7 @@ RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
-    /etc/php/7.4/cli/php.ini
+    /etc/php/8.0/cli/php.ini
 
 # add cron jobs
 RUN echo "* * * * * root cd /www && /root/.symfony/bin/symfony console oshans:data:update" >> /etc/cron.d/oshans
