@@ -447,9 +447,9 @@ class LogicProcessor
         $minWaterTemp = 38;
         $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
         if ($pcoMode == Settings::MODE_HOLIDAY) {
-            $minInsideTemp = $minInsideTemp - 2;
-            $targetWaterTemp = $targetWaterTemp - 10;
-            $minWaterTemp = $minWaterTemp - 10;
+            $minInsideTemp = 18;
+            $targetWaterTemp = 10;
+            $minWaterTemp = 10;
         }
         // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
