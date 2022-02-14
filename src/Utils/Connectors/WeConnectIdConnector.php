@@ -32,12 +32,15 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $output = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging/batteryStatus');
-            // find cruisingRange
-            $output = str_replace("\t", "", $output);
-            $outputArr = explode("\n", $output);
-            $data['soc'] = str_replace("%", "", str_replace("Current SoC: ", "", $outputArr[1]));
-            $data['range'] = str_replace("km", "", str_replace("Range: ", "", $outputArr[2]));
+            $batteryStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging/batteryStatus --format json');
+            $readinessStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/readiness/readinessStatus --format json');
+
+            $batteryStatus = json_decode($batteryStatusJson, true);
+            $readinessStatus = json_decode($readinessStatusJson, true);
+            $data['soc'] = $batteryStatus['currentSOC_pct'];
+            $data['range'] = $batteryStatus['cruisingRangeElectric_km'];
+            $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
+            $data['isActive'] = $readinessStatus['connectionState']['isActive'];
         } catch (\Exception $e) {
             // do nothing
         }

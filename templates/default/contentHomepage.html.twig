@@ -293,7 +293,8 @@
         <div id="ecar_container" class="content" style="display:none;">
         <div id="ecar" class="refresh">
         {% for device in currentStat['ecar'] %}
-            {{ device['name'] }}<br>
+            {{ device['name'] }} <br>
+            {% if device['data']['isOnline']|default(false) %}<span class="fa-solid fa-signal" style="color:green;"></span>{% else %}<span class="fa-solid fa-signal" style="color:red;"></span>{% endif %} {% if device['data']['isActive']|default(false) %}<span class="fa-solid fa-road"></span>{% else %}<span class="fa-solid fa-product-hunt"></span>{% endif %}<br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ device['data']['soc']|default('???') }} %<br>
             {% trans %}label.ecar.range{% endtrans %}: {{ device['data']['range']|default('???') }} km
             {% if not loop.last %}<hr>{% endif %}
