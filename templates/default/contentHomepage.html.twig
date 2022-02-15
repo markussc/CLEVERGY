@@ -294,7 +294,10 @@
         <div id="ecar" class="refresh">
         {% for device in currentStat['ecar'] %}
             {{ device['name'] }} <br>
-            {% if device['data']['isOnline']|default(false) %}<i class="fas fa-signal" style="color:green;"></i>{% else %}<i class="fas fa-signal" style="color:red;"></i>{% endif %} {% if device['data']['isActive']|default(false) %}<i class="fas fa-road" style="color:silver;"></i>{% else %}<i class="fas fa-power-off" style="color:darkred;"></i>{% endif %}<br>
+            {% if device['data']['isOnline']|default(false) %}<i class="fas fa-signal" style="color:green;"></i>{% else %}<i class="fas fa-signal" style="color:red;"></i>{% endif %} 
+            {% if device['data']['isActive']|default(false) %}<i class="fas fa-road" style="color:silver;"></i>{% else %}<i class="fas fa-power-off" style="color:darkred;"></i>{% endif %} 
+            {% if device['data']['plugConnectionState']|default(false) == 'connected' %}<i class="fas fa-plug" style="color:{% if device['data']['chargePower_kW']|default(0) > 0 %}green{% else %}red{% endif %};"></i>{% endif %}
+            <br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ device['data']['soc']|default('???') }} %<br>
             {% trans %}label.ecar.range{% endtrans %}: {{ device['data']['range']|default('???') }} km
             {% if not loop.last %}<hr>{% endif %}

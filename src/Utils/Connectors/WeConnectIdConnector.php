@@ -32,13 +32,15 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $batteryStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging/batteryStatus --format json');
+            $chargingJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging --format json');
             $readinessStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/readiness/readinessStatus --format json');
 
-            $batteryStatus = json_decode($batteryStatusJson, true);
+            $charging = json_decode($chargingJson, true);
             $readinessStatus = json_decode($readinessStatusJson, true);
-            $data['soc'] = $batteryStatus['currentSOC_pct'];
-            $data['range'] = $batteryStatus['cruisingRangeElectric_km'];
+            $data['soc'] = $charging['batteryStatus']['currentSOC_pct'];
+            $data['range'] = $charging['batteryStatus']['cruisingRangeElectric_km'];
+            $data['plugConnectionState'] = $charging['plugStatus']['plugConnectionState'];
+            $data['chargePower_kW'] = $charging['chargingStatus']['chargePower_kW'];
             $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
             $data['isActive'] = $readinessStatus['connectionState']['isActive'];
         } catch (\Exception $e) {
