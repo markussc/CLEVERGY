@@ -499,8 +499,8 @@ class LogicProcessor
             $warmWater = false;
 
             // normalize temporary values
-            if ($ppMode == PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] == 2) {
-                $log[] = "normalize hwHysteresis and hotWater after switching to MODE_SUMMER";
+            if ($ppMode == PcoWebConnector::MODE_SUMMER && $pcoweb['hwHist'] == 25) {
+                $log[] = "normalize hwHysteresis and hotWater after switching to MODE_SUMMER. set waterTemp = ".$targetWaterTemp;
                 $this->pcoweb->executeCommand('hwHysteresis', 12);
                 $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
             }
@@ -687,9 +687,9 @@ class LogicProcessor
                 if ($insideTemp > ($minInsideTemp + 1.5)) {
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER) {
                         $this->pcoweb->executeCommand('waterTemp', $minWaterTemp+2);// this will be overwritten in the next loop! the goal is, that during switch to mode_summer, we do not provocate water heating
-                        $this->pcoweb->executeCommand('hwHysteresis', 2);           // this will be overwritten in the next loop!
+                        $this->pcoweb->executeCommand('hwHysteresis', 25);          // this will be overwritten in the next loop!
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
-                        $log[] = "set MODE_SUMMER during low energy rate and high inside temperature and reduce waterTemp and hysteresis to min temporarily";
+                        $log[] = "set MODE_SUMMER during low energy rate and high inside temperature and reduce waterTemp and hysteresis to min temporarily. waterTemp = ".$minWaterTemp+2;
                     }
                 } elseif ($ppMode !== PcoWebConnector::MODE_2ND && $insideTemp <= ($minInsideTemp + 1)) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
