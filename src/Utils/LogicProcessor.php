@@ -962,7 +962,12 @@ class LogicProcessor
             if ($device) {
                 if ($action !== null) {
                     $shelly = $device;
-                    $shelly['status'] = $this->shelly->createStatus($action);
+                    if ($shelly['type'] == 'button') {
+                        $this->shelly->executeCommand($deviceId, $action);
+                        return;
+                    } else {
+                        $shelly['status'] = $this->shelly->createStatus($action);
+                    }
                 } else {
                     $shelly = $this->shelly->getOne($device);
                 }

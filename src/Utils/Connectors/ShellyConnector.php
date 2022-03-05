@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\ShellyDataStore;
 use App\Utils\ConfigManager;
+use App\Controller\ChromecastController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -25,8 +26,10 @@ class ShellyConnector
     private $authkey;
     protected $connectors;
 
-    public function __construct(ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
+    public function __construct(ChromecastController $cc, MyStromConnector $mystrom, ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
+        $this->cc = $cc;
+        $this->mystrom = $mystrom;
         $this->cm = $cm;
         $this->em = $em;
         $this->client = $client;
@@ -72,6 +75,9 @@ class ShellyConnector
 
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
+                if (isset($device['type']) && $device['type'] == 'button') {
+                    continue;
+                }
                 $result = $this->getOneLatest($device);
                 if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
                     $connectorId = $device['ip'].'_'.$device['port'];
@@ -91,6 +97,9 @@ class ShellyConnector
 
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
             foreach ($this->connectors['shelly'] as $device) {
+                if ($device['type'] == 'button') {
+                    continue;
+                }
                 if ($device['type'] == 'door') {
                     // we query the shelly cloud api (max. 1 request per second, therefore a sleep after every query)
                     if (array_key_exists('cloudId', $device)) {
@@ -236,9 +245,26 @@ class ShellyConnector
             case -1:
                 // roller stop
                 return $this->setStop($this->connectors['shelly'][$deviceId]);
+            case 'long':
+                $actions = $this->getConfig($deviceId)['actions']['long'];
+                return $this->executeButtonAction($actions);
         }
         // no known command
         return false;
+    }
+
+    private function executeButtonAction($actions)
+    {
+        foreach ($actions as $action => $attr) {
+            switch($action) {
+                case 'Chromecast_Power':
+                    return $this->cc->powerAction($this->mystrom, $attr['ccId'], $attr['power']);
+                case 'Chromecast_Play':
+                    return $this->cc->playAction($this->mystrom, $attr['ccId'], $attr['streamId']);
+            }
+        }
+
+        return true;
     }
 
     public function switchOK($deviceId)
