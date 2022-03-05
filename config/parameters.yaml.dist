@@ -141,6 +141,26 @@ parameters:
                         'openweathermap:currentClouds': '<15'
                     -
                         'time': '>8:30' # < and > are supported. 24h time format # if there are multiple time conditions to be fulfilled, use 'time1', 'time2' etc.
+            -
+                name: Medienwiedergabe
+                ip: 10.12.1.81
+                type: button
+                actions: # actions which should be triggered, when the following URLs are invoked: http://myoshans.com/trigger/10.12.1.81/long  // .../short1   etc.
+                    long:
+                        'Chromecast_Power':
+                            'ccId': 0 # id of the chromecast which should be toggled
+                    short1:
+                        'Chromecast_Play':
+                            'ccId': 0
+                            'streamId': 0 # id of the stream which should be started
+                    short2:
+                        'Chromecast_Play':
+                            'ccId': 0
+                            'streamId': 3
+                    short3:
+                        'Chromecast_Play':
+                            'ccId': 0
+                            'streamId': 5
         shellycloud:
             server: https://shelly-3-eu.shelly.cloud
             authkey: 1234345D324e983
