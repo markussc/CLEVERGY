@@ -16,10 +16,19 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class ChromecastController extends AbstractController
 {
+    private $mystrom;
+    private $cc;
+
+    public function __construct(MyStromConnector $mystrom, ChromecastConnector $ccConnector)
+    {
+        $this->mystrom = $mystrom;
+        $this->ccConnector = $ccConnector;
+    }
+
     /**
      * @Route("/power/{ccId}/{power}", name="chromecast_power")
      */
-    public function powerAction(MyStromConnector $mystrom, $ccId, $power)
+    public function powerAction($ccId, $power)
     {
         $em = $this->getDoctrine()->getManager();
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
@@ -29,12 +38,20 @@ class ChromecastController extends AbstractController
             $settings = new Settings();
             $settings->setConnectorId($ip);
         }
+        if ($power == -1) {
+            // we want to toggle the power
+            if ($settings->getMode()) {
+                $power = 0;
+            } else {
+                $power = 1;
+            }
+        }
         if ($power) {
             // turn on
             $settings->setMode(1);
             if (array_key_exists('mystrom', $chromecast)) {
                 foreach ($chromecast['mystrom'] as $mystromId) {
-                    $mystrom->executeCommand($mystromId, 1);
+                    $this->mystrom->executeCommand($mystromId, 1);
                 }
             }
             // wait a few seconds until chromecast might be ready
@@ -48,7 +65,7 @@ class ChromecastController extends AbstractController
             ]);
             if (array_key_exists('mystrom', $chromecast)) {
                 foreach ($chromecast['mystrom'] as $mystromId) {
-                    $mystrom->executeCommand($mystromId, 0);
+                    $this->mystrom->executeCommand($mystromId, 0);
                 }
             }
         }
@@ -61,7 +78,7 @@ class ChromecastController extends AbstractController
     /**
      * @Route("/play/{ccId}/{streamId}", name="chromecast_play")
      */
-    public function playAction(ChromecastConnector $ccConnector, $ccId, $streamId)
+    public function playAction($ccId, $streamId)
     {
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
         $stream = $chromecast['streams'][$streamId];
@@ -69,7 +86,7 @@ class ChromecastController extends AbstractController
         if (isset($stream['metadata'])) {
             $metadata = $stream['metadata'];
         }
-        $success = $ccConnector->startStream($chromecast['ip'], $stream['url'], $metadata);
+        $success = $this->ccConnector->startStream($chromecast['ip'], $stream['url'], $metadata);
 
         return new JsonResponse(['success' => $success]);
     }
@@ -77,10 +94,10 @@ class ChromecastController extends AbstractController
     /**
      * @Route("/stop/{ccId}", name="chromecast_stop")
      */
-    public function stopAction(ChromecastConnector $ccConnector, $ccId)
+    public function stopAction($ccId)
     {
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
-        $success = $ccConnector->stopStream($chromecast['ip']);
+        $success = $this->ccConnector->stopStream($chromecast['ip']);
 
         return new JsonResponse(['success' => $success]);
     }
@@ -88,10 +105,10 @@ class ChromecastController extends AbstractController
     /**
      * @Route("/volume_up/{ccId}", name="chromecast_volume_up")
      */
-    public function volumeUpAction(ChromecastConnector $ccConnector, $ccId)
+    public function volumeUpAction($ccId)
     {
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
-        $success = $ccConnector->volumeUp($chromecast['ip']);
+        $success = $this->ccConnector->volumeUp($chromecast['ip']);
 
         return new JsonResponse(['success' => $success]);
     }
@@ -99,10 +116,10 @@ class ChromecastController extends AbstractController
     /**
      * @Route("/volume_down/{ccId}", name="chromecast_volume_down")
      */
-    public function volumeDownAction(ChromecastConnector $ccConnector, $ccId)
+    public function volumeDownAction($ccId)
     {
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
-        $success = $ccConnector->volumeDown($chromecast['ip']);
+        $success = $this->ccConnector->volumeDown($chromecast['ip']);
 
         return new JsonResponse(['success' => $success]);
     }

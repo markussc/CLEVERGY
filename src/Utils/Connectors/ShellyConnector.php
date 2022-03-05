@@ -26,10 +26,9 @@ class ShellyConnector
     private $authkey;
     protected $connectors;
 
-    public function __construct(ChromecastController $cc, MyStromConnector $mystrom, ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
+    public function __construct(ChromecastController $cc, ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
         $this->cc = $cc;
-        $this->mystrom = $mystrom;
         $this->cm = $cm;
         $this->em = $em;
         $this->client = $client;
@@ -248,6 +247,15 @@ class ShellyConnector
             case 'long':
                 $actions = $this->getConfig($deviceId)['actions']['long'];
                 return $this->executeButtonAction($actions);
+            case 'short1':
+                $actions = $this->getConfig($deviceId)['actions']['short1'];
+                return $this->executeButtonAction($actions);
+            case 'short2':
+                $actions = $this->getConfig($deviceId)['actions']['short2'];
+                return $this->executeButtonAction($actions);
+            case 'short3':
+                $actions = $this->getConfig($deviceId)['actions']['short3'];
+                return $this->executeButtonAction($actions);
         }
         // no known command
         return false;
@@ -258,9 +266,9 @@ class ShellyConnector
         foreach ($actions as $action => $attr) {
             switch($action) {
                 case 'Chromecast_Power':
-                    return $this->cc->powerAction($this->mystrom, $attr['ccId'], $attr['power']);
+                    return $this->cc->powerAction($attr['ccId'], -1);
                 case 'Chromecast_Play':
-                    return $this->cc->playAction($this->mystrom, $attr['ccId'], $attr['streamId']);
+                    return $this->cc->playAction($attr['ccId'], $attr['streamId']);
             }
         }
 
