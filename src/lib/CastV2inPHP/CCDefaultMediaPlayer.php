@@ -23,7 +23,9 @@ class CCDefaultMediaPlayer extends CCBaseSender
                     $json = '{"type":"LOAD","media":{"metadata":{"metadataType":0,"title":"'.$metadata['title'].'","subtitle":"'.$metadata['subtitle'].'","images":{"0":{"url":"'.$metadata['image'].'"}}},"contentId":"' . $url . '","streamType":"' . $streamType . '","contentType":"' . $contentType . '"},"autoplay":' . $autoPlay . ',"currentTime":' . $currentTime . ',"requestId":921489134}';
                     $this->chromecast->sendMessage("urn:x-cast:com.google.cast.media", $json);
                     $r = "";
-                    while (!preg_match("/\"playerState\":\"PLAYING\"/",$r)) {
+                    $counter = 10;
+                    while ($counter > 0 && !preg_match("/\"playerState\":\"PLAYING\"/",$r)) {
+                            $counter--;
                             $r = $this->chromecast->getCastMessage();
                             sleep(1);
                     }

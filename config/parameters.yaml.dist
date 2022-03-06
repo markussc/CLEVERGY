@@ -131,6 +131,7 @@ parameters:
                 port: 0
                 type: roller # other types are "relay" and "door"
                 priority: 5 # does make sense only for relay type
+                cloudId: D9867364ed # deviceId of the shelly device in the shelly cloud (refer to the settings in the app)
                 nominalPower: 100
                 minWaitTime: 120 # in minutes
                 autoIntervals: # several intervals for auto control are possible
@@ -144,7 +145,7 @@ parameters:
             -
                 name: Medienwiedergabe
                 ip: 10.12.1.81
-                type: button
+                type: button #note: button type devices MUST be at the end of the list of shelly devices!
                 actions: # actions which should be triggered, when the following URLs are invoked: http://myoshans.com/trigger/10.12.1.81/long  // .../short1   etc.
                     long:
                         'Chromecast_Power':

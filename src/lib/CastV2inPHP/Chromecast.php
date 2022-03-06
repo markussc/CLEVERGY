@@ -45,7 +45,7 @@ class Chromecast
 		$this->lastactivetime = time();
 		// Create an instance of the DMP for this CCDefaultMediaPlayer
 		$this->DMP = new CCDefaultMediaPlayer($this);
-		$this->Plex = new CCPlexPlayer($this);
+		//this->Plex = new CCPlexPlayer($this);
 	}
 	
 	public static function scan($wait = 15)
