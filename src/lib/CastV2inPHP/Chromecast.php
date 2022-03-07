@@ -402,10 +402,10 @@ class Chromecast
 		$this->testLive();
 		$response = fread($this->socket, 2000);
                 $counter = 0;
+                // Wait max. 15 seconds for a packet.
+                set_time_limit(15);
 		while ($counter < 5 && preg_match("/urn:x-cast:com.google.cast.tp.heartbeat/", $response) && preg_match("/\"PING\"/", $response)) {
                     $counter++;
-                    // Wait max. 10 seconds for a packet.
-                    set_time_limit(10);
                     $this->pong();
                     sleep(3);
                     $response = fread($this->socket, 2000);
