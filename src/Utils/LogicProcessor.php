@@ -434,25 +434,29 @@ class LogicProcessor
             $diffToEndOfLowEnergyRate += 24;
         }
         $pcoweb = $this->pcoweb->getAll();
-
-        // set the temperature offset for low outside temp
-        $tempOffset = 0;
         $outsideTemp = $pcoweb['outsideTemp'];
-        if ($outsideTemp < 2) {
-            $tempOffset = (1 +(0-$outsideTemp)/10);
+
+        // set temperature levels
+        if ($pcoMode == Settings::MODE_HOLIDAY) {
+            // use fixed levels when in mode holiday
+            $minInsideTemp = 18;
+            $maxInsideTemp = 20;
+            $targetWaterTemp = 20;
+            $minWaterTemp = 10;
+        } else {
+            // set the temperature offset for low outside temp
+            $tempOffset = 0;
+            if ($outsideTemp < 2) {
+                $tempOffset = (1 +(0-$outsideTemp)/10);
+            }
+            // set the target and emergency temperature levels
+            $targetWaterTemp = 52;
+            $minWaterTemp = 38;
+            $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
+            // set the max inside temp above which we do not want to have the 2nd heat circle active
+            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
         }
 
-        // set the target and emergency temperature levels
-        $targetWaterTemp = 52;
-        $minWaterTemp = 38;
-        $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
-        if ($pcoMode == Settings::MODE_HOLIDAY) {
-            $minInsideTemp = 18;
-            $targetWaterTemp = 10;
-            $minWaterTemp = 10;
-        }
-        // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
