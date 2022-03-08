@@ -203,7 +203,7 @@ class LogicProcessor
             // auto actions for devices which have a nominalPower
             if ($netPower > 0) {
                 if ($avgPower > 0) {
-                    // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                    // if current net_power positive and average over last 5 minutes positive as well: turn off the first found device
                     foreach ($mystromDevices as $deviceId => $mystrom) {
                         if ($mystrom['nominalPower'] > 0) {
                             // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
@@ -219,7 +219,7 @@ class LogicProcessor
                     }
                 }
             } else {
-                // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+                // if current net_power negative and average over last 5 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
                 foreach ($mystromDevices as $deviceId => $mystrom) {
                     if ($mystrom['nominalPower'] > 0) {
                         // check for "forceOff" conditions (if true, try to turn it off and skip
@@ -231,7 +231,7 @@ class LogicProcessor
                         if ($this->forceOnMystrom($deviceId, $mystrom)) {
                             continue;
                         }
-                        // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                        // check if the device is off, compare the required power with the current and average power over the last 5 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
                         if (!$mystrom['status']['val'] && $mystrom['nominalPower'] < -1*$netPower && $mystrom['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($mystrom, 'on') && $this->mystrom->switchOK($deviceId)) {
                             if($this->mystrom->executeCommand($deviceId, 1)) {
                                 break;
@@ -331,7 +331,7 @@ class LogicProcessor
         // auto actions for devices which have a nominalPower
         if ($netPower > 0) {
             if ($avgPower > 0) {
-                // if current net_power positive and average over last 10 minutes positive as well: turn off the first found device
+                // if current net_power positive and average over last 5 minutes positive as well: turn off the first found device
                 foreach ($shellyDevices as $deviceId => $shelly) {
                     if ($shelly['nominalPower'] > 0) {
                         // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
@@ -347,7 +347,7 @@ class LogicProcessor
                 }
             }
         } else {
-            // if current net_power negative and average over last 10 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
+            // if current net_power negative and average over last 5 minutes negative: turn on a device if its power consumption is less than the negative value (current and average)
             foreach ($shellyDevices as $deviceId => $shelly) {
                 if ($shelly['nominalPower'] > 0) {
                     // check for "forceOff" conditions (if true, try to turn it off and skip
@@ -359,7 +359,7 @@ class LogicProcessor
                     if ($this->forceOnShelly($deviceId, $shelly)) {
                         continue;
                     }
-                    // check if the device is off, compare the required power with the current and average power over the last 10 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
+                    // check if the device is off, compare the required power with the current and average power over the last 5 minutes, and on condition is fulfilled (or not set) and check if the device is allowed to be turned on
                     if (!$shelly['status']['val'] && $shelly['nominalPower'] < -1*$netPower && $shelly['nominalPower'] < -1*$avgPower && $this->conditionchecker->checkCondition($shelly, 'on') && $this->shelly->switchOK($deviceId)) {
                         if($this->shelly->executeCommand($deviceId, 1)) {
                             break;
@@ -434,25 +434,29 @@ class LogicProcessor
             $diffToEndOfLowEnergyRate += 24;
         }
         $pcoweb = $this->pcoweb->getAll();
-
-        // set the temperature offset for low outside temp
-        $tempOffset = 0;
         $outsideTemp = $pcoweb['outsideTemp'];
-        if ($outsideTemp < 2) {
-            $tempOffset = (1 +(0-$outsideTemp)/10);
+
+        // set temperature levels
+        if ($pcoMode == Settings::MODE_HOLIDAY) {
+            // use fixed levels when in mode holiday
+            $minInsideTemp = 18;
+            $maxInsideTemp = 20;
+            $targetWaterTemp = 20;
+            $minWaterTemp = 10;
+        } else {
+            // set the temperature offset for low outside temp
+            $tempOffset = 0;
+            if ($outsideTemp < 2) {
+                $tempOffset = (1 +(0-$outsideTemp)/10);
+            }
+            // set the target and emergency temperature levels
+            $targetWaterTemp = 52;
+            $minWaterTemp = 38;
+            $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
+            // set the max inside temp above which we do not want to have the 2nd heat circle active
+            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
         }
 
-        // set the target and emergency temperature levels
-        $targetWaterTemp = 52;
-        $minWaterTemp = 38;
-        $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
-        if ($pcoMode == Settings::MODE_HOLIDAY) {
-            $minInsideTemp = 18;
-            $targetWaterTemp = 10;
-            $minWaterTemp = 10;
-        }
-        // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
@@ -962,7 +966,12 @@ class LogicProcessor
             if ($device) {
                 if ($action !== null) {
                     $shelly = $device;
-                    $shelly['status'] = $this->shelly->createStatus($action);
+                    if ($shelly['type'] == 'button') {
+                        $this->shelly->executeCommand($deviceId, $action);
+                        return;
+                    } else {
+                        $shelly['status'] = $this->shelly->createStatus($action);
+                    }
                 } else {
                     $shelly = $this->shelly->getOne($device);
                 }
@@ -1166,7 +1175,7 @@ class LogicProcessor
     private function getAvgPower()
     {
         if ($this->avgPower === null) {
-            $this->avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 10);
+            $this->avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 5);
         }
 
         return $this->avgPower;

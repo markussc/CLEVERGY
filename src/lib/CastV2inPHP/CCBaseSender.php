@@ -37,7 +37,9 @@ class CCBaseSender {
             $this->chromecast->launch($this->appid);
             $this->chromecast->transportid = "";
             $r = "";
-            while (!preg_match("/Ready to Cast/",$r) && !preg_match("/Default Media Receiver/",$r)) {
+            $counter = 15;
+            while ($counter > 0  && !preg_match("/Ready to Cast/",$r) && !preg_match("/Default Media Receiver/",$r)) {
+                $counter--;
                 $r = $this->chromecast->getStatus();
                 sleep(1);
             }

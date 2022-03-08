@@ -45,7 +45,7 @@ class Chromecast
 		$this->lastactivetime = time();
 		// Create an instance of the DMP for this CCDefaultMediaPlayer
 		$this->DMP = new CCDefaultMediaPlayer($this);
-		$this->Plex = new CCPlexPlayer($this);
+		//this->Plex = new CCPlexPlayer($this);
 	}
 	
 	public static function scan($wait = 15)
@@ -402,13 +402,13 @@ class Chromecast
 		$this->testLive();
 		$response = fread($this->socket, 2000);
                 $counter = 0;
+                // Wait max. 15 seconds for a packet.
+                set_time_limit(15);
 		while ($counter < 5 && preg_match("/urn:x-cast:com.google.cast.tp.heartbeat/", $response) && preg_match("/\"PING\"/", $response)) {
                     $counter++;
                     $this->pong();
                     sleep(3);
                     $response = fread($this->socket, 2000);
-                    // Wait infinitely for a packet.
-                    //set_time_limit(30);
 		}
                 if ($counter >= 5) {
                     return false;
