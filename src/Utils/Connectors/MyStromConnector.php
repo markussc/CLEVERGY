@@ -246,6 +246,13 @@ class MyStromConnector
         // get current status
         $currentStatus = $this->getStatus($this->connectors['mystrom'][$deviceId])['val'];
 
+        // check if it is a fully loaded battery
+        if ($currentStatus && isset($this->connectors['mystrom'][$deviceId]['type']) && $this->connectors['mystrom'][$deviceId]['type'] == 'battery') {
+            if ($this->getTimerData($this->connectors['mystrom'][$deviceId])['activePercentage'] >= 100) {
+                return false;
+            }
+        }
+
         // get latest timestamp with opposite status
         $oldStatus = $this->em->getRepository('App:MyStromDataStore')->getLatest($this->connectors['mystrom'][$deviceId]['ip'], ($currentStatus + 1)%2);
         if (count($oldStatus) == 1) {
