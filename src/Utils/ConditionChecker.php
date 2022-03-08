@@ -119,7 +119,7 @@ class ConditionChecker
             }
         }
         // check for prioritized forceOff
-        if ($type == 'forceOn' && !$this->checkPriorityForceOff($this->deviceClass, $conf)) {
+        if ($type == 'forceOff' && !$this->checkPriorityForceOff($this->deviceClass, $conf)) {
             // there is a device with higher priority ready to be started
             return true;
         }
@@ -373,11 +373,14 @@ class ConditionChecker
                 // currently turned off, check with current averagePower
                 $maxNominalPower = -1*($currentAveragePower);
             }
-            return !$this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
-        } else {
-            // we do not have any priority set, so we have priority
-            return true;
+            $otherDeviceWaiting = $this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
+            if ($otherDeviceWaiting) {
+                // other device is waiting, we have no priority
+                return false;
+            }
         }
+        // we do not have any priority set or no other device is waiting, so we have priority
+        return true;
     }
 
     /*
