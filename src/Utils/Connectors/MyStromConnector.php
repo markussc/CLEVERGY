@@ -247,7 +247,7 @@ class MyStromConnector
         $currentStatus = $this->getStatus($this->connectors['mystrom'][$deviceId])['val'];
 
         // check if it is a fully loaded battery
-        if ($currentStatus && isset($this->connectors['mystrom'][$deviceId]['type']) && $this->connectors['mystrom'][$deviceId]['type'] == 'battery') {
+        if (!$currentStatus && isset($this->connectors['mystrom'][$deviceId]['type']) && $this->connectors['mystrom'][$deviceId]['type'] == 'battery') {
             if ($this->getTimerData($this->connectors['mystrom'][$deviceId])['activePercentage'] >= 100) {
                 return false;
             }
