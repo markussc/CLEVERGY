@@ -500,9 +500,9 @@ class MyStromConnector
         $carTimerData =  [];
         if (array_key_exists('type', $device) && $device['type'] == 'carTimer') {
             $connectorId = $device['ip'];
-            $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
-            if ($device) {
-                $config = $device->getConfig();
+            $deviceSettings = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
+            if ($deviceSettings) {
+                $config = $deviceSettings->getConfig();
                 if (array_key_exists('ecar', $this->connectors) && is_array($config) && array_key_exists('carId', $config)  && array_key_exists('deadline', $config)  && array_key_exists('percent', $config) && array_key_exists($config['carId'], $this->connectors['ecar'])) {
                     $carTimerData = [
                         'carId' => $config['carId'],
@@ -510,6 +510,7 @@ class MyStromConnector
                         'capacity' => $this->connectors['ecar'][$config['carId']]['capacity'],
                         'deadline' => $config['deadline'],
                         'percent' => $config['percent'],
+                        'plugStatus' => $this->getStatus($device)['val'],
                     ];
                 }
             }

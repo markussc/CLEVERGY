@@ -108,8 +108,10 @@ class EcarConnector
                 // the targetPercent and deadline are not reached yet
                 // check if we need to start charging in order to reach the targetPercent until deadline
                 $percentDuringDiff = $hourlyPercent * $hours;
-                if  ($percentDuringDiff < $percentDiff) {
-                    // we need to start immediately
+                if  ($percentDuringDiff < $percentDiff || ($switchDevice['carTimerData']['plugStatus'] && $percentDuringDiff < $percentDiff + 5)) {
+                    // we need to start immediately either because
+                    // - currently not charging and percentDuringDiff < percentDiff or
+                    // - currently charging and percentDuringDiff < percentDif + 5 (this prevents constantly starting and stopping the charging
                     $priority = true;
                 } elseif (($hours < 24 && $percentDiff > $hourlyPercent*4) || ($energyLowRate && $hours < 48 && $percentDiff > $hourlyPercent*8) || $currentPercent < 30) {
                     // the deadline is within 24 hours from now and we need more than 8 hours charging left,
