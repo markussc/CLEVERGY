@@ -568,19 +568,21 @@ class ShellyConnector
 
     public function storeStatus($device, $status)
     {
-        $connectorId = $this->getId($device);
-        $shellyEntity = new ShellyDataStore();
-        $shellyEntity->setTimestamp(new \DateTime('now'));
-        $shellyEntity->setConnectorId($connectorId);
-        $shellyEntity->setData($status);
-        if (array_key_exists('power', $status)) {
-            if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
-                // update nominalPower with the current power of the device if consumption is detected
-                $this->cm->updateConfig($connectorId, ['nominalPower' => $status['power']]);
+        if ($status !== null) {
+            $connectorId = $this->getId($device);
+            $shellyEntity = new ShellyDataStore();
+            $shellyEntity->setTimestamp(new \DateTime('now'));
+            $shellyEntity->setConnectorId($connectorId);
+            $shellyEntity->setData($status);
+            if (array_key_exists('power', $status)) {
+                if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
+                    // update nominalPower with the current power of the device if consumption is detected
+                    $this->cm->updateConfig($connectorId, ['nominalPower' => $status['power']]);
+                }
             }
+            $this->em->persist($shellyEntity);
+            $this->em->flush();
         }
-        $this->em->persist($shellyEntity);
-        $this->em->flush();
     }
 
     private function getId($device)
