@@ -308,6 +308,9 @@ class MyStromConnector
                 'val' => 0,
                 'power' => $power
             ];
+            if ($r === false) {
+                $status['offline'] = true;
+            }
 
             return $this->createStatus($status);
         }
@@ -346,6 +349,9 @@ class MyStromConnector
         }
         if (is_array($status) && array_key_exists('power', $status)) {
             $ret['power'] = $status['power'];
+        }
+        if (isset($status['offline'])) {
+            $ret['offline'] = true;
         }
 
         return $ret;
