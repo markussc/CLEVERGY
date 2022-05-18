@@ -94,7 +94,7 @@ class PriorityManager
             if (array_key_exists('priority', $dev) && intval($dev['priority']) <= intval($priority)) {
                 // check if currently running
                 $status = $conn->getStatus($dev);
-                if ($status === false) {
+                if (isset($status['offline'])) {
                     // error while retrieving status; we assume the device is currently offline and could not be turned off anyway
                     continue;
                 }

@@ -199,6 +199,7 @@
                     {% endif %}
                     <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i>{% if date(device.carTimerData['deadline']['date']|default(date())) >= date() %}&nbsp;&nbsp;{{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}{% endif %}</a>
                 {% endif %}
+                {% if device.status.offline|default(false) %}<i class="fas fa-exclamation-triangle" style="color:red;"></i>{% endif %}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
             {% endif %}
         {% endfor %}
