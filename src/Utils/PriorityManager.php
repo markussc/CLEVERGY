@@ -70,6 +70,10 @@ class PriorityManager
                 if (array_key_exists('priority', $dev) && intval($dev['priority']) >= intval($priority) && $nominalPower <= $maxNominalPower) {
                     // check if currently off
                     $status = $conn->getStatus($dev);
+                    if ($status === false) {
+                        // error while retrieving status; we assume the device is currently offline and could not be turned on anyway
+                        continue;
+                    }
                     if ($status['val']) {
                         // already running
                         continue;
@@ -90,6 +94,10 @@ class PriorityManager
             if (array_key_exists('priority', $dev) && intval($dev['priority']) <= intval($priority)) {
                 // check if currently running
                 $status = $conn->getStatus($dev);
+                if ($status === false) {
+                    // error while retrieving status; we assume the device is currently offline and could not be turned off anyway
+                    continue;
+                }
                 if (!$status['val']) {
                     // already stopped
                     continue;
