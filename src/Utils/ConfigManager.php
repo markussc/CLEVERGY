@@ -72,7 +72,7 @@ class ConfigManager {
 
         // get dynamic configuration from DB (settings-table, config field) if we found a static configuration for this device
         if ($config !== null) {
-            $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
+            $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
             if ($settings) {
                 $dynamicConfig = $settings->getConfig();
                 if (is_array($dynamicConfig)) {
@@ -89,7 +89,7 @@ class ConfigManager {
      */
     public function updateConfig($connectorId, $newConfig)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($connectorId);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
         if ($settings) {
             $config = $settings->getConfig();
             if ($config === null) {

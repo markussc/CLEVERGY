@@ -2,6 +2,7 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\NetatmoDataStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -86,7 +87,7 @@ class NetatmoConnector
 
     public function getAllLatest()
     {
-        return $this->em->getRepository('App:NetatmoDataStore')->getLatest($this->config['deviceid']);
+        return $this->em->getRepository(NetatmoDataStore::class)->getLatest($this->config['deviceid']);
     }
 
     public function getAll()

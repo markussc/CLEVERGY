@@ -5,6 +5,7 @@ namespace App\Utils\Connectors;
 use Doctrine\ORM\EntityManagerInterface;
 use Nesk\Puphpeteer\Puppeteer;
 use App\Entity\Settings;
+use App\Entity\WemDataStore;
 use ModbusTcpClient\Network\BinaryStreamConnection;
 use ModbusTcpClient\Packet\ModbusFunction\ReadInputRegistersRequest;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
@@ -65,7 +66,7 @@ class WemConnector
 
     public function getAllLatest()
     {
-        return $this->em->getRepository('App:WemDataStore')->getLatest($this->username);
+        return $this->em->getRepository(WemDataStore::class)->getLatest($this->username);
     }
 
     public function getAll()
@@ -93,7 +94,7 @@ class WemConnector
                 'ppStatus' => $this->readPpStatusModbusTcp(),
                 'storTemp' => '---', // currently not available
             ];
-            $modeData = ['mode' => $this->wemModeToString($this->em->getRepository('App:Settings')->getMode($this->getUsername()))];
+            $modeData = ['mode' => $this->wemModeToString($this->em->getRepository(Settings::class)->getMode($this->getUsername()))];
 
             return array_merge($modbusTcpData, $modeData);
         } catch (\Exception $e) {
@@ -353,7 +354,7 @@ class WemConnector
 
     private function storePpLevel($ppLevel)
     {
-        $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($this->getUsername());
+        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->getUsername());
         if (!$device) {
             $device = new Settings();
             $device->setConnectorId($this->getUsername());
@@ -371,7 +372,7 @@ class WemConnector
     private function getPpLevel()
     {
         $ppLevel = 100;
-        $device = $this->em->getRepository('App:Settings')->findOneByConnectorId($this->getUsername());
+        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->getUsername());
         if ($device) {
             $config = $device->getConfig();
             if(is_array($config) && array_key_exists('ppLevel', $config)) {

@@ -2,6 +2,7 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\LogoControlDataStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -39,7 +40,7 @@ class LogoControlConnector
         $latest = [];
         if (array_key_exists('logocontrol', $this->connectors)) {
             $ip = $this->connectors['logocontrol']['ip'];
-            $latest = $this->em->getRepository('App:LogoControlDataStore')->getLatest($ip);
+            $latest = $this->em->getRepository(LogoControlDataStore::class)->getLatest($ip);
         }
 
         return $latest;

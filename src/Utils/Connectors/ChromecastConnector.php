@@ -28,7 +28,7 @@ class ChromecastConnector
      */
     public function getUrl($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         $url = false;
         if ($settings) {
             $conf = $settings->getConfig();
@@ -46,7 +46,7 @@ class ChromecastConnector
      */
     public function getPower($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         $power = 0;
         if ($settings) {
             $power = $settings->getMode();
@@ -61,7 +61,7 @@ class ChromecastConnector
      */
     public function getState($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         $state = false;
         if ($settings) {
             $conf = $settings->getConfig();
@@ -75,7 +75,7 @@ class ChromecastConnector
 
     public function startStream($ip, $url, $metadata = [], $type = "audio/mp4")
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if (!$settings) {
             $settings = new Settings();
             $settings->setConnectorId($ip);
@@ -125,7 +125,7 @@ class ChromecastConnector
 
     public function stopStream($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if ($settings) {
             $config = $settings->getConfig();
             // set working state
@@ -155,7 +155,7 @@ class ChromecastConnector
 
     public function volumeUp($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if ($settings) {
             $config = $settings->getConfig();
             if (!array_key_exists('volume', $config)) {
@@ -181,7 +181,7 @@ class ChromecastConnector
 
     public function volumeDown($ip)
     {
-        $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if ($settings) {
             $config = $settings->getConfig();
             if (!array_key_exists('volume', $config)) {

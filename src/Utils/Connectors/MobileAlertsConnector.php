@@ -2,6 +2,8 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\MobileAlertsDataStore;
+use App\Entity\Settings;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -31,7 +33,7 @@ class MobileAlertsConnector
         if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
             foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
                 if (array_key_exists(4, $sensorConf[0]) && $sensorConf[0][4] == 'contact') {
-                    $data = $this->em->getRepository('App:MobileAlertsDataStore')->getLatest($sensorId);
+                    $data = $this->em->getRepository(MobileAlertsDataStore::class)->getLatest($sensorId);
                     if (is_array($data) && $data[1]['value'] == 'label.device.status.open') {
                         $alarms[] = [
                             'name' => $sensorConf[0][0],
@@ -61,7 +63,7 @@ class MobileAlertsConnector
 
     public function getAlarmMode()
     {
-        return $this->em->getRepository('App:Settings')->getMode('alarm');
+        return $this->em->getRepository(Settings::class)->getMode('alarm');
     }
 
     public function getCurrentMinInsideTemp()
@@ -96,7 +98,7 @@ class MobileAlertsConnector
         $data = [];
         if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
             foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
-                $data[$sensorId] = $this->em->getRepository('App:MobileAlertsDataStore')->getLatest($sensorId);
+                $data[$sensorId] = $this->em->getRepository(MobileAlertsDataStore::class)->getLatest($sensorId);
             }
         }
         return $data;

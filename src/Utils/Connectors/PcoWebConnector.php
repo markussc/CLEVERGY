@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\Settings;
+use App\Entity\PcoWebDataStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -39,7 +40,7 @@ class PcoWebConnector
 
     public function getAllLatest()
     {
-        return $this->em->getRepository('App:PcoWebDataStore')->getLatest($this->ip);
+        return $this->em->getRepository(PcoWebDataStore::class)->getLatest($this->ip);
     }
 
     public function getAll()
@@ -52,7 +53,7 @@ class PcoWebConnector
         $responseArr = json_decode($json, true);
 
         return [
-            'mode' => $this->pcowebModeToString($this->em->getRepository('App:Settings')->getMode($this->getIp())),
+            'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
             'outsideTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][0]['VALUE'],
             'waterTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][2]['VALUE'],
             'setDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][53]['VALUE'],
@@ -274,7 +275,7 @@ class PcoWebConnector
         $currentStatus = $this->getAllLatest()['ppMode'];
 
         // get latest timestamp with opposite status
-        $oldStatus = $this->em->getRepository('App:PcoWebDataStore')->getLatestNotStatus($this->getIp(), $currentStatus);
+        $oldStatus = $this->em->getRepository(PcoWebDataStore::class)->getLatestNotStatus($this->getIp(), $currentStatus);
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 

@@ -2,6 +2,7 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\ConexioDataStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Nesk\Puphpeteer\Puppeteer;
 
@@ -38,9 +39,9 @@ class ConexioConnector
         $latest = [];
         if (array_key_exists('conexio', $this->connectors)) {
             $ip = $this->connectors['conexio']['ip'];
-            $latest = $this->em->getRepository('App:ConexioDataStore')->getLatest($ip);
+            $latest = $this->em->getRepository(ConexioDataStore::class)->getLatest($ip);
             if ($latest && count($latest)) {
-                 $latest['energyToday'] = $this->em->getRepository('App:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+                 $latest['energyToday'] = $this->em->getRepository(ConexioDataStore::class)->getEnergyToday($this->connectors['conexio']['ip']);
             }
         }
 
@@ -80,7 +81,7 @@ class ConexioConnector
 
             // if requested, add calculated data
             if ($calculatedData) {
-                $data['energyToday'] = $this->em->getRepository('App:ConexioDataStore')->getEnergyToday($this->connectors['conexio']['ip']);
+                $data['energyToday'] = $this->em->getRepository(ConexioDataStore::class)->getEnergyToday($this->connectors['conexio']['ip']);
             }
         } catch (\Exception $e) {
             return false;
