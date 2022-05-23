@@ -2,6 +2,11 @@
 
 namespace App\Utils;
 
+use App\Entity\MyStromDataStore;
+use App\Entity\ShellyDataStore;
+use App\Entity\MobileAlertsDataStore;
+use App\Entity\Settings;
+use App\Entity\SmartFoxDataStore;
 use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\OpenWeatherMapConnector;
 use App\Utils\Connectors\MyStromConnector;
@@ -87,9 +92,9 @@ class ConditionChecker
         if ($now->format("H") > 12 && $this->checkEnergyLowRate() && isset($conf['minRunTime'])) {
             $runTime = null;
             if($this->deviceClass == "MyStrom") {
-                $runTime = $this->em->getRepository("App:MyStromDataStore")->getActiveDuration($this->ip);
+                $runTime = $this->em->getRepository(MyStromDataStore::class)->getActiveDuration($this->ip);
             } elseif($this->deviceClass == "Shelly") {
-                $runTime = $this->em->getRepository("App:ShellyDataStore")->getActiveDuration($this->ip);
+                $runTime = $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($this->ip);
             }
             if ($runTime !== null && $runTime < $conf['minRunTime']) {
                 if ($type !== 'forceOff') {
@@ -201,7 +206,7 @@ class ConditionChecker
                 if (strpos($condition, 'rain') !== false) {
                     // we check for rain (more than x)
                     $condition = floatval(str_replace('rain>', '', $condition));
-                    $rain = $this->em->getRepository("App:MobileAlertsDataStore")->getDiffLast60Min($condArr[1]);
+                    $rain = $this->em->getRepository(MobileAlertsDataStore::class)->getDiffLast60Min($condArr[1]);
                     if ($rain > strtolower($condition)) {
                         $fulfilled = true;
                     } else {
@@ -308,7 +313,7 @@ class ConditionChecker
                 }
             }
             if ($condArr[0] == 'mystrom') {
-                $status = $this->em->getRepository("App:MyStromDataStore")->getLatest($condArr[1]);
+                $status = $this->em->getRepository(MyStromDataStore::class)->getLatest($condArr[1]);
                 // we only have equal condition (true / false)
                 if ($status == $condition) {
                     $fulfilled = true;
@@ -318,7 +323,7 @@ class ConditionChecker
                 }
             }
             if ($condArr[0] == 'alarm') {
-                $status = $this->em->getRepository("App:Settings")->getMode('alarm');
+                $status = $this->em->getRepository(Settings::class)->getMode('alarm');
                 // we only have equal condition (true / false)
                 if ($status == $condition) {
                     $fulfilled = true;
@@ -330,10 +335,10 @@ class ConditionChecker
             if ($condArr[0] == 'runTime') {
                 $runTime = null;
                 if ($this->deviceClass == 'MyStrom') {
-                    $runTime = $this->em->getRepository("App:MyStromDataStore")->getActiveDuration($this->ip);
+                    $runTime = $this->em->getRepository(MyStromDataStore::class)->getActiveDuration($this->ip);
                 }
                 if ($this->deviceClass == 'Shelly') {
-                    $runTime = $this->em->getRepository("App:ShellyDataStore")->getActiveDuration($this->ip);
+                    $runTime = $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($this->ip);
                 }
                 if ($runTime !== null && intval($runTime) > intval($condition)) {
                     $fulfilled = true;
@@ -354,7 +359,7 @@ class ConditionChecker
     {
         // check if there is a waiting device with higher priority (return false if there is one with higher priority, true if we have priority)
         if (array_key_exists('priority', $device) && array_key_exists('nominalPower', $device)) {
-            $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 2);
+            $currentAveragePower = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 2);
             // check if device is currently running
             $status = [];
             if ($deviceClass == "MyStrom") {
@@ -398,7 +403,7 @@ class ConditionChecker
                 $status = $this->shelly->getStatus($device);
             }
             if (array_key_exists('val', $status) && $status['val']) {
-                $currentAveragePower = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 5);
+                $currentAveragePower = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 5);
                 if (array_key_exists('power', $status)) {
                     // if we have a valid power value, use this instead of the nominal power
                     $device['nominalPower'] = $status['power'];

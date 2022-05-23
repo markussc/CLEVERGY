@@ -80,8 +80,8 @@ class ShellyConnector
                 $result = $this->getOneLatest($device);
                 if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
                     $connectorId = $device['ip'].'_'.$device['port'];
-                    $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('today'), new \DateTime('now'));
-                    $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
+                    $result['consumption_day'] = $this->em->getRepository(ShellyDataStore::class)->getConsumption($connectorId, new \DateTime('today'), new \DateTime('now'));
+                    $result['consumption_yesterday'] = $this->em->getRepository(ShellyDataStore::class)->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
                 }
                 $results[] = $result;
             }
@@ -133,7 +133,7 @@ class ShellyConnector
         }
         $status = $this->getStatus($device);
         $connectorId = $device['ip'].'_'.$device['port'];
-        $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
+        $mode = $this->em->getRepository(Settings::class)->getMode($connectorId);
         $config = $this->cm->getConfig('shelly', $connectorId);
         if (!isset($config['port'])) {
             $config['port'] = 0;
@@ -158,12 +158,12 @@ class ShellyConnector
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
-            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
+            'activeMinutes' => $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($connectorId, $today, $now),
             'timestamp' => new \DateTime('now'),
         ];
         if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
-            $result['consumption_day'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, $today, $now);
-            $result['consumption_yesterday'] = $this->em->getRepository('App:ShellyDataStore')->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
+            $result['consumption_day'] = $this->em->getRepository(ShellyDataStore::class)->getConsumption($connectorId, $today, $now);
+            $result['consumption_yesterday'] = $this->em->getRepository(ShellyDataStore::class)->getConsumption($connectorId, new \DateTime('yesterday'), new \DateTime('today'));
         }
 
         return $result;
@@ -178,7 +178,7 @@ class ShellyConnector
         }
 
         $connectorId = $device['ip'].'_'.$device['port'];
-        $mode = $this->em->getRepository('App:Settings')->getMode($connectorId);
+        $mode = $this->em->getRepository(Settings::class)->getMode($connectorId);
         $config = $this->cm->getConfig('shelly', $connectorId);
         if (!isset($config['port'])) {
             $config['port'] = 0;
@@ -193,7 +193,7 @@ class ShellyConnector
         } else {
             $autoIntervals = [];
         }
-        $latest = $this->em->getRepository('App:ShellyDataStore')->getLatest($connectorId);
+        $latest = $this->em->getRepository(ShellyDataStore::class)->getLatest($connectorId);
         if (method_exists($latest, "getData")) {
             $status = $latest->getData();
             $timestamp = $latest->getTimestamp();
@@ -210,7 +210,7 @@ class ShellyConnector
             'nominalPower' => $nominalPower,
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
-            'activeMinutes' => $this->em->getRepository('App:ShellyDataStore')->getActiveDuration($connectorId, $today, $now),
+            'activeMinutes' => $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($connectorId, $today, $now),
             'timestamp' => $timestamp,
         ];
     }
@@ -278,7 +278,7 @@ class ShellyConnector
     public function switchOK($deviceId)
     {
         // check if manual mode is set
-        if ($this->em->getRepository('App:Settings')->getMode($this->getId($this->connectors['shelly'][$deviceId])) == Settings::MODE_MANUAL) {
+        if ($this->em->getRepository(Settings::class)->getMode($this->getId($this->connectors['shelly'][$deviceId])) == Settings::MODE_MANUAL) {
             return false;
         }
 
@@ -319,7 +319,7 @@ class ShellyConnector
         } else {
             $oppositeStatus = ($currentStatus + 1)%2;
         }
-        $oldStatus = $this->em->getRepository('App:ShellyDataStore')->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus, $roller);
+        $oldStatus = $this->em->getRepository(ShellyDataStore::class)->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus, $roller);
         if (count($oldStatus) == 1) {
             $oldTimestamp = $oldStatus[0]->getTimestamp();
 
@@ -602,7 +602,7 @@ class ShellyConnector
                     if (!array_key_exists('port', $deviceConf)) {
                         $deviceConf['port'] = 0;
                     }
-                    $latest = $this->em->getRepository('App:ShellyDataStore')->getLatest($deviceConf['ip'].'_'.$deviceConf['port']);
+                    $latest = $this->em->getRepository(ShellyDataStore::class)->getLatest($deviceConf['ip'].'_'.$deviceConf['port']);
                     if (method_exists($latest, "getData")) {
                         $status = $latest->getData();
                         $timestamp = $latest->getTimestamp();

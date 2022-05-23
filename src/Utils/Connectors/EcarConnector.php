@@ -2,6 +2,9 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\EcarDataStore;
+use App\Entity\MyStromDataStore;
+use App\Entity\SmartFoxDataStore;
 use App\Utils\Connectors\WeConnectIdConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,7 +72,7 @@ class EcarConnector
         $latest = [];
         if (array_key_exists('ecar', $this->connectors)) {
             foreach ($this->connectors['ecar'] as $ecar) {
-                $data = $this->em->getRepository('App:EcarDataStore')->getLatest($ecar['carId']);
+                $data = $this->em->getRepository(EcarDataStore::class)->getLatest($ecar['carId']);
                 if ($data) {
                     $latest[] = $data;
                 }
@@ -81,7 +84,7 @@ class EcarConnector
 
     public function getOneLatest($carId)
     {
-        return $this->em->getRepository('App:EcarDataStore')->getLatest($carId);
+        return $this->em->getRepository(EcarDataStore::class)->getLatest($carId);
     }
 
     public function checkHighPriority($switchDevice, $energyLowRate)
@@ -118,8 +121,8 @@ class EcarConnector
                     // or low rate and more than 8 hours charging left,
                     // or battery level below 30%
                     // in these cases we want to allow max half of the charging power from the grid
-                    $switchState = $this->em->getRepository("App:MyStromDataStore")->getLatest($switchDevice['ip']);
-                    $powerAverage = $this->em->getRepository("App:SmartFoxDataStore")->getNetPowerAverage($this->smartfox->getIp(), 15);
+                    $switchState = $this->em->getRepository(MyStromDataStore::class)->getLatest($switchDevice['ip']);
+                    $powerAverage = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 15);
                     if ($switchState && $powerAverage < $switchDevice['nominalPower']/2) {
                         // currently charging, we want at least half of the charging power by self production
                         $priority = true;

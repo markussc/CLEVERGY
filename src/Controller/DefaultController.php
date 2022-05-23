@@ -3,6 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Settings;
+use App\Entity\User;
+use App\Entity\SmartFoxDataStore;
+use App\Entity\MobileAlertsDataStore;
+use App\Entity\NetatmoDataStore;
+use App\Entity\PcoWebDataStore;
+use App\Entity\WemDataStore;
+use App\Entity\ConexioDataStore;
+use App\Entity\LogoControlDataStore;
+use App\Entity\EcarDataStore;
 use App\Utils\LogicProcessor;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\EcarConnector;
@@ -68,7 +77,7 @@ class DefaultController extends AbstractController
         if (!$securityContext->isGranted('IS_AUTHENTICATED_REMEMBERED') && array_key_exists($clientIp, $authenticatedIps)) {
             $route = $request->get('route');
             $em = $this->getDoctrine()->getManager();
-            $user = $em->getRepository('App:User')->findOneBy(array('email' => $authenticatedIps[$clientIp]));
+            $user = $em->getRepository(User::class)->findOneBy(array('email' => $authenticatedIps[$clientIp]));
             if ($user) {
                 $token = new UsernamePasswordToken($user, $user->getPassword(), "xinstance", $user->getRoles());
                 $this->get('security.token_storage')->setToken($token);
@@ -113,7 +122,7 @@ class DefaultController extends AbstractController
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
                 $currentStat['smartFox'] = $this->smartfox->getAllLatest();
                 $currentStat['smartFoxChart'] = true;
-                $currentStat['smartFox_energy_mix'] = $em->getRepository('App:SmartFoxDataStore')->getEnergyMix($this->smartfox->getIp(), $this->getParameter('energy_low_rate'), new \DateTime('today'), new \DateTime('now'));
+                $currentStat['smartFox_energy_mix'] = $em->getRepository(SmartFoxDataStore::class)->getEnergyMix($this->smartfox->getIp(), $this->getParameter('energy_low_rate'), new \DateTime('today'), new \DateTime('now'));
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
                 $currentStat['pcoWeb'] = $this->pcoweb->getAllLatest();
@@ -140,30 +149,30 @@ class DefaultController extends AbstractController
             if (array_key_exists('mobilealerts', $this->getParameter('connectors')) && is_array($this->getParameter('connectors')['mobilealerts']['sensors'])) {
                 $mobileAlertsHistory = [];
                 foreach ($this->getParameter('connectors')['mobilealerts']['sensors'] as $sensorId => $mobileAlertsSensor) {
-                    $mobileAlertsHistory[$sensorId] = $em->getRepository('App:MobileAlertsDataStore')->getHistory($sensorId, $from, $to);
+                    $mobileAlertsHistory[$sensorId] = $em->getRepository(MobileAlertsDataStore::class)->getHistory($sensorId, $from, $to);
                 }
                 $history['mobileAlerts'] = $mobileAlertsHistory;
             }
             if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
-                $history['netatmo'] = $em->getRepository('App:NetatmoDataStore')->getHistory($this->netatmo->getId(), $from, $to);
+                $history['netatmo'] = $em->getRepository(NetatmoDataStore::class)->getHistory($this->netatmo->getId(), $from, $to);
             }
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-                $history['smartFox'] = $em->getRepository('App:SmartFoxDataStore')->getHistory($this->smartfox->getIp(), $from, $to);
+                $history['smartFox'] = $em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), $from, $to);
             }
             if (array_key_exists('pcoweb', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:PcoWebDataStore')->getHistory($this->pcoweb->getIp(), $from, $to);
+                $history['pcoWeb'] = $em->getRepository(PcoWebDataStore::class)->getHistory($this->pcoweb->getIp(), $from, $to);
             } elseif (array_key_exists('wem', $this->getParameter('connectors'))) {
-                $history['pcoWeb'] = $em->getRepository('App:WemDataStore')->getHistory($this->wem->getUsername(), $from, $to); // we store the wem data to the pcoWeb data structure for simplicity
+                $history['pcoWeb'] = $em->getRepository(WemDataStore::class)->getHistory($this->wem->getUsername(), $from, $to); // we store the wem data to the pcoWeb data structure for simplicity
             }
             if (array_key_exists('conexio', $this->getParameter('connectors'))) {
-                $history['conexio'] = $em->getRepository('App:ConexioDataStore')->getHistory($this->conexio->getIp(), $from, $to);
+                $history['conexio'] = $em->getRepository(ConexioDataStore::class)->getHistory($this->conexio->getIp(), $from, $to);
             }
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
-                $history['logoControl'] = $em->getRepository('App:LogoControlDataStore')->getHistory($this->logocontrol->getIp(), $from, $to);
+                $history['logoControl'] = $em->getRepository(LogoControlDataStore::class)->getHistory($this->logocontrol->getIp(), $from, $to);
             }
             if (array_key_exists('ecar', $this->getParameter('connectors'))) {
                 foreach ($this->getParameter('connectors')['ecar'] as $ecar) {
-                    $ecarHistory[$ecar['carId']] = $em->getRepository('App:EcarDataStore')->getHistory($ecar['carId'], $from, $to);
+                    $ecarHistory[$ecar['carId']] = $em->getRepository(EcarDataStore::class)->getHistory($ecar['carId'], $from, $to);
                 }
                 $history['ecar'] = $ecarHistory;
             }
@@ -231,7 +240,7 @@ class DefaultController extends AbstractController
                         // make sure all mystrom PIR devices have their action URL set correctly
                         $this->mystrom->activateAllPIR();
                     }
-                    $settings = $this->getDoctrine()->getManager()->getRepository('App:Settings')->findOneByConnectorId($connectorId);
+                    $settings = $this->getDoctrine()->getManager()->getRepository(Settings::class)->findOneByConnectorId($connectorId);
                     if (!$settings) {
                         $settings = new Settings();
                         $settings->setConnectorId($connectorId);
@@ -314,51 +323,51 @@ class DefaultController extends AbstractController
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
             $ip = $this->smartfox->getIp();
             $history['smartfox'] = [
-                'pv_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $today, $now),
-                'pv_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $yesterday, $today),
-                'pv_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisWeek, $now),
-                'pv_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisMonth, $now),
-                'pv_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYearMonth, $lastYearPart),
-                'pv_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $thisYear, $now),
-                'pv_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYear, $lastYearPart),
-                'pv_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'PvEnergy', $lastYear, $thisYear),
-                'energy_in_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $today, $now),
-                'energy_in_today_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $today, $now),
-                'energy_out_today' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $today, $now),
-                'energy_in_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $yesterday, $today),
-                'energy_in_yesterday_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $yesterday, $today),
-                'energy_out_yesterday' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $yesterday, $today),
-                'energy_in_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisWeek, $now),
-                'energy_in_week_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisWeek, $now),
-                'energy_out_week' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisWeek, $now),
-                'energy_in_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisMonth, $now),
-                'energy_in_month_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisMonth, $now),
-                'energy_out_month' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisMonth, $now),
-                'energy_in_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYearMonth, $lastYearPart),
-                'energy_in_lastYearMonth_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYearMonth, $lastYearPart),
-                'energy_out_lastYearMonth' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
-                'energy_in_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $thisYear, $now),
-                'energy_in_year_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
-                'energy_out_year' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $thisYear, $now),
-                'energy_in_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYear, $lastYearPart),
-                'energy_in_lastYearPart_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $lastYearPart),
-                'energy_out_lastYearPart' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYear, $lastYearPart),
-                'energy_in_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_in', $lastYear, $thisYear),
-                'energy_in_lastYear_highrate' => $em->getRepository('App:SmartFoxDataStore')->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $thisYear),
-                'energy_out_lastYear' => $em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($ip, 'energy_out', $lastYear, $thisYear),
+                'pv_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $today, $now),
+                'pv_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $yesterday, $today),
+                'pv_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisWeek, $now),
+                'pv_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisMonth, $now),
+                'pv_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYearMonth, $lastYearPart),
+                'pv_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisYear, $now),
+                'pv_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYear, $lastYearPart),
+                'pv_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYear, $thisYear),
+                'energy_in_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $today, $now),
+                'energy_in_today_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $today, $now),
+                'energy_out_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $today, $now),
+                'energy_in_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $yesterday, $today),
+                'energy_in_yesterday_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $yesterday, $today),
+                'energy_out_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $yesterday, $today),
+                'energy_in_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $thisWeek, $now),
+                'energy_in_week_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisWeek, $now),
+                'energy_out_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $thisWeek, $now),
+                'energy_in_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $thisMonth, $now),
+                'energy_in_month_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisMonth, $now),
+                'energy_out_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $thisMonth, $now),
+                'energy_in_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastYearMonth, $lastYearPart),
+                'energy_in_lastYearMonth_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYearMonth, $lastYearPart),
+                'energy_out_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
+                'energy_in_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $thisYear, $now),
+                'energy_in_year_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
+                'energy_out_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $thisYear, $now),
+                'energy_in_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastYear, $lastYearPart),
+                'energy_in_lastYearPart_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $lastYearPart),
+                'energy_out_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYear, $lastYearPart),
+                'energy_in_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastYear, $thisYear),
+                'energy_in_lastYear_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $thisYear),
+                'energy_out_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYear, $thisYear),
             ];
         }
         if (array_key_exists('conexio', $this->getParameter('connectors'))) {
             $ip = $this->conexio->getIp();
             $history['conexio'] = [
-                'energy_today' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $today, $now),
-                'energy_yesterday' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $yesterday, $today),
-                'energy_week' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisWeek, $now),
-                'energy_month' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisMonth, $now),
-                'energy_lastYearMonth' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYearMonth, $lastYearPart),
-                'energy_year' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $thisYear, $now),
-                'energy_lastYearPart' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYear, $lastYearPart),
-                'energy_lastYear' => $em->getRepository('App:ConexioDataStore')->getEnergyInterval($ip, $lastYear, $thisYear),
+                'energy_today' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $today, $now),
+                'energy_yesterday' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $yesterday, $today),
+                'energy_week' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisWeek, $now),
+                'energy_month' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisMonth, $now),
+                'energy_lastYearMonth' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYearMonth, $lastYearPart),
+                'energy_year' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisYear, $now),
+                'energy_lastYearPart' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYear, $lastYearPart),
+                'energy_lastYear' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYear, $thisYear),
             ];
         }
 

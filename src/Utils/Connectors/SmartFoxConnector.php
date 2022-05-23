@@ -2,6 +2,7 @@
 
 namespace App\Utils\Connectors;
 
+use App\Entity\SmartFoxDataStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -36,7 +37,7 @@ class SmartFoxConnector
 
     public function getAllLatest()
     {
-        $latest = $this->em->getRepository('App:SmartFoxDataStore')->getLatest($this->ip);
+        $latest = $this->em->getRepository(SmartFoxDataStore::class)->getLatest($this->ip);
 
         return $latest;
     }
@@ -60,9 +61,9 @@ class SmartFoxConnector
     private function getFromREG9TE()
     {
         $arr = json_decode($this->client->request('GET', $this->basePath . '/all')->getContent(), true);
-        $arr['day_energy_in'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in');
-        $arr['day_energy_out'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out');
-        $arr['energyToday'] = $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip);
+        $arr['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
+        $arr['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
+        $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
 
         return $arr;
     }
@@ -102,9 +103,9 @@ class SmartFoxConnector
             ],
             "PvPower" => ["0" => $data["wr1PowerValue"]],
             "PvEnergy" => ["0" => $data["wr1EnergyValue"]],
-            "day_energy_in" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_in'),
-            "day_energy_out" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyInterval($this->ip, 'energy_out'),
-            "energyToday" => $this->em->getRepository('App:SmartFoxDataStore')->getEnergyToday($this->ip),
+            "day_energy_in" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in'),
+            "day_energy_out" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out'),
+            "energyToday" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip),
             "consumptionControl1Percent" => $data["consumptionControl1Percent"]
         ];
 

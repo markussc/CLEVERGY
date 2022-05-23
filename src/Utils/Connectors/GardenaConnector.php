@@ -53,12 +53,12 @@ class GardenaConnector
 
     public function availableDevices()
     {
-        return $this->em->getRepository('App:Settings')->findByType('gardena');
+        return $this->em->getRepository(Settings::class)->findByType('gardena');
     }
 
     public function updateDevices($force = false)
     {
-        $controlDevice = $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId('gardena');
+        $controlDevice = $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId('gardena');
         $now = new \DateTime();
         if (!$controlDevice) {
             $controlDevice = new Settings();
@@ -75,7 +75,7 @@ class GardenaConnector
             $controlDevice->setConfig(['lastUpdate' =>$now]);
             $devices = $this->getDevices();
             foreach ($devices as $device) {
-                $settings = $this->em->getRepository('App:Settings')->findOneByConnectorId($device['id']);
+                $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($device['id']);
                 if (!$settings) {
                     $settings = new Settings();
                     $settings->setConnectorId($device['id']);

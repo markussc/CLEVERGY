@@ -33,7 +33,7 @@ class ChromecastController extends AbstractController
         $em = $this->getDoctrine()->getManager();
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
         $ip = $chromecast['ip'];
-        $settings = $em->getRepository('App:Settings')->findOneByConnectorId($ip);
+        $settings = $em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if (!$settings) {
             $settings = new Settings();
             $settings->setConnectorId($ip);

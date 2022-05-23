@@ -37,7 +37,7 @@ class OpenWeatherMapConnector
     public function saveCurrentWeatherToDb($force = false)
     {
         $id = 'current';
-        $latest = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest($id);
+        $latest = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest($id);
         // calculate time diff
         $now = new \DateTime('now');
         if ($latest) {
@@ -62,7 +62,7 @@ class OpenWeatherMapConnector
     public function save5DayForecastToDb($force = false)
     {
         $id = '5dayforecast';
-        $latest = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest($id);
+        $latest = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest($id);
         // calculate time diff
         $now = new \DateTime('now');
         if ($latest) {
@@ -86,7 +86,7 @@ class OpenWeatherMapConnector
 
     public function getRelevantCloudsNextDaylightPeriod()
     {
-        $forecast = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('5dayforecast');
+        $forecast = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('5dayforecast');
         if ($forecast) {
             $forecastData = $forecast->getData();
         } else {
@@ -122,7 +122,7 @@ class OpenWeatherMapConnector
 
     public function getMinTempNextNightPeriod()
     {
-        $forecast = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('5dayforecast');
+        $forecast = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('5dayforecast');
         if ($forecast) {
             $forecastData = $forecast->getData();
         } else {
@@ -151,7 +151,7 @@ class OpenWeatherMapConnector
 
     public function getMaxTempNextDaylightPeriod()
     {
-        $forecast = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('5dayforecast');
+        $forecast = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('5dayforecast');
         if ($forecast) {
             $forecastData = $forecast->getData();
         } else {
@@ -179,7 +179,7 @@ class OpenWeatherMapConnector
 
     private function getCurrentClouds()
     {
-        $current = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('current');
+        $current = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('current');
         if ($current) {
             $currentData = $current->getData();
             if (isset($currentData['clouds']['all'])) {
@@ -193,7 +193,7 @@ class OpenWeatherMapConnector
 
     public function getCurrentMain()
     {
-        $current = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('current');
+        $current = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('current');
         if ($current) {
             $currentData = $current->getData();
             if (isset($currentData['weather'][0]['main'])) {
@@ -207,7 +207,7 @@ class OpenWeatherMapConnector
 
     public function getCurrentCode()
     {
-        $current = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('current');
+        $current = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('current');
         if ($current) {
             $currentData = $current->getData();
             if (isset($currentData['weather'][0]['icon'])) {
@@ -221,7 +221,7 @@ class OpenWeatherMapConnector
 
     public function getDayNight()
     {
-        $current = $this->em->getRepository('App:OpenWeatherMapDataStore')->getLatest('current');
+        $current = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('current');
         if ($current) {
             $currentData = $current->getData();
             if (isset($currentData['sys']['sunrise']) && isset($currentData['sys']['sunset'])) {

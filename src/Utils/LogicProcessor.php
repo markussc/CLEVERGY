@@ -148,7 +148,7 @@ class LogicProcessor
         // execute auto actions for PcoWeb heating, if we are not in manual mode
         $pcoIp = $this->pcoweb->getIp();
         if ($pcoIp) {
-            $pcoMode = $this->em->getRepository('App:Settings')->getMode($pcoIp);
+            $pcoMode = $this->em->getRepository(Settings::class)->getMode($pcoIp);
             if (Settings::MODE_MANUAL != $pcoMode) {
                 $this->autoActionsPcoWeb($pcoMode);
             }
@@ -157,7 +157,7 @@ class LogicProcessor
         // execute auto actions for wem WEM heating, if we are not in manual mode
         $wemUsername = $this->wem->getUsername();
         if ($wemUsername) {
-            $wemMode = $this->em->getRepository('App:Settings')->getMode($wemUsername);
+            $wemMode = $this->em->getRepository(Settings::class)->getMode($wemUsername);
             if (Settings::MODE_MANUAL != $wemMode) {
                 $this->autoActionsWem($wemMode, $doWemPortal);
             }
@@ -1129,7 +1129,7 @@ class LogicProcessor
         $shAlarms = $this->shelly->getAlarms();
         $alarms = array_merge($maAlarms, $msAlarms, $shAlarms);
         if (count($alarms)) {
-            $alarmSetting = $this->em->getRepository('App:Settings')->findOneByConnectorId('alarm');
+            $alarmSetting = $this->em->getRepository(Settings::class)->findOneByConnectorId('alarm');
             if(!$alarmSetting) {
                 $alarmSetting = new Settings();
                 $alarmSetting->setConnectorId('alarm');
@@ -1175,7 +1175,7 @@ class LogicProcessor
     private function getAvgPower()
     {
         if ($this->avgPower === null) {
-            $this->avgPower = $this->em->getRepository('App:SmartFoxDataStore')->getNetPowerAverage($this->smartfox->getIp(), 5);
+            $this->avgPower = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 5);
         }
 
         return $this->avgPower;
@@ -1184,7 +1184,7 @@ class LogicProcessor
     private function getAvgPvPower()
     {
         if ($this->avgPvPower === null) {
-            $this->avgPvPower = $this->em->getRepository('App:SmartFoxDataStore')->getPvPowerAverage($this->smartfox->getIp(), 10);
+            $this->avgPvPower = $this->em->getRepository(SmartFoxDataStore::class)->getPvPowerAverage($this->smartfox->getIp(), 10);
         }
 
         return $this->avgPvPower;
