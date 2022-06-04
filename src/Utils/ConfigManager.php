@@ -94,6 +94,9 @@ class ConfigManager {
             $settings = new Settings();
             $settings->setConnectorId($connectorId);
             $settings->setMode(Settings::MODE_AUTO);
+            if (isset($newConfig['nominalPower'])) {
+                $newConfig['nominalPower'] = max($newConfig['nominalPower'], 1); // set 1 Watt as nominalPower if 0 is currently reported, in order to correctly handle auto mode
+            }
             $settings->setConfig($newConfig);
             $this->em->persist($settings);
             $this->em->flush();
