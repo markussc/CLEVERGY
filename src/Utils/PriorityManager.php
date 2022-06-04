@@ -61,7 +61,7 @@ class PriorityManager
             if(array_key_exists("nominalPower", $dev)) {
                 $nominalPower = $dev['nominalPower'];
                 if (array_key_exists('type', $dev) && $dev['type'] == 'carTimer') {
-                    $switchDevice = $this->mystrom->getConfig($dev['ip']);
+                    $switchDevice = $conn->getConfig($conn->getId($dev));
                     $nominalPower = $switchDevice['nominalPower'];
                     if ($this->ecar->checkHighPriority($switchDevice, $energyLowRate)) {
                         $nominalPower = $switchDevice['nominalPower'] / 2;

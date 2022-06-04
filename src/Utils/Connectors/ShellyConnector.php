@@ -60,6 +60,9 @@ class ShellyConnector
     public function getConfig($connectorId)
     {
         $config = $this->cm->getConfig('shelly', $connectorId);
+        if (is_array($config) && array_key_exists('type', $config) && $config['type'] == 'carTimer') {
+            $config['carTimerData'] = $this->getCarTimerData($config);
+        }
 
         return $config;
     }
@@ -159,6 +162,8 @@ class ShellyConnector
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
             'activeMinutes' => $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($connectorId, $today, $now),
+            'timerData' => $this->getTimerData($config),
+            'carTimerData' => $this->getCarTimerData($config),
             'timestamp' => new \DateTime('now'),
         ];
         if (is_array($result['status']) && array_key_exists('power', $result['status'])) {
@@ -211,12 +216,28 @@ class ShellyConnector
             'autoIntervals' => $autoIntervals,
             'mode' => $mode,
             'activeMinutes' => $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($connectorId, $today, $now),
+            'timerData' => $this->getTimerData($config),
+            'carTimerData' => $this->getCarTimerData($config),
             'timestamp' => $timestamp,
         ];
     }
 
     public function executeCommand($deviceId, $command)
     {
+        if (strpos(strval($command), 'timer') === 0) {
+            $timer = explode('timer_', $command);
+            if (count($timer) == 2) {
+                return $this->startTimer($this->connectors['shelly'][$deviceId], $timer[1]);
+            }
+        }
+        if (strpos(strval($command), 'cartimer_') === 0) {
+            $command = str_replace("cartimer_", "", $command);
+            $cartimer = explode('_', $command);
+            if (count($cartimer) == 3) {
+                return $this->startCarTimer($this->connectors['shelly'][$deviceId], $cartimer);
+            }
+        }
+    
         switch ($command) {
             case 100:
                 if ($this->connectors['shelly'][$deviceId]['type'] == 'roller') {
@@ -288,7 +309,7 @@ class ShellyConnector
         }
 
         // check if any autoIntervals are set (and if so, whether we are inside)
-        if ($this->connectors['shelly'][$deviceId]['autoIntervals']) {
+        if (isset($this->connectors['shelly'][$deviceId]['autoIntervals']) && is_array($this->connectors['shelly'][$deviceId]['autoIntervals'])) {
             $autoOK = false;
             $nowH = (int)date('H');
             $nowM = (int)date('i');
@@ -310,6 +331,13 @@ class ShellyConnector
 
         // get current status
         $currentStatus = $this->getStatus($this->connectors['shelly'][$deviceId])['val'];
+
+        // check if it is a fully loaded battery
+        if (!$currentStatus && isset($this->connectors['shelly'][$deviceId]['type']) && $this->connectors['shelly'][$deviceId]['type'] == 'battery') {
+            if ($this->getTimerData($this->connectors['shelly'][$deviceId])['activePercentage'] >= 100) {
+                return false;
+            }
+        }
 
         // get latest timestamp with opposite status
         $roller = false;
@@ -368,7 +396,7 @@ class ShellyConnector
             } else {
                 return $this->createStatus(3, $r['current_pos']);
             }
-        } elseif (!empty($r) && $device['type'] == 'relay') {
+        } elseif (!empty($r) && ($device['type'] == 'relay' || $device['type'] == 'battery' || $device['type'] == 'carTimer')) {
             if (array_key_exists('ison', $r) && $r['ison'] == true) {
                 $powerResp = $this->queryShelly($device, 'power');
                 if (!empty($powerResp) && array_key_exists('power', $powerResp)) {
@@ -437,16 +465,27 @@ class ShellyConnector
         if (!empty($r)) {
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
+            $this->enableCarCharger($device);
             return true;
         } else {
             return false;
         }
     }
 
-    private function setOff($device)
+    private function setOff($device, $recursionDepth = 0)
     {
+        $ok = $this->disableCarCharger($device);
+        if ($recursionDepth < 10 && !$ok) {
+            // car is still charging, we do not want to forcibly turn off the switch yet (we wait max. 100 seconds for it to complete)
+            // try again within 10 seconds
+            // wait 10 seconds before continuation
+            sleep(10);
+            $this->setOff($device, $recursionDepth++);
+            return false;
+        }
         $r = $this->queryShelly($device, 'off');
         if (!empty($r)) {
+            // get the current (new) status and store to database
             $status = $this->getStatus($device);
             $this->storeStatus($device, $status);
             return true;
@@ -517,7 +556,7 @@ class ShellyConnector
                     $reqUrl = 'settings/actions?index=0&name=roller_close_url&enabled=true&urls[]='.$triggerUrl.'/5';
                     break;
             }
-        } elseif ($device['type'] == 'relay') {
+        } elseif ($device['type'] == 'relay' || $device['type'] == 'battery' || $device['type'] == 'carTimer') {
             switch ($cmd) {
                 case 'status':
                     $reqUrl = 'relay/'.$device['port'];
@@ -575,7 +614,7 @@ class ShellyConnector
             $shellyEntity->setConnectorId($connectorId);
             $shellyEntity->setData($status);
             if (array_key_exists('power', $status)) {
-                if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
+                if (array_key_exists('nominalPower', $device) && $device['nominalPower'] > 0 && ($status['power'] > 0 || !$this->cm->hasDynamicConfig($connectorId))) {
                     // update nominalPower with the current power of the device if consumption is detected
                     $this->cm->updateConfig($connectorId, ['nominalPower' => $status['power']]);
                 }
@@ -585,7 +624,7 @@ class ShellyConnector
         }
     }
 
-    private function getId($device)
+    public function getId($device)
     {
         if (!isset($device['port'])) {
             $device['port'] = 0;
@@ -643,7 +682,7 @@ class ShellyConnector
     {
         if (array_key_exists('shelly', $this->connectors)) {
             foreach ($this->connectors['shelly'] as $deviceConf) {
-                if (array_key_exists('type', $deviceConf) && ($deviceConf['type'] == 'roller') || $deviceConf['type'] == 'relay') {
+                if (array_key_exists('type', $deviceConf) && ($deviceConf['type'] == 'roller') || $deviceConf['type'] == 'relay' || $deviceConf['type'] == 'battery' || $deviceConf['type'] == 'carTimer') {
                     return true;
                 }
             }
@@ -672,5 +711,128 @@ class ShellyConnector
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    
+    private function getTimerData($device)
+    {
+        $timerData =  [];
+        if (array_key_exists('type', $device) && $device['type'] == 'battery') {
+            $connectorId = $this->getId($device);
+            $now = new \DateTime();
+            $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+            if ($device) {
+                $config = $device->getConfig();
+                if (is_array($config) && array_key_exists('startTime', $config)) {
+                    $startTime = date_create($config['startTime']['date']);
+                    $activeDuration = $this->em->getRepository(ShellyDataStore::class)->getActiveDuration($connectorId, $startTime, $now); // in minutes since started
+                    $activePercentage = 100;
+                    if ($config['activeTime'] > 0) {
+                        $activePercentage = intval(100/$config['activeTime']*$activeDuration/60);
+                    }
+                    $timerData = [
+                        'startTime' => $startTime,
+                        'activeTime' => $config['activeTime'],
+                        'activeDuration' => $activeDuration,
+                        'activePercentage' =>  $activePercentage,
+                    ];
+                }
+            }
+        }
+
+        return $timerData;
+    }
+
+    private function getCarTimerData($device)
+    {
+        $carTimerData =  [];
+        if (array_key_exists('type', $device) && $device['type'] == 'carTimer') {
+            $connectorId = $this->getId($device);
+            $deviceSettings = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+            if ($deviceSettings) {
+                $config = $deviceSettings->getConfig();
+                if (array_key_exists('ecar', $this->connectors) && is_array($config) && array_key_exists('carId', $config)  && array_key_exists('deadline', $config)  && array_key_exists('percent', $config) && array_key_exists($config['carId'], $this->connectors['ecar'])) {
+                    $carTimerData = [
+                        'carId' => $config['carId'],
+                        'connectorId' => $this->connectors['ecar'][$config['carId']]['carId'],
+                        'capacity' => $this->connectors['ecar'][$config['carId']]['capacity'],
+                        'deadline' => $config['deadline'],
+                        'percent' => $config['percent'],
+                        'plugStatus' => $this->getStatus($device)['val'],
+                    ];
+                }
+            }
+        }
+
+        return $carTimerData;
+    }
+
+    private function startTimer($deviceConf, $activeTime)
+    {
+        $connectorId = $this->getId($deviceConf);
+        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+        if (!$device) {
+            $device = new Settings();
+            $device->setConnectorId($this->getId($connectorId));
+            $device->setMode(Settings::MODE_AUTO);
+            $this->em->persist($device);
+        }
+        $config = $device->getConfig();
+        $config['activeTime'] = intval($activeTime);
+        $config['startTime'] = new \DateTime('now');
+        $device->setConfig($config);
+        $this->em->flush($device);
+    }
+
+    private function startCarTimer($deviceConf, $timerConf)
+    {
+        $connectorId = $this->getId($deviceConf);
+        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+        if (!$device) {
+            $device = new Settings();
+            $device->setConnectorId($connectorId);
+            $device->setMode(Settings::MODE_AUTO);
+            $this->em->persist($device);
+        }
+        $device->setType("carTimer");
+        $config = $device->getConfig();
+        $config['carId'] = intval($timerConf[0]);
+        $config['deadline'] = new \DateTime($timerConf[1]);
+        $config['percent'] = intval($timerConf[2]);
+        $device->setConfig($config);
+        $this->em->flush($device);
+    }
+
+    // if this is a carCharger which is currently charging, turn it off first
+    private function disableCarCharger($deviceConf)
+    {
+        $connectorId = $this->getId($deviceConf);
+        $retVal = true;
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
+            $status = $this->getStatus($deviceConf);
+            if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
+                // currently turned on with substantial power flow
+                $config = $this->getConfig($connectorId);
+                $carId = $config['carTimerData']['carId'];
+                $this->ecar->stopCharging($carId);
+                // we are trying to stop charging, we therefore do not allow immediate switch-off
+                $retVal = false;
+            }
+        }
+
+        return $retVal;
+    }
+
+    private function enableCarCharger($deviceConf)
+    {
+        if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
+            $connectorId = $this->getId($deviceConf);
+            // turn on the car charcher
+            $config = $this->getConfig($connectorId);
+            $carId = $config['carTimerData']['carId'];
+            $this->ecar->startCharging($carId);
+        }
+
+        return true;
     }
 }

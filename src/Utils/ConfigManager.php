@@ -90,7 +90,16 @@ class ConfigManager {
     public function updateConfig($connectorId, $newConfig)
     {
         $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
-        if ($settings) {
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setConnectorId($connectorId);
+            $settings->setMode(Settings::MODE_AUTO);
+            $settings->setConfig($newConfig);
+            $this->em->persist($settings);
+            $this->em->flush();
+        }
+        else {
+            // found existing entry
             $config = $settings->getConfig();
             if ($config === null) {
                 $config = [];
@@ -100,6 +109,14 @@ class ConfigManager {
             }
             $settings->setConfig($config);
             $this->em->flush();
+            return true;
+        }
+    }
+
+    public function hasDynamicConfig($connectorId)
+    {
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+        if ($settings) {
             return true;
         } else {
             return false;
