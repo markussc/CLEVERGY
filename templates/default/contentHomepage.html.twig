@@ -217,7 +217,6 @@
             {% if not loop.first %}<br/>{% endif %}
             {% if device['status']['val']|default(100) < 2 %}
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i>&nbsp;&nbsp;{{ device['name']}}</a>
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
             {% elseif device['status']['val']|default(100) < 4 %}
                 {% if is_granted('ROLE_OWNER') %}
                 {% if device['status']['position']|default(50) == 0 %}
