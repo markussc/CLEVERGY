@@ -25,13 +25,14 @@
       <input type="radio" name="mystromTimer" value="timer_14" id="timer_14">
       <label for="timer_14">14h</label>
       <hr>
-      <button type="button" class="button" onclick="sendCommand(['mystrom', selectedMystrom, getTimerValue()]);$('#mystromTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
+      <button type="button" class="button" onclick="sendCommand([timerDeviceType, selectedMystrom, getTimerValue()]);$('#mystromTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
       <button class="close-button" data-close aria-label="Close modal" type="button" id="mystromTimerModalClose">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
     <script>
         var selectedMystrom;
+        var timerDeviceType;
         function getTimerValue()
         {
             return $("input:radio[name='mystromTimer']:checked").val();
@@ -51,13 +52,14 @@
       <label for="cartimer_percent">{%  trans %}label.mystrom.cartimer_percent{% endtrans %}</label><br>
       <input type="number" value="" min="10" max="100" maxlength="3" id="cartimer_percent">
       <hr>
-      <button type="button" class="button" onclick="sendCommand(['mystrom', selectedMystromCar, getCarTimerValue()]);$('#mystromCarTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
+      <button type="button" class="button" onclick="sendCommand([carTimerDeviceType, selectedMystromCar, getCarTimerValue()]);$('#mystromCarTimerModalClose').click();">{% trans %}label.mystrom.timer.start{% endtrans %}</button>
       <button class="close-button" data-close aria-label="Close modal" type="button" id="mystromTimerModalClose">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
       <script>
         var selectedMystromCar;
+        var carTimerDeviceType
         function getCarTimerValue()
         {
             return "cartimer_" + $("#cartimer_car").val() + "_" + $("#cartimer_deadline").val() + "_" + $("#cartimer_percent").val();
@@ -167,7 +169,7 @@
         {% for key, device in currentStat['mystrom']|default([]) %}
             {% if device['type']|default('') != 'motion' %}
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['mystrom', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i>&nbsp;&nbsp;{{ device['name']}}</a>
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
+                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
                 <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
                     <ul>\
                         <li>{% trans %}label.device.activation_interval_today{% endtrans %}: {{ (device.activeMinutes/60)|round(0, 'floor') }}h {{ device.activeMinutes%60 }}m</li>\
@@ -189,7 +191,7 @@
                         {% set timerColor =  'green' %}
                         {% set timerClass = 'full' %}
                     {% endif %}
-                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i>{% if device.timerData['activePercentage']|default(100) < 100 and device.timerData['activeTime']|default(0) > 0 %}&nbsp;&nbsp;{{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h{% endif %}</a>
+                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";timerDeviceType="mystrom";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i>{% if device.timerData['activePercentage']|default(100) < 100 and device.timerData['activeTime']|default(0) > 0 %}&nbsp;&nbsp;{{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h{% endif %}</a>
                 {% endif %}
                 {% if device['type'] == 'carTimer' %}
                     {% if ecarConnector.checkHighPriority(device, conditionChecker.checkEnergyLowRate()) %}
@@ -197,7 +199,7 @@
                     {% else %}
                         {% set timerClass = 'hourglass-half' %}
                     {% endif %}
-                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i>{% if date(device.carTimerData['deadline']['date']|default(date())) >= date() %}&nbsp;&nbsp;{{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}{% endif %}</a>
+                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";carTimerDeviceType="mystrom";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i>{% if date(device.carTimerData['deadline']['date']|default(date())) >= date() %}&nbsp;&nbsp;{{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}{% endif %}</a>
                 {% endif %}
                 {% if device.status.offline|default(false) %}<i class="fas fa-exclamation-triangle" style="color:red;"></i>{% endif %}
                 {% if not loop.last or currentStat['shelly']|default([])|length > 0 %}<br/>{% endif %}
@@ -211,11 +213,10 @@
         <div class="columns small-12 medium-8 large-6 small-centered">
             <div id="shelly_container" class="content" style="display:none;">
             <div id="shelly" class="refresh">
-            {% for key, device in currentStat['shelly']|filter(device => device['type'] == "roller" or device['type'] == "relay") %}
+            {% for key, device in currentStat['shelly']|filter(device => device['type'] == "roller" or device['type'] == "relay" or device['type'] == "battery" or device['type'] == "carTimer") %}
             {% if not loop.first %}<br/>{% endif %}
             {% if device['status']['val']|default(100) < 2 %}
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, {{ (device['status']['val'] + 1) % 2 }}])"{% endif %}><i class="fas fa-power-off" style="color:{% if device['status']['val'] %}green{% else %}red{% endif %}"></i>&nbsp;&nbsp;{{ device['name']}}</a>
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
             {% elseif device['status']['val']|default(100) < 4 %}
                 {% if is_granted('ROLE_OWNER') %}
                 {% if device['status']['position']|default(50) == 0 %}
@@ -225,10 +226,11 @@
                 {% elseif device['status']['position']|default(0) > 0 and device['status']['position']|default(100) < 100 %}
                     <span style="min-width:120px; max-width:50;%"><a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 2])"><i class="fas fa-arrow-circle-up"></i></a> <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i></a><a class="button hollow tiny" style="border:none;"><i class="fas"></i>{{ device['name']}}</a></span>
                 {% endif %}
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not device['autoIntervals']|length %}visibility:hidden;{% endif %}}}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>{% endif %}
+                {% endif %}
             {% else %}
-                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, -1]);"{% endif %}><i class="fas fa-stop-circle"></i>&nbsp;&nbsp;{{ device['name']}}</a>
+                <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['shelly', {{ key }}, -1]);"{% endif %}><i class="fas fa-stop-circle"></i>&nbsp;&nbsp;{{ device['name']}}</a>
             {% endif %}
+            <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;{% if not (device['nominalPower']|default(false) or device['autoIntervals']|default(false)) %}visibility:hidden;{% endif %}" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['settings', 'mode', '{{ device['ip'] }}_{{ device['port'] }}', {{ (device['mode'] + 1) % 2 }}])"{% endif %}><i class="fas {% if device['mode'] %}fa-lock{% else %}fa-lock-open{% endif %}"></i></a>
             {%  if device.status.power|default(false) is not same as(false) %}
                 <a href="#" data-open="deviceModal" class="button hollow tiny" style="border-radius:5px;" onclick="loadDeviceModal('{{ device['name']}}', '', '\
                 <ul>\
@@ -238,6 +240,30 @@
                     <li>{% trans %}label.device.energy_yesterday{% endtrans %}: {{  device.consumption_yesterday|number_format(1, '.', '') }} kWh</li>\
                 </ul>');"><i class="fa fa-info-circle"></i></a>
             {% endif %}
+            {% if device['type'] == 'battery' %}
+                    {% if device.timerData.activePercentage|default(100) < 25 %}
+                        {% set timerColor =  'red' %}
+                        {% set timerClass = 'empty' %}
+                    {% elseif device.timerData.activePercentage|default(100) < 75 %}
+                        {% set timerColor =  'orange' %}
+                        {% set timerClass = 'half' %}
+                    {% elseif device.timerData.activePercentage|default(100) < 90 %}
+                        {% set timerColor =  'yellow' %}
+                        {% set timerClass = 'three-quarters' %}
+                    {% else %}
+                        {% set timerColor =  'green' %}
+                        {% set timerClass = 'full' %}
+                    {% endif %}
+                    <a href="#" data-open="mystromTimerModal" onclick='selectedMystrom = "{{ key }}";timerDeviceType="shelly";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-battery-{{ timerClass}}" style="color:{{ timerColor }}"></i>{% if device.timerData['activePercentage']|default(100) < 100 and device.timerData['activeTime']|default(0) > 0 %}&nbsp;&nbsp;{{ device.timerData['activePercentage']|default(100) }}% / {{ device.timerData['activeTime']|default(0) }}h{% endif %}</a>
+                {% endif %}
+                {% if device['type'] == 'carTimer' %}
+                    {% if ecarConnector.checkHighPriority(device, conditionChecker.checkEnergyLowRate()) %}
+                        {% set timerClass = 'stopwatch' %}
+                    {% else %}
+                        {% set timerClass = 'hourglass-half' %}
+                    {% endif %}
+                    <a href="#" data-open="mystromCarTimerModal" onclick='selectedMystromCar = "{{ key }}";carTimerDeviceType="shelly";' class="button hollow tiny" style="border-radius:5px;"><i class="fas fa-{{ timerClass}}"></i>{% if date(device.carTimerData['deadline']['date']|default(date())) >= date() %}&nbsp;&nbsp;{{ currentStat['ecar'][device.carTimerData['carId']]['name']|default('') }}: {{ device.carTimerData['percent']|default(0) }}%, {{ device.carTimerData['deadline']['date']|default(date())|format_datetime('short', 'short', locale='de') }}{% endif %}</a>
+                {% endif %}
             {% endfor %}
             </div>
             </div>

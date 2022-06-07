@@ -48,6 +48,11 @@ class MyStromConnector
         return $exists;
     }
 
+    public function getId($device)
+    {
+        return $device['ip'];
+    }
+
     public function getAlarms()
     {
         $alarms = [];
@@ -243,6 +248,27 @@ class MyStromConnector
             return false;
         }
 
+        // check if any autoIntervals are set (and if so, whether we are inside)
+        if (isset($this->connectors['mystrom'][$deviceId]['autoIntervals']) && is_array($this->connectors['mystrom'][$deviceId]['autoIntervals'])) {
+            $autoOK = false;
+            $nowH = (int)date('H');
+            $nowM = (int)date('i');
+            foreach ($this->connectors['mystrom'][$deviceId]['autoIntervals'] as $autoInterval) {
+                $startArr = explode(":", $autoInterval[0]);
+                $endArr = explode(":", $autoInterval[1]);
+                $startH = (int)$startArr[0];
+                $startM = (int)$startArr[1];
+                $endH = (int)$endArr[0];
+                $endM = (int)$endArr[1];
+                if (($nowH*60 + $nowM >= $startH*60 + $startM) && ($nowH*60 + $nowM < $endH*60 + $endM)) {
+                    $autoOK = true;
+                }
+            }
+            if (!$autoOK) {
+                return false;
+            }
+        }
+
         // get current status
         $currentStatus = $this->getStatus($this->connectors['mystrom'][$deviceId])['val'];
 
@@ -318,15 +344,16 @@ class MyStromConnector
 
     public function storeStatus($device, $status)
     {
+        $connectorId = $this->getId($device);
         $mystromEntity = new MyStromDataStore();
         $mystromEntity->setTimestamp(new \DateTime('now'));
-        $mystromEntity->setConnectorId($device['ip']);
+        $mystromEntity->setConnectorId($connectorId);
         $mystromEntity->setData($status['val']);
         if (array_key_exists('power', $status)) {
             $mystromEntity->setExtendedData($status);
-            if (array_key_exists('nominalPower', $device) && $status['power'] > 0 && $device['nominalPower'] > 0) {
+            if (array_key_exists('nominalPower', $device) && $device['nominalPower'] > 0 && ($status['power'] > 0 || !$this->cm->hasDynamicConfig($connectorId))) {
                 // update nominalPower with the current power of the device if consumption is detected
-                $this->cm->updateConfig($device['ip'], ['nominalPower' => $status['power']]);
+                $this->cm->updateConfig($connectorId, ['nominalPower' => $status['power']]);
             }
         }
         $this->em->persist($mystromEntity);

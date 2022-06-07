@@ -95,6 +95,8 @@ parameters:
                 type: carTimer # type for e-car scenario (currently only supported with mystrom switches)
                 priority: 10
                 nominalPower: 500 # max. expected power in Watt consumed by the device
+                autoIntervals: # several intervals for auto control are possible
+                    - [08:00,20:00]
                 on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>55'
