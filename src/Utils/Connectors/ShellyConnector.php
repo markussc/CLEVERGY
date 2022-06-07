@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Settings;
 use App\Entity\ShellyDataStore;
 use App\Utils\ConfigManager;
+use App\Utils\Connectors\EcarConnector;
 use App\Controller\ChromecastController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -20,17 +21,19 @@ class ShellyConnector
 {
     protected $cm;
     protected $em;
+    protected $ecar;
     private $client;
     private $baseUrl;
     private $server;
     private $authkey;
     protected $connectors;
 
-    public function __construct(ChromecastController $cc, ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
+    public function __construct(ChromecastController $cc, ConfigManager $cm, EntityManagerInterface $em, EcarConnector $ecar, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
         $this->cc = $cc;
         $this->cm = $cm;
         $this->em = $em;
+        $this->ecar = $ecar;
         $this->client = $client;
         $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
         $this->connectors = $connectors;
