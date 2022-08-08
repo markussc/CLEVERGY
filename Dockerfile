@@ -41,7 +41,8 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 RUN pip3 install weconnect-cli
 
 # install Symfony CLI
-RUN wget https://get.symfony.com/cli/installer -O - | bash
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
+RUN apt install symfony-cli
 
 # config changes in PHP config
 RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
