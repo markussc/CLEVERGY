@@ -41,7 +41,8 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 RUN pip3 install weconnect-cli
 
 # install Symfony CLI
-RUN wget https://get.symfony.com/cli/installer -O - | bash
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
+RUN apt install symfony-cli
 
 # config changes in PHP config
 RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
@@ -62,7 +63,7 @@ RUN yarn install
 RUN yarn run encore prod
 
 # create TLS support
-RUN /root/.symfony/bin/symfony server:ca:install
+RUN symfony server:ca:install
 
 # apply database migrations and run symfony web server
 CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console cache:clear ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /root/.symfony/bin/symfony server:start
