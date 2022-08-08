@@ -52,8 +52,8 @@ RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
     /etc/php/8.1/cli/php.ini
 
 # add cron jobs
-RUN echo "* * * * * root cd /www && /root/.symfony/bin/symfony console oshans:data:update" >> /etc/cron.d/oshans
-RUN echo "*/5 * * * * root cd /www && /root/.symfony/bin/symfony console oshans:data:archive" >> /etc/cron.d/oshans
+RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/cron.d/oshans
+RUN echo "*/5 * * * * root cd /www && symfony console oshans:data:archive" >> /etc/cron.d/oshans
 
 # prepare symfony app
 WORKDIR "/www"
@@ -66,5 +66,5 @@ RUN yarn run encore prod
 RUN symfony server:ca:install
 
 # apply database migrations and run symfony web server
-CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console cache:clear ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /root/.symfony/bin/symfony server:start
+CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console cache:clear ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; symfony server:start
 EXPOSE 8000
