@@ -35,12 +35,12 @@ class ShellyConnector
         $this->em = $em;
         $this->ecar = $ecar;
         $this->client = $client;
-        $this->baseUrl = 'https://shelly-3-eu.shelly.cloud';
+        $this->baseUrl = 'https://undefined';
         $this->connectors = $connectors;
         $this->host = $host;
         $this->session_cookie_path = $session_cookie_path;
         if (array_key_exists('shellycloud', $connectors)) {
-            $this->server = $connectors['shellycloud']['server'];
+            $this->baseUrl = $connectors['shellycloud']['server'];
             $this->authkey = $connectors['shellycloud']['authkey'];
         }
     }
@@ -697,6 +697,7 @@ class ShellyConnector
     private function getStatusCloud($cloudId)
     {
         try {
+            sleep(1); // API allows max. 1 call per second
             $response = $this->client->request(
                 'POST',
                 $this->baseUrl . '/device/status',
