@@ -35,10 +35,6 @@ class WeConnectIdConnector
             $chargingJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging --format json');
             $readinessStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/readiness/readinessStatus --format json');
 
-            // workaround for removing "None" from beginning of response
-            $chargingJson = str_replace("None\n", "", $chargingJson);
-            $readinessStatusJson = str_replace("None\n", "", $readinessStatusJson);
-
             $charging = json_decode($chargingJson, true);
             $readinessStatus = json_decode($readinessStatusJson, true);
             $data['soc'] = $charging['batteryStatus']['currentSOC_pct'];
