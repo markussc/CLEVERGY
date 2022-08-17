@@ -67,7 +67,8 @@ parameters:
                         - contact # if set to contact, a warning will be shown if open
         netatmo:
             clientid: abcdefg123
-            clientsecret: xyz9876deviceid: '00:11:22:33:44:55'
+            clientsecret: xyz9876
+            deviceid: '00:11:22:33:44:55'
             location: 'inside' #inside, outside, firstfloor, secondfloor
             modules:
                 -
