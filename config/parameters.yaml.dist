@@ -68,8 +68,6 @@ parameters:
         netatmo:
             clientid: abcdefg123
             clientsecret: xyz9876
-            username: myuser@mymail.com
-            password: mypassword
             deviceid: '00:11:22:33:44:55'
             location: 'inside' #inside, outside, firstfloor, secondfloor
             modules:

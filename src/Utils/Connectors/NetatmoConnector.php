@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\NetatmoDataStore;
+use App\Entity\Settings;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -20,8 +21,10 @@ class NetatmoConnector
     private $clientSecret;
     private $baseUrl;
     private $token;
+    private $host;
+    private $session_cookie_path;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {
         $this->em = $em;
         $this->connectors = $connectors;
@@ -29,12 +32,11 @@ class NetatmoConnector
             $this->config = $connectors['netatmo'];
             $this->client = $client;
             $this->baseUrl = 'https://api.netatmo.com';
-            $this->tokenEndpoint = $this->baseUrl.'/oauth2/token';
             $this->clientId = $this->config['clientid'];
             $this->clientSecret = $this->config['clientsecret'];
-            $this->username = $this->config['username'];
-            $this->password = $this->config['password'];
-            $this->setToken();
+            $this->host = $host;
+            $this->session_cookie_path = $session_cookie_path;
+            $this->authenticate();
         }
     }
 
@@ -45,6 +47,28 @@ class NetatmoConnector
         } else {
             return false;
         }
+    }
+
+    public function requiresUserAuthentication()
+    {
+        $requiresAuth = false;
+        if ($this->getAvailable()) {
+            $requiresAuth = true;
+            $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
+            if ($settings) {
+                $config = $settings->getConfig();
+                if (array_key_exists('state', $config) && $config['state'] !== 'unauthenticated') {
+                    $requiresAuth = false;
+                }
+            }
+        }
+
+        return $requiresAuth;
+    }
+
+    public function getUserAuthenticationLink()
+    {
+        return $this->baseUrl . '/oauth2/authorize?scope=read_station&state=auth&client_id=' . $this->clientId . '&redirect_uri=https://' . $this->host . $this->session_cookie_path . 'extauth/netatmo_code';
     }
 
     public function getId()
@@ -127,43 +151,138 @@ class NetatmoConnector
     {
         $url = $this->baseUrl.'/api/getstationsdata?device_id='.$deviceId;
 
-        try {
-            $response = $this->client->request(
-                'GET',
-                $url,
-                ['auth_bearer' => $this->token]
-            );
-            $content = $response->getContent();
-        } catch (\Exception $e) {
-            $content = null;
+        $content = null;
+        if ($this->token) {
+            try {
+                $response = $this->client->request(
+                    'GET',
+                    $url,
+                    ['auth_bearer' => $this->token]
+                );
+                if ($response->getStatusCode() === Response::HTTP_OK) {
+                    $content = $response->getContent();
+                } elseif ($response->getStatusCode() === Response::HTTP_FORBIDDEN) {
+                    $this->reauthenticate();
+                }
+            } catch (\Exception $e) {
+                // do nothing
+            }
         }
 
         return $content;
     }
 
+    public function storeAuthConfig($state, $code, $accessToken, $refreshToken)
+    {
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setConnectorId("netatmo");
+            $this->em->persist($settings);
+        }
+        $settings->setConfig([
+            'state' => $state,
+            'code' => $code,
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
+        ]);
+        $this->em->flush();
+    }
+
     /*
-     * Sets the bearer token for the usage of the API using the client_credentials grant type, based on the available credentials
+     * Manages the authentication workflog according to https://dev.netatmo.com/apidocumentation/oauth
      * Documentation refer to https://dev.netatmo.com/apidocumentation/
      */
-    private function setToken()
+    private function authenticate()
     {
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
+        if ($settings) {
+            $config = $settings->getConfig();
+            if ($config['access_token']) {
+                $this->token = $config['access_token'];
+            } elseif ($config['refresh_token']) {
+                $this->refreshAccessToken($config['refresh_token']);
+            } elseif ($config['code']) {
+                $this->getAccessToken('authorize', $config['code']);
+            }
+        } else {
+            // create a new settings entry
+            $this->storeAuthConfig('unauthenticated', null, null, null);
+        }
+    }
+
+    private function reauthenticate()
+    {
+        $this->token = null;
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
+        if ($settings) {
+            $config = $settings->getConfig();
+            if ($config['refresh_token']) {
+                $this->refreshAccessToken($config['refresh_token']);
+            }
+        }
+    }
+
+    private function getAccessToken($state, $code)
+    {
+        $url = $this->baseUrl . '/oauth2/token';
         try {
             $response = $this->client->request(
                 'POST',
-                $this->tokenEndpoint,
+                $url,
                 [
                     'body' => [
-                        'grant_type' => 'password',
+                        'grant_type' => 'authorization_code',
                         'client_id' => $this->clientId,
                         'client_secret' => $this->clientSecret,
-                        'username' => $this->username,
-                        'password' => $this->password,
+                        'code' => $code,
+                        'redirect_uri' => 'https://' . $this->host . $this->session_cookie_path . 'extauth/netatmo_code',
+                        'scope' => 'read_station',
                     ]
                 ]
             );
             if ($response->getStatusCode() === Response::HTTP_OK) {
-                $content = json_decode($response->getContent());
-                $this->token = $content->access_token;
+                $content = json_decode($response->getContent(), true);
+                $this->token = $content['access_token'];
+                $this->storeAuthConfig('authenticated', null, $this->token, $content['refresh_token']);
+            } else {
+                $this->token = null;
+                $content = $response->getContent(false);
+                if (is_array($content) && array_key_exists('refresh_token')) {
+                    $this->storeAuthConfig('refreshing', null, null, $content['refresh_token']);
+                    $this->refreshAccessToken($content['refresh_token']);
+                } else {
+                    $this->storeAuthConfig('unauthenticated', null, null, null);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->token = null;
+        }
+    }
+
+    private function refreshAccessToken($refreshToken)
+    {
+        $url = $this->baseUrl . '/oauth2/token';
+        try {
+            $response = $this->client->request(
+                'POST',
+                $url,
+                [
+                    'body' => [
+                        'grant_type' => 'refresh_token',
+                        'client_id' => $this->clientId,
+                        'client_secret' => $this->clientSecret,
+                        'refresh_token' => $refreshToken,
+                    ]
+                ]
+            );
+            if ($response->getStatusCode() === Response::HTTP_OK) {
+                $content = json_decode($response->getContent(), true);
+                $this->token = $content['access_token'];
+                $this->storeAuthConfig('authenticated', null, $this->token, $content['refresh_token']);
+            } else {
+                $this->token = null;
+                $this->storeAuthConfig('unauthenticated', null, null, null);
             }
         } catch (\Exception $e) {
             $this->token = null;

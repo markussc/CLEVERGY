@@ -13,5 +13,5 @@ twig:
         pcowebConnector: '@App\Utils\Connectors\PcoWebConnector'
         ecarConnector: '@App\Utils\Connectors\EcarConnector'
         gardenaConnector: '@App\Utils\Connectors\GardenaConnector'
+        netatmoConnector: '@App\Utils\Connectors\NetatmoConnector'
         conditionChecker: '@App\Utils\ConditionChecker'
-
