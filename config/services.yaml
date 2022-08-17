@@ -70,6 +70,12 @@ services:
             $connectors: "%connectors%"
             $host: "%host%"
             $session_cookie_path: "%session_cookie_path%"
+    App\Utils\Connectors\NetatmoConnector:
+        public: false
+        arguments:
+            $connectors: "%connectors%"
+            $host: "%host%"
+            $session_cookie_path: "%session_cookie_path%"
     App\Utils\Connectors\WeConnectIdConnector:
         public: false
     App\Utils\ConfigManager:

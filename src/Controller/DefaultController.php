@@ -663,4 +663,20 @@ class DefaultController extends AbstractController
 
         return new JsonResponse($value);
     }
+
+    /**
+     * callback interface for external authentication responses
+     * currently only supports responses for netatmo
+     * @Route("/extauth/{service}", name="extAuth")
+     */
+    public function extAuthAction(Request $request, $service)
+    {
+        if ($service === 'netatmo_code') {
+            $state = $request->query->get('state');
+            $code = $request->query->get('code');
+            $this->netatmo->storeAuthConfig($state, $code, null, null);
+        }
+
+        return $this->redirectToRoute('homepage');
+    }
 }
