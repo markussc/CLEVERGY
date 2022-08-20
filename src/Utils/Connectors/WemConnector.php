@@ -45,6 +45,7 @@ class WemConnector
     const MODBUSTCP_PPSTATUS = 33103;
     const MODBUSTCP_CPSTATUS = 41202;
     const MODBUSTCP_PPSOURCEIN = 30002;
+    const MODBUSTCP_PPSOURCEOUT = 33106;
     const MODBUSTCP_HC1 = 41108;
     const MODBUSTCP_HC2 = 41208;
 
@@ -85,7 +86,7 @@ class WemConnector
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
                 'waterTemp' => $this->readTempModbusTcp(self::MODBUSTCP_WARMWATER),
                 'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),
-                'ppSourceOut' => '---',
+                'ppSourceOut' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEOUT),
                 'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
                 'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
                 'setDistrTemp' => $setDistrTemp,
