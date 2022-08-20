@@ -38,6 +38,7 @@ class WemConnector
     const MODBUSTCP_WARMWATER = 32102;
     const MODBUSTCP_PRETEMP = 33104;
     const MODBUSTCP_BACKTEMP = 33105;
+    const MODBUSTCP_STORTEMP = 33108;
     const MODBUSTCP_SETDISTRTEMP = 31204;
     const MODBUSTCP_EFFDISTRTEMP = 31205;
     const MODBUSTCP_PPMODE = 40001;
@@ -92,7 +93,7 @@ class WemConnector
                 'cpStatus' => $cpStatus,
                 'ppMode' => $this->readPpModeModbusTcp(),
                 'ppStatus' => $this->readPpStatusModbusTcp(),
-                'storTemp' => '---', // currently not available
+                'storTemp' => $this->readTempModbusTcp(self::MODBUSTCP_STORTEMP),
             ];
             $modeData = ['mode' => $this->wemModeToString($this->em->getRepository(Settings::class)->getMode($this->getUsername()))];
 
