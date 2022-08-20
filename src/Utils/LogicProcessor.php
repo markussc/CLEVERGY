@@ -748,6 +748,9 @@ class LogicProcessor
             $hc2TempDiff = 0;
         }
 
+        // storage temp
+        $lowStorage = $wem['storTemp'] < $wem['setDistrTemp'] - 5;
+
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         if ($wemMode == Settings::MODE_HOLIDAY) {
             $minInsideTemp = $minInsideTemp - 2;
@@ -765,7 +768,7 @@ class LogicProcessor
         $commandLog->setAvgPvPower($avgPvPower);
         $commandLog->setAvgPower($avgPower);
         $commandLog->setWaterTemp($waterTemp);
-        //$commandLog->setHeatStorageMidTemp($wem['storTemp']); // currently not available
+        $commandLog->setHeatStorageMidTemp($wem['storTemp']); // currently not available
         $commandLog->setAvgClouds($avgClouds);
         $commandLog->setPpMode($wem['ppMode']);
         $commandLog->setInsideTemp($insideTemp);
@@ -776,9 +779,9 @@ class LogicProcessor
         $minPpPower = 10;
         if ($outsideTemp < 10) {
             // cold outside. set minPpPower depending on hc2TempDiff
-            if ($hc2TempDiff > 5) {
+            if ($hc2TempDiff > 5 && $lowStorage) {
                 $minPpPower = min(100,  $ppLevel + 5);
-            } elseif ($hc2TempDiff > 3) {
+            } elseif ($hc2TempDiff > 3 && $lowStorage) {
                 $minPpPower = min(100, $ppLevel + 3);
             } elseif ($hc2TempDiff > 1) {
                 $minPpPower = $ppLevel;
