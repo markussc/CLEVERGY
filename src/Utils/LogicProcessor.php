@@ -749,7 +749,10 @@ class LogicProcessor
         }
 
         // storage temp
-        $lowStorage = ($wem['storTemp'] < ($wem['setDistrTemp'] - 5));
+        $lowStorage = false;
+        if ($wem['setDistrTemp'] != '---' && $wem['storTemp'] < ($wem['setDistrTemp'] - 5)) {
+            $lowStorage = true;
+        }
 
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         if ($wemMode == Settings::MODE_HOLIDAY) {
