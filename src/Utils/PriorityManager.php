@@ -10,7 +10,6 @@ use App\Utils\ConditionChecker;
 class PriorityManager
 {
     private $connectors;
-    private $condition;
     private $mystrom;
     private $shelly;
     private $ecar;
