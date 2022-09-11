@@ -775,7 +775,7 @@ class LogicProcessor
         $commandLog->setAvgPvPower($avgPvPower);
         $commandLog->setAvgPower($avgPower);
         $commandLog->setWaterTemp($waterTemp);
-        $commandLog->setHeatStorageMidTemp($wem['storTemp']); // currently not available
+        $commandLog->setHeatStorageMidTemp($wem['storTemp']);
         $commandLog->setAvgClouds($avgClouds);
         $commandLog->setPpMode($wem['ppMode']);
         $commandLog->setInsideTemp($insideTemp);
