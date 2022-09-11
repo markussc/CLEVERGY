@@ -352,6 +352,16 @@ class ConditionChecker
                     break;
                 }
             }
+            if ($condArr[0] == 'smartfox') {
+                $smartFox = $this->smartfox->getAll();
+                $value = $smartFox['power_io'];
+                if (-1 * $value > $condition) {
+                    $fulfilled = true;
+                } else {
+                    $fulfilled = false;
+                    break;
+                }
+            }
         }
 
         return $fulfilled;

@@ -142,6 +142,8 @@ parameters:
                         'openweathermap:currentClouds': '<15'
                     -
                         'time': '>8:30' # < and > are supported. 24h time format # if there are multiple time conditions to be fulfilled, use 'time1', 'time2' etc.
+                    -
+                        smartfox: 90 # indicates the power consumption of the device in W. The command will only be executed, if the current net power is negative by at least the value indicated (i.e. the device will be operated using our own energy)
             -
                 name: Medienwiedergabe
                 ip: 10.12.1.81
