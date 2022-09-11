@@ -429,9 +429,13 @@ class LogicProcessor
         $avgPower = $this->getAvgPower();
         $avgPvPower = $this->getAvgPvPower();
         $nowDateTime = new \DateTime();
-        $diffToEndOfLowEnergyRate = $this->energyLowRate['end'] - $nowDateTime->format('H');
-        if ($diffToEndOfLowEnergyRate < 0) {
-            $diffToEndOfLowEnergyRate += 24;
+        if (isset($this->energyLowRate['end'])) {
+            $diffToEndOfLowEnergyRate = $this->energyLowRate['end'] - $nowDateTime->format('H');
+            if ($diffToEndOfLowEnergyRate < 0) {
+                $diffToEndOfLowEnergyRate += 24;
+            }
+        } else {
+            $diffToEndOfLowEnergyRate = 24;
         }
         $pcoweb = $this->pcoweb->getAll();
         $outsideTemp = $pcoweb['outsideTemp'];

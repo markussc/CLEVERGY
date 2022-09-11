@@ -153,29 +153,34 @@ class ConditionChecker
 
     public function checkEnergyLowRate()
     {
-        $now = new \DateTime();
-        $nowH = $now->format('H');
-        $nowN = $now->format('N');
-        if (!isset($this->energyLowRate['days'])) {
-            $this->energyLowRate['days'] = [];
-        }
-        foreach ($this->energyLowRate['days'] as $lowRateDay) {
-            // check if the current day is a full-low rate day or a separate start hour is specified
-            $lowRateDayConfig = explode(",", $lowRateDay);
-            if ($nowN == $lowRateDayConfig[0]) {
-                if (count($lowRateDayConfig) == 1) {
-                    // this is a full-low rate day
-                    return true;
-                } else {
-                    // set the specific start hour for this day
-                    $this->energyLowRate['start'] = $lowRateDayConfig[1];
+        if (isset($this->energyLowRate['start']) && isset($this->energyLowRate['end'])) {
+            $now = new \DateTime();
+            $nowH = $now->format('H');
+            $nowN = $now->format('N');
+            if (!isset($this->energyLowRate['days'])) {
+                $this->energyLowRate['days'] = [];
+            }
+            foreach ($this->energyLowRate['days'] as $lowRateDay) {
+                // check if the current day is a full-low rate day or a separate start hour is specified
+                $lowRateDayConfig = explode(",", $lowRateDay);
+                if ($nowN == $lowRateDayConfig[0]) {
+                    if (count($lowRateDayConfig) == 1) {
+                        // this is a full-low rate day
+                        return true;
+                    } else {
+                        // set the specific start hour for this day
+                        $this->energyLowRate['start'] = $lowRateDayConfig[1];
+                    }
                 }
             }
-        }
-        if ($nowH >= $this->energyLowRate['start'] || $nowH < $this->energyLowRate['end']) {
-            return true;
+            if ($nowH >= $this->energyLowRate['start'] || $nowH < $this->energyLowRate['end']) {
+                $lowRate = true;
+            } else {
+                $lowRate = false;
+            }
         } else {
-            return false;
+            // no differentiation of rates
+            $lowRate = true;
         }
     }
 
