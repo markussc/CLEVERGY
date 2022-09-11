@@ -383,7 +383,7 @@ class ConditionChecker
                 // currently turned off, check with current averagePower
                 $maxNominalPower = -1*($currentAveragePower);
             }
-            $otherDeviceWaiting = $this->prio->checkWaitingDevice($device['priority']+1, $maxNominalPower);
+            $otherDeviceWaiting = $this->prio->checkWaitingDevice($this, $device['priority']+1, $maxNominalPower);
             if ($otherDeviceWaiting) {
                 // other device is waiting, we have no priority
                 return false;
@@ -416,7 +416,7 @@ class ConditionChecker
                 if ($currentAveragePower < $device['nominalPower']/4) {
                     // currently running and only small part of nominalPower is currently imported
                     // check if there is another device with lower priority that could be turned off first
-                    $otherDeviceStopReady = $this->prio->checkStoppingDevice($device['priority']-1);
+                    $otherDeviceStopReady = $this->prio->checkStoppingDevice($this, $device['priority']-1);
                     if ($otherDeviceStopReady) {
                         // Another device with lower priority is ready to be stopped. This means, we have priority.
                         return true;
