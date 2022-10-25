@@ -92,4 +92,4 @@ RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run symfony web server
 CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
-EXPOSE 8000
+EXPOSE 443
