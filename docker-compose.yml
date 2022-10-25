@@ -15,6 +15,7 @@ services:
       - ./.env.local
     environment:
       - TZ=Europe/Zurich
+      - servername=${HOSTNAME}
     build:
       context: ./
       dockerfile: ./Dockerfile
