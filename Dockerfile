@@ -20,11 +20,13 @@ RUN apt-get -y update && apt-get install -y \
         cron \
         python3 \
         python3-pip \
+        htop \
+        nano \
     && true
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get -y update && apt-get install -y \
         nodejs \
         yarn \
@@ -41,10 +43,6 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 
 # install weconnect-cli
 RUN pip3 install weconnect-cli
-
-# install Symfony CLI
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
-RUN apt install symfony-cli
 
 # config changes in PHP config
 RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
@@ -83,12 +81,17 @@ COPY ./ /www
 RUN /usr/bin/composer install --no-interaction
 RUN yarn install
 RUN yarn run encore prod
+RUN bin/console cache:warmup
 
 # set permissions
 RUN HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
 RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
+# install Symfony CLI
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
+RUN apt install symfony-cli
+
 # apply database migrations and run apache2 web server
-CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; bin/console cache:warmup ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443
