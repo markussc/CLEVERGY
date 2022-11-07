@@ -511,7 +511,7 @@ class DefaultController extends AbstractController
                 $ppStatus = $translator->trans('label.device.status.off');
             } else {
                 if (is_string($currentStat['pcoWeb']['ppStatus'])) {
-                    $ppStatus = $translator->trans($currentStat['pcoWeb']['ppStatus']);
+                    $ppStatus = $translator->trans($currentStat['pcoWeb']['ppStatusMsg']);
                 } else {
                     $ppStatus = str_replace(' %', '', $currentStat['pcoWeb']['ppStatus']) . '%';
                 }
