@@ -5,6 +5,7 @@ namespace App\Utils;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\EcarConnector;
+use App\Utils\ConditionChecker;
 
 class PriorityManager
 {
@@ -21,17 +22,17 @@ class PriorityManager
         $this->ecar = $ecar;
     }
 
-    // check if there is at least one device with priority >= $priority which is currently turned off but ready to be turned on (based on its switchOK check)
+    // check if there is at least one device with priority >= $priority which is currently turned off but ready to be turned on (based on its switchOK and condition check)
     // returns true if found a device, false if there is no waiting device
-    public function checkWaitingDevice($priority, $maxNominalPower, $energyLowRate = false)
+    public function checkWaitingDevice(ConditionChecker $condition, $priority, $maxNominalPower, $energyLowRate = false)
     {
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
-            if($this->checkStartDevice($this->mystrom, $this->connectors['mystrom'], $priority, $maxNominalPower, $energyLowRate)) {
+            if($this->checkStartDevice($condition, $this->mystrom, $this->connectors['mystrom'], $priority, $maxNominalPower, $energyLowRate)) {
                 return true;
             }
         }
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
-            if($this->checkStartDevice($this->shelly, $this->connectors['shelly'], $priority, $maxNominalPower)) {
+            if($this->checkStartDevice($condition, $this->shelly, $this->connectors['shelly'], $priority, $maxNominalPower, $energyLowRate)) {
                 return true;
             }
         }
@@ -40,22 +41,22 @@ class PriorityManager
 
     // check if there is at least one device with priority <= priority which is currently turned on but ready to be turned off (based on its switchOK check)
     // returns true if found a device, false if there is no stopping-ready device
-    public function checkStoppingDevice($priority)
+    public function checkStoppingDevice(ConditionChecker $condition, $priority)
     {
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
-            if($this->checkStopDevice($this->mystrom, $this->connectors['mystrom'], $priority)) {
+            if($this->checkStopDevice($condition, $this->mystrom, $this->connectors['mystrom'], $priority)) {
                 return true;
             }
         }
         if (array_key_exists('shelly', $this->connectors) && is_array($this->connectors['shelly'])) {
-            if($this->checkStopDevice($this->shelly, $this->connectors['shelly'], $priority)) {
+            if($this->checkStopDevice($condition, $this->shelly, $this->connectors['shelly'], $priority)) {
                 return true;
             }
         }
         return false;
     }
 
-    private function checkStartDevice($conn, $devices, $priority, $maxNominalPower, $energyLowRate = false)
+    private function checkStartDevice($condition, $conn, $devices, $priority, $maxNominalPower, $energyLowRate = false)
     {
         foreach ($devices as $deviceId => $dev) {
             if(array_key_exists("nominalPower", $dev)) {
@@ -78,8 +79,8 @@ class PriorityManager
                         // already running
                         continue;
                     }
-                    if ($conn->switchOK($deviceId)) {
-                        // switching is OK
+                    if ($conn->switchOK($deviceId) &&!$condition->checkCondition($dev, 'forceOff')) {
+                        // switching is OK and the device is not forcedOff
                         return true;
                     }
                 }
@@ -88,7 +89,7 @@ class PriorityManager
         return false;
     }
 
-    private function checkStopDevice($conn, $devices, $priority)
+    private function checkStopDevice(ConditionChecker $condition, $conn, $devices, $priority)
     {
         foreach ($devices as $deviceId => $dev) {
             if (array_key_exists('priority', $dev) && intval($dev['priority']) <= intval($priority)) {
@@ -102,8 +103,8 @@ class PriorityManager
                     // already stopped
                     continue;
                 }
-                if ($conn->switchOK($deviceId)) {
-                    // switching is OK
+                if ($conn->switchOK($deviceId) && !$condition->checkCondition($dev, 'forceOn')) {
+                    // switching is OK and the device is not forcedOn
                     return true;
                 }
             }

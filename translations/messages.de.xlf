@@ -321,6 +321,10 @@
         <source>label.highrate</source>
         <target>Hochtarif</target>
       </trans-unit>
+      <trans-unit id="EqcC6tF" resname="label.normalrate">
+        <source>label.normalrate</source>
+        <target>Normaltarif</target>
+      </trans-unit>
       <trans-unit id="vXwW21h" resname="label.lowrate">
         <source>label.lowrate</source>
         <target>Niedertarif</target>
@@ -433,7 +437,7 @@
         <source>security.login.password</source>
         <target>Passwort</target>
       </trans-unit>
-      <trans-unit id="abcdf" resname="label.netatmo.user_auth.link">
+      <trans-unit id="QOGEoKG" resname="label.netatmo.user_auth.link">
         <source>label.netatmo.user_auth.link</source>
         <target>Bitte melden Sie sich HIER bei Netatmo an und gestatten Sie den Zugriff auf Ihre Daten für OSHANS</target>
       </trans-unit>

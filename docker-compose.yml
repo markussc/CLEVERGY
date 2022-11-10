@@ -15,11 +15,12 @@ services:
       - ./.env.local
     environment:
       - TZ=Europe/Zurich
+      - servername=${HOSTNAME}
     build:
       context: ./
       dockerfile: ./Dockerfile
     networks:
       - default
     ports:
-      - "${PORT}:8000"
+      - "${PORT}:443"
     restart: always

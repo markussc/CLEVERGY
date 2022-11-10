@@ -10,6 +10,7 @@
         ['Task', 'Hours per Day'],
         ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
         ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
+        ['{% trans %}label.normalrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['normal']|default(0) }}],
         ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
       ]);
 
