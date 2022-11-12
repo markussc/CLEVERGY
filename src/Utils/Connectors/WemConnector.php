@@ -48,6 +48,7 @@ class WemConnector
     const MODBUSTCP_PPSOURCEOUT = 33106;
     const MODBUSTCP_HC1 = 41108;
     const MODBUSTCP_HC2 = 41208;
+    const MODBUSTCP_MODE = 30006;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
@@ -302,6 +303,11 @@ class WemConnector
         ];
         $bytes = $this->readBytesFc3ModbusTcp(self::MODBUSTCP_CPSTATUS);
         $ppModeInt = Types::parseUInt16(Types::byteArrayToByte($bytes));
+
+        $mode = $this->readUint16ModbusTcp(self::MODBUSTCP_MODE);
+        if ($mode == 20) { // 20: Warmwasserbetrieb; cp is never active
+            $ppModeInt = 0;
+        }
 
         return $ppModes[$ppModeInt];
     }
