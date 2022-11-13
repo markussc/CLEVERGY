@@ -305,7 +305,7 @@ class WemConnector
         $ppModeInt = Types::parseUInt16(Types::byteArrayToByte($bytes));
 
         $mode = $this->readUint16ModbusTcp(self::MODBUSTCP_MODE);
-        if ($mode == 20) { // 20: Warmwasserbetrieb; cp is never active
+        if ($mode == 20 || $mode == 21 || $mode == 25) { // 20: Warmwasserbetrieb, 21: Legionellenschutz, 25: Sommerbetrieb; cp is never active
             $ppModeInt = 0;
         }
 
