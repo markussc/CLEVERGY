@@ -169,6 +169,10 @@
         <source>label.pco.mode.holiday</source>
         <target>Ferien</target>
       </trans-unit>
+      <trans-unit id="5XjyQsO" resname="label.pco.mode.warmwater">
+        <source>label.pco.mode.warmwater</source>
+        <target>Warmwasser extra</target>
+      </trans-unit>
       <trans-unit id="Gkg0V6L" resname="label.pco.mode.save">
         <source>label.pco.mode.save</source>
         <target>Aktivieren</target>

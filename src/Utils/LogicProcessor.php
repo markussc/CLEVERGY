@@ -447,6 +447,12 @@ class LogicProcessor
             $maxInsideTemp = 20;
             $targetWaterTemp = 20;
             $minWaterTemp = 10;
+        } elseif ($pcoMode == Settings::MODE_WARMWATER) {
+            // push warm water target temperature
+            $minInsideTemp = 18;
+            $maxInsideTemp = 20;
+            $targetWaterTemp = 60;
+            $minWaterTemp = 55;
         } else {
             // set the temperature offset for low outside temp
             $tempOffset = 0;
