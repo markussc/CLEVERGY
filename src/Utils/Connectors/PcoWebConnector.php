@@ -217,6 +217,8 @@ class PcoWebConnector
                 return 'label.pco.mode.manual';
             case Settings::MODE_HOLIDAY:
                 return 'label.pco.mode.holiday';
+            case Settings::MODE_WARMWATER:
+                return 'label.pco.mode.warmwater';
         }
         return 'undefined';
     }
