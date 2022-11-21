@@ -447,6 +447,12 @@ class LogicProcessor
             $maxInsideTemp = 20;
             $targetWaterTemp = 20;
             $minWaterTemp = 10;
+        } elseif ($pcoMode == Settings::MODE_WARMWATER) {
+            // push warm water target temperature
+            $minInsideTemp = 18;
+            $maxInsideTemp = 20;
+            $targetWaterTemp = 60;
+            $minWaterTemp = 55;
         } else {
             // set the temperature offset for low outside temp
             $tempOffset = 0;
@@ -567,7 +573,11 @@ class LogicProcessor
                     }
                 } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 5 && $nowDateTime->format('H') < 22)) {
                     // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
-                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp-7);
+                    if ($pcoMode == Settings::MODE_WARMWATER) {
+                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                    } else {
+                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp-7);
+                    }
                     $this->pcoweb->executeCommand('hwHysteresis', 5);
                     $log[] = "set hwHysteresis to 5 and reduce waterTemp due to emergency action: we only want minimal water heating";
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {

@@ -35,7 +35,10 @@
       <select id="pcowebModeSelect">
           <option value="0">{% trans %}label.pco.mode.auto{% endtrans %}</option>
           <option value="1">{% trans %}label.pco.mode.manual{% endtrans %}</option>
-          {% if pcowebConnector.getIp() %}<option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>{% endif %}
+          {% if pcowebConnector.getIp() %}
+              <option value="-1">{% trans %}label.pco.mode.holiday{% endtrans %}</option>
+              <option value="-2">{% trans %}label.pco.mode.warmwater{% endtrans %}</option>
+          {% endif %}
       </select>
       <hr>
       <button type="button" onclick="sendCommand(['settings', 'mode', '{% if pcowebConnector.getIp() %}pcoweb{% else %}wem{% endif %}', $('#pcowebModeSelect').val()])">{% trans %}label.pco.mode.save{% endtrans %}</button>
