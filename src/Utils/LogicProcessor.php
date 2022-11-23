@@ -439,6 +439,12 @@ class LogicProcessor
         }
         $pcoweb = $this->pcoweb->getAll();
         $outsideTemp = $pcoweb['outsideTemp'];
+        $waterTemp = $pcoweb['waterTemp'];
+        $heatStorageMidTemp = $pcoweb['storTemp'];
+        if ($waterTemp === null) {
+            // if waterTemp could not be read out, the values can not be trusted. Skip any further processing.
+            return;
+        }
 
         // set temperature levels
         if ($pcoMode == Settings::MODE_HOLIDAY) {
@@ -462,6 +468,10 @@ class LogicProcessor
             // set the target and emergency temperature levels
             $targetWaterTemp = 52;
             $minWaterTemp = 38;
+            // increase minWaterTemp if storage is low
+            if ($heatStorageMidTemp < $minWaterTemp) {
+                $minWaterTemp = min($minWaterTemp + (($minWaterTemp - $heatStorageMidTemp) / 2), $targetWaterTemp - 5);
+            }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
@@ -477,18 +487,11 @@ class LogicProcessor
             $insideTemp = 20;
         }
 
-        $waterTemp = $pcoweb['waterTemp'];
-        if ($waterTemp === null) {
-            // if waterTemp could not be read out, the values can not be trusted. Skip any further processing.
-            return;
-        }
         $ppMode = $this->pcoweb->ppModeToInt($pcoweb['ppMode']);
         $ppStatus = 0;
         if ($pcoweb['ppStatus'] == "label.device.status.on") {
             $ppStatus = 1;
         }
-
-        $heatStorageMidTemp = $pcoweb['storTemp'];
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
