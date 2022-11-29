@@ -574,7 +574,7 @@ class LogicProcessor
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
-                } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 5 && $nowDateTime->format('H') < 22)) {
+                } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 4 && $nowDateTime->format('H') < 23)) {
                     // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
                     if ($pcoMode == Settings::MODE_WARMWATER) {
                         $this->pcoweb->executeCommand('waterTemp', max($targetWaterTemp, $minWaterTemp + 5));
