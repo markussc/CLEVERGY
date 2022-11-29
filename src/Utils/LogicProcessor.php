@@ -577,9 +577,9 @@ class LogicProcessor
                 } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 5 && $nowDateTime->format('H') < 22)) {
                     // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
                     if ($pcoMode == Settings::MODE_WARMWATER) {
-                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                        $this->pcoweb->executeCommand('waterTemp', max($targetWaterTemp, $minWaterTemp + 5));
                     } else {
-                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp-7);
+                        $this->pcoweb->executeCommand('waterTemp', max($targetWaterTemp-7, $minWaterTemp + 5));
                     }
                     $this->pcoweb->executeCommand('hwHysteresis', 5);
                     $log[] = "set hwHysteresis to 5 and reduce waterTemp due to emergency action: we only want minimal water heating";
