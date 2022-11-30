@@ -468,8 +468,10 @@ class LogicProcessor
             // set the target and emergency temperature levels
             $targetWaterTemp = 52;
             $minWaterTemp = 38;
-            // increase minWaterTemp if storage is low
-            if ($heatStorageMidTemp < $minWaterTemp) {
+            // increase minWaterTemp during hours where water consumption is high and if storage is low
+            if ((($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') <= 9) ||
+                ($nowDateTime->format('H') >= 18 && $nowDateTime->format('H') <= 21)) &&
+                $heatStorageMidTemp < $minWaterTemp) {
                 $minWaterTemp = min($minWaterTemp + (($minWaterTemp - $heatStorageMidTemp) / 2), $targetWaterTemp - 5);
             }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
