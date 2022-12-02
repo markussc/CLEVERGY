@@ -568,15 +568,7 @@ class LogicProcessor
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
-                if ($insideTemp < $minInsideTemp) {
-                    $insideEmergency = true;
-                    $this->pcoweb->executeCommand('hc2', 30);
-                    $log[] = "set hc2=30 as emergency action";
-                    if (($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $heatStorageMidTemp < 36 && $pcoweb['effDistrTemp'] < 25) {
-                        $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
-                        $log[] = "set MODE_HOLIDAY due to emergency action";
-                    }
-                } elseif ($pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 4 && $nowDateTime->format('H') < 23)) {
+                if ($waterTemp < $minWaterTemp && $pcoMode !== Settings::MODE_HOLIDAY && ($nowDateTime->format('H') > 4 && $nowDateTime->format('H') < 23)) {
                     // only warmWater is too cold. Only if not in holiday mode and not during night hours (prevent mode flipping)
                     if ($pcoMode == Settings::MODE_WARMWATER) {
                         $this->pcoweb->executeCommand('waterTemp', max($targetWaterTemp, $minWaterTemp + 5));
@@ -588,6 +580,14 @@ class LogicProcessor
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                         $log[] = "set MODE_SUMMER due to emergency action (warm water only)";
+                    }
+                } elseif ($insideTemp < $minInsideTemp) {
+                    $insideEmergency = true;
+                    $this->pcoweb->executeCommand('hc2', 30);
+                    $log[] = "set hc2=30 as emergency action";
+                    if (($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $heatStorageMidTemp < 36 && $pcoweb['effDistrTemp'] < 25) {
+                        $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
+                        $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
                 }
             }
