@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Base class for custom field tables
  *
  * @ORM\Entity
- * @ORM\Table(name="data_store", indexes={@ORM\Index(name="timestamp_idx", columns={"timestamp"}),@ORM\Index(name="connector_idx", columns={"connector_id"}),@ORM\Index(name="connector_timestamp_idx", columns={"connector_id", "timestamp"}),@ORM\Index(name="discr_type_connector_idx", columns={"discr_type", "connector_id"}),@ORM\Index(name="discr_type_connector_idx_timestamp", columns={"discr_type", "connector_id", "timestamp"})})
+ * @ORM\Table(name="data_store", indexes={@ORM\Index(name="connector_timestamp_idx", columns={"connector_id", "timestamp"}),@ORM\Index(name="discr_type_connector_idx_timestamp", columns={"discr_type", "connector_id", "timestamp"})})
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discr_type", type="string")
  * @ORM\HasLifecycleCallbacks
