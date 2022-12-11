@@ -284,8 +284,9 @@
                 {% for measurement in maSensor %}
                     {% if measurement['label'] == 'timestamp' %}
                         {% set maTimestamp = measurement['datetime'] %}
+                        {% set maLowbattery = measurement['lowbattery']|default(false) %}
                     {% elseif measurement['usage']|default('') == 'contact' %}
-                        {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {% if measurement['lowbattery']|default(false) %}<i class="fas fa-battery-quarter" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
+                        {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {% if maLowbattery %}<i class="fas fa-battery-quarter" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
                     {% endif %}
                 {% endfor %}
             {% endfor %}
