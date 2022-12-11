@@ -285,12 +285,12 @@
                     {% if measurement['label'] == 'timestamp' %}
                         {% set maTimestamp = measurement['datetime'] %}
                     {% elseif measurement['usage']|default('') == 'contact' %}
-                        {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {{ measurement['label'] }}<br/>
+                        {% if measurement['value'] == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - maTimestamp['date']|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {% if measurement['lowbattery']|default(false) %}<i class="fas fa-battery-quarter" style="color:red"></i>{% endif %} {{ measurement['label'] }}<br/>
                     {% endif %}
                 {% endfor %}
             {% endfor %}
             {% for shellySensor in currentStat['shelly']|default([])|filter(shellySensor => shellySensor['type'] == "door") %}
-                {% if shellySensor['status']['label']|default("") == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - shellySensor['timestamp']|default(0)|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {{ shellySensor['name'] }}<br/>
+                {% if shellySensor['status']['label']|default("") == 'label.device.status.closed' %}<i class="fas fa-door-closed" style="color:green"></i>{% else %}<i class="fas fa-door-open" style="color:red"></i>{% endif %} {% if ('now'|date('U') - shellySensor['timestamp']|default(0)|date('U'))/60/60 > 24 %}<i class="fas fa-hourglass-end" style="color:orange"></i>{% endif %} {% if shellySensor['status']['battery']|default(100) < 20 %}<i class="fas fa-battery-quarter" style="color:red"></i>{% endif %} {{ shellySensor['name'] }}<br/>
             {% endfor %}
             {% for motionSensor in currentStat['mystrom']|default([])|filter(motionSensor => motionSensor['type']|default('') == 'motion') %}
             {% if not motionSensor['status']['val']|default(false) %}<i class="fas fa-male" style="color:green"></i>{% else %}<i class="fas fa-running" style="color:red"></i>{% endif %} {{ motionSensor['name'] }}<br/>

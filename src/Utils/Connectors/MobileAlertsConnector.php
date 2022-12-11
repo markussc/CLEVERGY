@@ -238,11 +238,18 @@ class MobileAlertsConnector
                     continue;
                 }
                 $datetime = new \DateTime('@'.$device['measurement']['ts']);
+                if (array_key_exists('lowbattery', $device)) {
+                    $lowbattery = $device['lowbattery'];
+                } else {
+                    $lowbattery = false;
+                }
                 $assocArr[$id][] =  [
                     'label' => 'timestamp',
                     'value' => $datetime->format('d.m.Y H:i:s'), // we do not need this value to be stored human readable here
                     'datetime' => $datetime,
+                    'lowbattery' => $lowbattery,
                 ];
+
                 // use the function createStorageData to create the array backwards compatible
                 $type = substr($id, 0, 2);
                 switch ($type) {

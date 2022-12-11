@@ -413,14 +413,14 @@ class ShellyConnector
             }
         } elseif (!empty($r) && $device['type'] == 'door') {
             if (array_key_exists('sensor', $r) && $r['sensor']['state'] == "open") {
-                return $this->createStatus(2);
+                return $this->createStatus(2, 100, 0, $r['bat']['value']);
             } else {
-                return $this->createStatus(3);
+                return $this->createStatus(3, 100, 0, $r['bat']['value']);
             }
         }
     }
 
-    public function createStatus($status, $position = 100, $power = 0)
+    public function createStatus($status, $position = 100, $power = 0, $battery = 100)
     {
         if ($status == 1) {
             return [
@@ -439,12 +439,14 @@ class ShellyConnector
                 'label' => 'label.device.status.open',
                 'val' => 2,
                 'position' => $position,
+                'battery' => $battery,
             ];
         } elseif ($status == 3) {
             return [
                 'label' => 'label.device.status.closed',
                 'val' => 3,
                 'position' => $position,
+                'battery' => $battery,
             ];
         }
         elseif ($status == 4) {
