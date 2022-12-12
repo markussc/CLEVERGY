@@ -476,7 +476,7 @@ class LogicProcessor
             }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
-            $maxInsideTemp = $this->minInsideTemp+1+$tempOffset;
+            $maxInsideTemp = min($this->minInsideTemp + 2, $this->minInsideTemp+1+$tempOffset);
         }
 
         // readout current temperature values
