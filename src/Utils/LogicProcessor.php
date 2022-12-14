@@ -585,7 +585,7 @@ class LogicProcessor
                     $insideEmergency = true;
                     $this->pcoweb->executeCommand('hc2', 30);
                     $log[] = "set hc2=30 as emergency action";
-                    if (($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && $heatStorageMidTemp < 36 && $pcoweb['effDistrTemp'] < 25) {
+                    if (($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && $pcoweb['effDistrTemp'] < 25) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
