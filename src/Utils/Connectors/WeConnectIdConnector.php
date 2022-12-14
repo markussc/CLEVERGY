@@ -42,8 +42,16 @@ class WeConnectIdConnector
             $data['plugConnectionState'] = $charging['plugStatus']['plugConnectionState'];
             $data['chargePower_kW'] = $charging['chargingStatus']['chargePower_kW'];
             if (array_key_exists('connectionState', $readinessStatus)) {
-                $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
-                $data['isActive'] = $readinessStatus['connectionState']['isActive'];
+                if (array_key_exists('isOnline', $readinessStatus['connectionState'])) {
+                    $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
+                } else {
+                    $data['isOnline'] = false;
+                }
+                if (array_key_exists('isActive', $readinessStatus['connectionState'])) {
+                    $data['isActive'] = $readinessStatus['connectionState']['isActive'];
+                } else {
+                    $data['isActive'] = false;
+                }
             }
         } catch (\Exception $e) {
             // do nothing
