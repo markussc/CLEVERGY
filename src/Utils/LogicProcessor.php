@@ -961,7 +961,7 @@ class LogicProcessor
             $this->wem->executeCommand('ppPower', $newPpPower);
         }
 
-        if ($wem['ppStatus'] == "Aus") {
+        if ($wem['ppStatus'] == "Aus" || !$wem['ppStatus']) {
             // reduce hc2 while pp is off to save storage energy
             $hc2 -= 10;
         }
