@@ -658,6 +658,11 @@ class LogicProcessor
                 }
             } else {
                 $activate2ndCircle = false;
+                $hc2Offset = 0;
+                if (!$ppStatus) {
+                    // while pp is not running, we set hc2 lower to save storage energy
+                    $hc2Offset = -4;
+                }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
@@ -665,16 +670,16 @@ class LogicProcessor
                     $activate2ndCircle = true;
                     $this->pcoweb->executeCommand('cpAutoMode', 0);
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
-                    $this->pcoweb->executeCommand('hc2', 19);
+                    $this->pcoweb->executeCommand('hc2', 19+$hc2Offset);
                     $log[] = "set hc2=19 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
-                    $this->pcoweb->executeCommand('hc2', 23);
+                    $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
                     $log[] = "set hc2=22 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
-                    $this->pcoweb->executeCommand('hc2', 28);
+                    $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
                     $log[] = "set hc2=28 due to current inside temp";
                     $activate2ndCircle = true;
                 }
