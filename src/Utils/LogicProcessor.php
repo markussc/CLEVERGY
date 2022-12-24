@@ -423,6 +423,7 @@ class LogicProcessor
      */
     private function autoActionsPcoWeb($pcoMode)
     {
+        $log = [];
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $smartfox = $this->getSmartfoxLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
@@ -453,6 +454,8 @@ class LogicProcessor
             $maxInsideTemp = 20;
             $targetWaterTemp = 20;
             $minWaterTemp = 10;
+            $log[] = "holiday mode. set watertemp to 20°C";
+            $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
         } elseif ($pcoMode == Settings::MODE_WARMWATER) {
             // push warm water target temperature
             $minInsideTemp = 18;
@@ -507,7 +510,6 @@ class LogicProcessor
         $commandLog->setWaterTemp($waterTemp);
         $commandLog->setHeatStorageMidTemp($heatStorageMidTemp);
         $commandLog->setAvgClouds($avgClouds);
-        $log = [];
 
         if ($this->pcoweb->getIp()) {
             // decide whether it's summer half year
