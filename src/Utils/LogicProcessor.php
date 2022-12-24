@@ -452,9 +452,9 @@ class LogicProcessor
             // use fixed levels when in mode holiday
             $minInsideTemp = 18;
             $maxInsideTemp = 20;
-            $targetWaterTemp = 20;
+            $targetWaterTemp = 30; // NOTE: values below 30°C are not accepted by PcoWeb!
             $minWaterTemp = 10;
-            $log[] = "holiday mode. set watertemp to 20°C";
+            $log[] = "holiday mode. set watertemp to 30°C";
             $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
         } elseif ($pcoMode == Settings::MODE_WARMWATER) {
             // push warm water target temperature
