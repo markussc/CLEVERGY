@@ -663,7 +663,7 @@ class LogicProcessor
                 $hc2Offset = 0;
                 if (!$ppStatus) {
                     // while pp is not running, we set hc2 lower to save storage energy
-                    $hc2Offset = -4;
+                    $hc2Offset = -5;
                 }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
@@ -965,7 +965,7 @@ class LogicProcessor
 
         if ($wem['ppStatus'] == "Aus" || !$wem['ppStatus']) {
             // reduce hc2 while pp is off to save storage energy
-            $hc2 -= 10;
+            $hc2 -= 15;
         }
         // set hc2
         $this->wem->executeCommand('hc2', $hc2);
