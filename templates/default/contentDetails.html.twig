@@ -1,30 +1,33 @@
 {% set contactAvailable = false %}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(drawChartEnergymix);
+    var elem = document.getElementById('piechart_energymix');
+      if (elem) {
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChartEnergymix);
 
-    function drawChartEnergymix() {
+        function drawChartEnergymix() {
 
-      var data = google.visualization.arrayToDataTable([
-        ['Task', 'Hours per Day'],
-        ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
-        ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
-        ['{% trans %}label.normalrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['normal']|default(0) }}],
-        ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
-      ]);
+          var data = google.visualization.arrayToDataTable([
+            ['Task', 'Hours per Day'],
+            ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
+            ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
+            ['{% trans %}label.normalrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['normal']|default(0) }}],
+            ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
+          ]);
+      
+        var chart = new google.visualization.PieChart(elem);
 
-      var chart = new google.visualization.PieChart(document.getElementById('piechart_energymix'));
+        var options = {
+            title: '{% trans %}label.energymix{% endtrans %}'
+        };
+        var formatter = new google.visualization.NumberFormat({
+           suffix: ' kWh'
+        });
 
-      var options = {
-          title: '{% trans %}label.energymix{% endtrans %}'
-      };
-      var formatter = new google.visualization.NumberFormat({
-         suffix: ' kWh'
-      });
-
-      formatter.format(data, 1);
-      chart.draw(data, options);
+        formatter.format(data, 1);
+        chart.draw(data, options);
+      }
     }
 </script>
 
@@ -196,7 +199,7 @@
     </div>
 </div>
 {% endif %}
-{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or history['ecar']|default(false) %}
 <hr>
 <div class="row">
     <div class="small-12 medium-4 columns">

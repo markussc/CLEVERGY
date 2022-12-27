@@ -140,10 +140,14 @@ class LogicProcessor
         $this->openweathermap->saveCurrentWeatherToDb();
 
         // execute auto actions for mystrom devices
-        $this->autoActionsMystrom();
+        if (array_key_exists('mystrom', $this->connectors)) {
+            $this->autoActionsMystrom();
+        }
 
         // execute auto actions for shelly devices
-        $this->autoActionsShelly();
+        if (array_key_exists('shelly', $this->connectors)) {
+            $this->autoActionsShelly();
+        }
 
         // execute auto actions for PcoWeb heating, if we are not in manual mode
         $pcoIp = $this->pcoweb->getIp();
