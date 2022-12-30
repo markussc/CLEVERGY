@@ -697,7 +697,7 @@ class LogicProcessor
             }
 
             // check if minimum requirements are fulfilled during high energy rate
-            if (!$energyLowRate && !$activateHeating && (($insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28) || $heatStorageMidTemp > 35) && $waterTemp > $minWaterTemp + 5) {
+            if (!$energyLowRate && !$activateHeating && (($insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28) || $heatStorageMidTemp > 35) && $waterTemp > $minWaterTemp + 2) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
                 $this->pcoweb->executeCommand('hwHysteresis', 12);
