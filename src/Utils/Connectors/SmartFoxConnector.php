@@ -137,8 +137,8 @@ class SmartFoxConnector
                     $totalAlternativePower += abs($pvPower);
                 }
                 // calculate the energy produced at the given power level during one minute
-            $arr['PvEnergy'][1] = $latestAltPvEnergy + 60*$totalAlternativePower/3600;
-            $arr['PvPower'][1] = $totalAlternativePower;
+                $arr['PvEnergy'][1] = round($latestAltPvEnergy + 60*$totalAlternativePower/3600);
+                $arr['PvPower'][1] = round($totalAlternativePower);
             }
         }
 
