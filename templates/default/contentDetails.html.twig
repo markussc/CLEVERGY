@@ -338,7 +338,20 @@
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
-            }
+            }{% if connectors['smartfox']['alternative']|default(false) %},
+            {
+                label: '{% trans %}label.smartfox.pv_power_alternative{% endtrans %}',
+                borderColor: ['orange'],
+                fill: false,
+                data: [
+                {% for sfData in history['smartFox']|default([]) %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ sfData.getData()['PvPower'][1]|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ]
+            }{% endif %}
             ]
         },
         options: {

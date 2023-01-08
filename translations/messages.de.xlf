@@ -125,6 +125,10 @@
         <source>label.smartfox.pv_power</source>
         <target>PV</target>
       </trans-unit>
+      <trans-unit id="AtwyO_d" resname="label.smartfox.pv_power_alternative">
+        <source>label.smartfox.pv_power_alternative</source>
+        <target>Mini-PV</target>
+      </trans-unit>
       <trans-unit id="G4xf.Cl" resname="label.smartfox.int_power">
         <source>label.smartfox.int_power</source>
         <target>Leistungsbedarf</target>
