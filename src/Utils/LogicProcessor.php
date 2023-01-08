@@ -112,7 +112,7 @@ class LogicProcessor
         if ($this->wem->getUsername()) {
             $now = new \DateTime();
             $nowMinutes = $now->format('i');
-            if ($nowMinutes % 15 == 0 || ($smartfox['PvPower'][0] > 0 && $nowMinutes % 5 == 0)) {
+            if ($nowMinutes % 15 == 0 || (array_sum($smartfox['PvPower']) > 0 && $nowMinutes % 5 == 0)) {
                 // WEM Portal requests should only be done every 30 minutes; if PV power is available, allow every 15 minutes.
                 $doWemPortal = true;
             }

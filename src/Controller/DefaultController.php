@@ -434,9 +434,9 @@ class DefaultController extends AbstractController
 
         // get values
         if (isset($currentStat['smartFox'])) {
-            $pvpower = $currentStat['smartFox']['PvPower'][0]." W";
+            $pvpower = array_sum($currentStat['smartFox']['PvPower'])." W";
             $netpower = $currentStat['smartFox']['power_io']." W";
-            $intpower = ($currentStat['smartFox']['power_io'] + $currentStat['smartFox']['PvPower'][0])." W";
+            $intpower = ($currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']))." W";
         } else {
             $pvpower = "";
             $netpower = "";

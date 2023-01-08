@@ -36,7 +36,7 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         $avgIndex = 0;
         foreach ($results as $res) {
             if ($idx === 'PvPower') {
-                $newValue = $res->getData()[$idx][0];
+                $newValue = array_sum($res->getData()[$idx]);
             } else {
                 $newValue = $res->getData()[$idx];
             }
@@ -91,7 +91,7 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         }
 
         if ($parameter === 'PvEnergy') {
-            return $endEnergy[0]->getData()[$parameter][0] - $startEnergy[0]->getData()[$parameter][0];
+            return array_sum($endEnergy[0]->getData()[$parameter]) - array_sum($startEnergy[0]->getData()[$parameter]);
         } else {
             return $endEnergy[0]->getData()[$parameter] - $startEnergy[0]->getData()[$parameter];
         }

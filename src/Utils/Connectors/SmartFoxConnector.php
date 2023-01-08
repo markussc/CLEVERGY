@@ -19,6 +19,7 @@ class SmartFoxConnector
     protected $basePath;
     protected $ip;
     protected $version;
+    private $connectors;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {
@@ -26,6 +27,7 @@ class SmartFoxConnector
         $this->client = $client;
         $this->ip = null;
         $this->version = null;
+        $this->connectors = $connectors;
         if (array_key_exists('smartfox', $connectors)) {
             $this->ip = $connectors['smartfox']['ip'];
             if (array_key_exists('version', $connectors['smartfox'])) {
@@ -49,6 +51,8 @@ class SmartFoxConnector
         } else {
             $responseArr = $this->getFromREG9TE();
         }
+
+        $responseArr = $this->addAlternativePv($responseArr);
 
         return $responseArr;
     }
@@ -110,5 +114,68 @@ class SmartFoxConnector
         ];
 
         return $values;
+    }
+
+    private function addAlternativePv($arr)
+    {
+        if (array_key_exists('smartfox', $this->connectors)) {
+            if (array_key_exists('alternative', $this->connectors['smartfox'])) {
+                $totalAlternativePower = 0;
+                $latestEntry = $this->getAllLatest();
+                if (array_key_exists(1, $latestEntry['PvEnergy'])) {
+                    $latestAltPvEnergy = $latestEntry['PvEnergy'][1];
+                } else {
+                    $latestAltPvEnergy = 0;
+                }
+                foreach ($this->connectors['smartfox']['alternative'] as $alternative) {
+                    if ($alternative['type'] == 'mystrom') {
+                        $pvPower = $this->queryMyStromPv($alternative['ip']);
+                    } elseif ($alternative['type'] == 'shelly') {
+                        $pvPower = $this->queryShellyPv($alternative['ip'], $alternative['port']);
+                    }
+                    // make sure values are positive (independent of device type)
+                    $totalAlternativePower += abs($pvPower);
+                }
+                // calculate the energy produced at the given power level during one minute
+            $arr['PvEnergy'][1] = $latestAltPvEnergy + 60*$totalAlternativePower/3600;
+            $arr['PvPower'][1] = $totalAlternativePower;
+            }
+        }
+
+        return $arr;
+    }
+
+    private function queryMyStromPv($ip)
+    {
+        $url = 'http://' . $ip . '/report';
+        try {
+            $response = $this->client->request('GET', $url);
+            $statusCode = $response->getStatusCode();
+            if ($statusCode != 200) {
+                return 0;
+            }
+            $json = $response->getContent();
+
+            return json_decode($json, true)['Ws'];
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+    private function queryShellyPv($ip, $port)
+    {
+        $url = 'http://' . $ip . '/meter/' . $port;
+        try {
+            $response = $this->client->request('GET', $url);
+            $statusCode = $response->getStatusCode();
+            if ($statusCode != 200) {
+                return 0;
+            }
+            $json = $response->getContent();
+
+            return json_decode($json, true)['power'];
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 }

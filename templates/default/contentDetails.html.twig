@@ -104,8 +104,8 @@
         <div class="small-12 columns refresh" id="smartfoxOuter">
             <div id="smartfox">
             <ul>
-                <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] }} W</li> {# TODO: sum up all PV powers #}
-                <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(', ') }} W</li>
+                <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] + currentStat['smartFox']['PvPower'][1]|default(0) }} W</li> {# TODO: sum up all PV powers #}
+                <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(' W, ') }} W</li>
                 <li>{% trans %}label.smartfox.net_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] }} W</li>
                 <li>{% trans %}label.smartfox.self_usage_today{% endtrans %}: {% if currentStat['smartFox']['energyToday'] and currentStat['smartFox']['energyToday'] >= currentStat['smartFox']['day_energy_out'] %}{{ ((currentStat['smartFox']['energyToday'] - currentStat['smartFox']['day_energy_out']) / currentStat['smartFox']['energyToday'] * 100) |round }} %{% else %}---{% endif %}</li>
                 <li>{% trans %}label.smartfox.self_suff_degree_today{% endtrans %}: {% if currentStat['smartFox']['energyToday'] and currentStat['smartFox']['energyToday'] >= currentStat['smartFox']['day_energy_out'] %}{{ (100/(currentStat['smartFox']['energyToday'] + currentStat['smartFox']['day_energy_in'] - currentStat['smartFox']['day_energy_out'])*(currentStat['smartFox']['energyToday']-currentStat['smartFox']['day_energy_out']))|round }} %{% else %}---{% endif %}</li>
@@ -334,7 +334,7 @@
                 {% for sfData in history['smartFox']|default([]) %}
                     {
                         x: new Date("{{ sfData.timestamp|date("c") }}"),
-                        y: {{ sfData.getData()['PvPower'][0]|default(0) }}
+                        y: {{ sfData.getData()['PvPower'][0]|default(0) + sfData.getData()['PvPower'][1]|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
