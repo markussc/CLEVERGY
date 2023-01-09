@@ -93,8 +93,12 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         if ($parameter === 'PvEnergy') {
             return array_sum($endEnergy[0]->getData()[$parameter]) - array_sum($startEnergy[0]->getData()[$parameter]);
         } elseif ($parameter === 'PvEnergyAlt') {
-            if (array_key_exists(1, $endEnergy[0]->getData()['PvEnergy']) && array_key_exists(1, $startEnergy[0]->getData()['PvEnergy'])) {
-                return $endEnergy[0]->getData()['PvEnergy'][1] - $startEnergy[0]->getData()['PvEnergy'][1];
+            if (array_key_exists(1, $endEnergy[0]->getData()['PvEnergy'])) {
+                if (!array_key_exists(1, $startEnergy[0]->getData()['PvEnergy'])) {
+                    return $endEnergy[0]->getData()['PvEnergy'][1];
+                } else {
+                    return $endEnergy[0]->getData()['PvEnergy'][1] - $startEnergy[0]->getData()['PvEnergy'][1];
+                }
             } else {
                 return 0;
             }

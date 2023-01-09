@@ -356,6 +356,18 @@ class DefaultController extends AbstractController
                 'energy_in_lastYear_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYear, $thisYear),
                 'energy_out_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYear, $thisYear),
             ];
+            if ($this->smartfox->hasAltPv()) {
+                $history['smartfox'] = array_merge($history['smartfox'], [
+                    'pv_alt_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $today, $now),
+                    'pv_alt_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $yesterday, $today),
+                    'pv_alt_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisWeek, $now),
+                    'pv_alt_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisMonth, $now),
+                    'pv_alt_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYearMonth, $lastYearPart),
+                    'pv_alt_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisYear, $now),
+                    'pv_alt_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYear, $lastYearPart),
+                    'pv_alt_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYear, $thisYear),
+                ]);
+            }
         }
         if (array_key_exists('conexio', $this->getParameter('connectors'))) {
             $ip = $this->conexio->getIp();
