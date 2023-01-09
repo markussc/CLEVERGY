@@ -6,6 +6,7 @@ twig:
         locale: '%locale%'
         connectors: '%connectors%'
         instancetitle: '%instancetitle%'
+        smartfoxConnector: '@App\Utils\Connectors\SmartFoxConnector'
         chromecastConnector: '@App\Utils\Connectors\ChromecastConnector'
         mobilealertsConnector: '@App\Utils\Connectors\MobileAlertsConnector'
         mystromConnector: '@App\Utils\Connectors\MyStromConnector'

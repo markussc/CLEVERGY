@@ -62,12 +62,24 @@ class SmartFoxConnector
         return $this->ip;
     }
 
+    public function hasAltPv()
+    {
+        if (array_key_exists('smartfox', $this->connectors) && array_key_exists('alternative', $this->connectors['smartfox'])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private function getFromREG9TE()
     {
         $arr = json_decode($this->client->request('GET', $this->basePath . '/all')->getContent(), true);
         $arr['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
         $arr['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
         $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
+        if ($this->hasAltPv()) {
+            $arr['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
+        }
 
         return $arr;
     }
@@ -112,6 +124,9 @@ class SmartFoxConnector
             "energyToday" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip),
             "consumptionControl1Percent" => $data["consumptionControl1Percent"]
         ];
+        if ($this->hasAltPv()) {
+            $values['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
+        }
 
         return $values;
     }

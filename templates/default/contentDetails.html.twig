@@ -1,35 +1,5 @@
 {% set contactAvailable = false %}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript">
-    var elem = document.getElementById('piechart_energymix');
-      if (elem) {
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChartEnergymix);
-
-        function drawChartEnergymix() {
-
-          var data = google.visualization.arrayToDataTable([
-            ['Task', 'Hours per Day'],
-            ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
-            ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
-            ['{% trans %}label.normalrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['normal']|default(0) }}],
-            ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
-          ]);
-      
-        var chart = new google.visualization.PieChart(elem);
-
-        var options = {
-            title: '{% trans %}label.energymix{% endtrans %}'
-        };
-        var formatter = new google.visualization.NumberFormat({
-           suffix: ' kWh'
-        });
-
-        formatter.format(data, 1);
-        chart.draw(data, options);
-      }
-    }
-</script>
 
 {% if is_granted('ROLE_OWNER') %}
     <div id="pcowebModeModal" class="reveal" data-reveal>
@@ -113,7 +83,7 @@
             </div>
             <div class="chart" style="display:none;">
                 <span class="chartId">energyDay</span>
-                <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}{% if currentStat['conexio']|default(false) %}, {{ currentStat['conexio']['energyToday']|default(0) }}{% endif %}]</span>
+                <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}{% if currentStat['smartFox']['altEnergyToday']|default(false) %}, {{ currentStat['smartFox']['altEnergyToday']/1000 }}{% endif %}{% if currentStat['conexio']|default(false) %}, {{ currentStat['conexio']['energyToday']|default(0) }}{% endif %}]</span>
             </div>
         </div>
     </div>
@@ -191,11 +161,11 @@
 {% if not refresh|default(false) %}
 {% if currentStat['smartFoxChart']|default(false) %}
 <div class="row">
-    <div class=""small-12 large-4 columns small-centered">
+    <div class="small-12 large-4 columns small-centered">
         <div id="piechart_energymix"></div>
     </div>
     <div class="small-12 medium-12 large-8 columns small-centered refresh">
-        <canvas id="energyDayCanvas" ></canvas>
+        <canvas id="energyDayCanvas"></canvas>
     </div>
 </div>
 {% endif %}
@@ -273,22 +243,27 @@
     charts.energyDay = new Chart(document.getElementById("energyDayCanvas").getContext('2d'), {
         type: 'bar',
         data: {
+            labels: [''],
             datasets: [
             {
                 label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
-                backgroundColor: ['red']
+                backgroundColor: ['darkblue']
             },
             {
                 label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
                 backgroundColor: ['chartreuse']
             },
             {
-                label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}',
+                label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}{% if smartfoxConnector.hasAltPv() %} ({% trans %}label.smartfox.total{% endtrans %}){% endif %}',
                 backgroundColor: ['yellow']
-            }{% if currentStat['conexio']|default(false) %},
+            }{%if smartfoxConnector.hasAltPv() %},
+            {
+                label: '{% trans %}label.smartfox.energy_pv_alt_day{% endtrans %}',
+                backgroundColor: ['orange']
+            }{% endif %}{% if currentStat['conexio']|default(false) %},
             {
                 label: '{% trans %}label.conexio.energy_day{% endtrans %}',
-                backgroundColor: ['orange']
+                backgroundColor: ['red']
             }{% endif %}
             ]
         },
@@ -305,7 +280,16 @@
                     }
                 }]
             },
-            animation: false
+            animation: false,
+            tooltips: {
+                enabled: true,
+                mode: 'single',
+                callbacks: {
+                    label: function(tooltipItems, data) {
+                        return data.datasets[tooltipItems.datasetIndex].label + ': ' + tooltipItems.yLabel + ' kWh';
+                    }
+                }
+            }
         }
     });
 
@@ -327,7 +311,7 @@
                 ]
             },
             {
-                label: '{% trans %}label.smartfox.pv_power{% endtrans %}',
+                label: '{% trans %}label.smartfox.pv_power{% endtrans %}{% if smartfoxConnector.hasAltPv() %} ({% trans %}label.smartfox.total{% endtrans %}){% endif %}',
                 borderColor: ['yellow'],
                 fill: false,
                 data: [
@@ -338,7 +322,7 @@
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
-            }{% if connectors['smartfox']['alternative']|default(false) %},
+            }{% if smartfoxConnector.hasAltPv() %},
             {
                 label: '{% trans %}label.smartfox.pv_power_alternative{% endtrans %}',
                 borderColor: ['orange'],
@@ -383,6 +367,36 @@
             animation: false
         }
     });
+
+    // energy mix
+    var elem = document.getElementById('piechart_energymix');
+    if (elem) {
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChartEnergymix);
+
+            function drawChartEnergymix() {
+
+              var data = google.visualization.arrayToDataTable([
+                ['Rate', 'Value'],
+                ['{% trans %}label.smartfox.pv_power{% endtrans %}', {{ currentStat['smartFox_energy_mix']['pv']|default(0) }}],
+                ['{% trans %}label.highrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['high']|default(0) }}],
+                ['{% trans %}label.normalrate{% endtrans %}',  {{ currentStat['smartFox_energy_mix']['normal']|default(0) }}],
+                ['{% trans %}label.lowrate{% endtrans %}', {{ currentStat['smartFox_energy_mix']['low']|default(0) }}]
+              ]);
+
+            var chart = new google.visualization.PieChart(elem);
+
+            var options = {
+                title: '{% trans %}label.energymix{% endtrans %}'
+            };
+            var formatter = new google.visualization.NumberFormat({
+               suffix: ' kWh'
+            });
+
+            formatter.format(data, 1);
+            chart.draw(data, options);
+        }
+    }
     {% endif %}
     {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or history['ecar']|default(false) %}
     // 24hTemperatures

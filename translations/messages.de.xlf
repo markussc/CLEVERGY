@@ -187,7 +187,11 @@
       </trans-unit>
       <trans-unit id="o3YNEkW" resname="label.smartfox.energy_pv_day">
         <source>label.smartfox.energy_pv_day</source>
-        <target>Ertrag Photovoltaik heute</target>
+        <target>Ertrag PV heute</target>
+      </trans-unit>
+      <trans-unit id="xFzP4M4" resname="label.smartfox.energy_pv_alt_day">
+        <source>label.smartfox.energy_pv_alt_day</source>
+        <target>Ertrag Mini-PV heute</target>
       </trans-unit>
       <trans-unit id="wFi8EUf" resname="label.smartfox.self_usage_today">
         <source>label.smartfox.self_usage_today</source>
@@ -448,6 +452,10 @@
       <trans-unit id="QOGEoKG" resname="label.netatmo.user_auth.link">
         <source>label.netatmo.user_auth.link</source>
         <target>Bitte melden Sie sich HIER bei Netatmo an und gestatten Sie den Zugriff auf Ihre Daten für OSHANS</target>
+      </trans-unit>
+      <trans-unit id="HXrfQwM" resname="label.smartfox.total">
+        <source>label.smartfox.total</source>
+        <target>total</target>
       </trans-unit>
     </body>
   </file>
