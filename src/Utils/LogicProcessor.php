@@ -547,7 +547,7 @@ class LogicProcessor
             }
 
             // heat storage is low or net power is negative or at least not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
-            if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 45 || $waterTemp < 45 )) || $avgPower < 0) {
+            if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 50 || $waterTemp < 52 )) || $avgPower < 0) {
                 $power = $this->pcoweb->getPower();
                 if (!$isSummer) {
                     $power = $power *0.75; // we accept a lower self consumption degree in winter
