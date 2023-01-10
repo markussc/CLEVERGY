@@ -561,6 +561,7 @@ class LogicProcessor
                     $activateHeating = true;
                     // we make sure the hwHysteresis is set to the default value
                     $this->pcoweb->executeCommand('hwHysteresis', 10);
+                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
                     $this->pcoweb->executeCommand('hc1', 40);
                     $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10), increase hc1 (set hc1=35).";
                     if ($ppMode !== PcoWebConnector::MODE_AUTO && $ppMode !== PcoWebConnector::MODE_HOLIDAY && ($ppMode != PcoWebConnector::MODE_SUMMER || !$ppStatus)) {
