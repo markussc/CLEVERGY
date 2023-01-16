@@ -60,7 +60,7 @@ class DataStoreBaseRepository extends EntityRepository
         $qb = $this->createQueryBuilder('e')
             ->where('e.timestamp >= :start')
             ->andWhere('e.timestamp < :end')
-            ->orderBy('e.timestamp', 'asc')
+            ->orderBy('e.id', 'asc')
             ->setParameter('start', $start)
             ->setParameter('end', $end)
             ->setMaxResults($maxResults);

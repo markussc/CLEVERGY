@@ -23,7 +23,7 @@ class DataArchiveCommand extends Command
     {
         $this
             ->setDescription('Archive data which is older than the year before')
-            ->setHelp('This command moves all archiveable data to the archive which is older than the year before. Not archiveable data will be deleted.');
+            ->setHelp('This command moves all archiveable data to the archive which is older than the year before. Not archiveable data will be deleted. Per call, a maximum of 50 entries are archived/deleted per type.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -44,12 +44,11 @@ class DataArchiveCommand extends Command
             \App\Entity\EcarDataStore::class,
         ];
         foreach ($archiveClasses as $archiveClass) {
-            $items = $this->em->getRepository($archiveClass)->getArchiveable(100);
-
+            $items = $this->em->getRepository($archiveClass)->getArchiveable(50);
             foreach ($items as $item) {
                 $this->em->remove($item);
-                $this->em->flush();
             }
+            $this->em->flush();
         }
 
         return 0;
