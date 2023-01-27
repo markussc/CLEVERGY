@@ -41,6 +41,10 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# install Symfony CLI
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
+RUN apt install symfony-cli
+
 # install weconnect-cli
 RUN pip3 install weconnect-cli
 
@@ -87,10 +91,6 @@ RUN bin/console cache:warmup
 RUN HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
 RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
-
-# install Symfony CLI
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
-RUN apt install symfony-cli
 
 # apply database migrations and run apache2 web server
 CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
