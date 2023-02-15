@@ -46,13 +46,17 @@ class SmartFoxConnector
 
     public function getAll()
     {
-        if ($this->version === "pro") {
-            $responseArr = $this->getFromPRO();
-        } else {
-            $responseArr = $this->getFromREG9TE();
-        }
+        try {
+            if ($this->version === "pro") {
+                $responseArr = $this->getFromPRO();
+            } else {
+                $responseArr = $this->getFromREG9TE();
+            }
 
-        $responseArr = $this->addAlternativePv($responseArr);
+            $responseArr = $this->addAlternativePv($responseArr);
+        } catch (\Exception $e) {
+            $responseArr = null;
+        }
 
         return $responseArr;
     }

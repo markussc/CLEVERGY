@@ -1036,18 +1036,22 @@ class LogicProcessor
         $smartfox = null;
         if ($this->smartfox->getIp()) {
             $smartfox = $this->smartfox->getAll();
-            $smartfoxEntity = new SmartFoxDataStore();
-            $smartfoxEntity->setTimestamp(new \DateTime('now'));
-            $smartfoxEntity->setConnectorId($this->smartfox->getIp());
-            if ($smartfox['PvEnergy'][0] <= 0) {
-                $lastSmartFox = $this->smartfox->getAllLatest();
-                if ($lastSmartFox) {
-                    $smartfox['PvEnergy'][0] = $lastSmartFox['PvEnergy'][0];
+            if ($smartfox) {
+                $smartfoxEntity = new SmartFoxDataStore();
+                $smartfoxEntity->setTimestamp(new \DateTime('now'));
+                $smartfoxEntity->setConnectorId($this->smartfox->getIp());
+                if ($smartfox['PvEnergy'][0] <= 0) {
+                    $lastSmartFox = $this->smartfox->getAllLatest();
+                    if ($lastSmartFox) {
+                        $smartfox['PvEnergy'][0] = $lastSmartFox['PvEnergy'][0];
+                    }
                 }
+                $smartfoxEntity->setData($smartfox);
+                $this->em->persist($smartfoxEntity);
+                $this->em->flush();
+            } else {
+                $smartfox = $this->smartfox->getAllLatest();
             }
-            $smartfoxEntity->setData($smartfox);
-            $this->em->persist($smartfoxEntity);
-            $this->em->flush();
             $this->smartfoxLatest = $smartfox;
         }
 
