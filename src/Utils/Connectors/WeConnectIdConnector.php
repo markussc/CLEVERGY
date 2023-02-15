@@ -41,7 +41,7 @@ class WeConnectIdConnector
             $data['range'] = $charging['batteryStatus']['cruisingRangeElectric_km'];
             $data['plugConnectionState'] = $charging['plugStatus']['plugConnectionState'];
             $data['chargePower_kW'] = $charging['chargingStatus']['chargePower_kW'];
-            if (array_key_exists('connectionState', $readinessStatus)) {
+            if (is_array($readinessStatus) && array_key_exists('connectionState', $readinessStatus)) {
                 if (array_key_exists('isOnline', $readinessStatus['connectionState'])) {
                     $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
                 } else {
