@@ -48,6 +48,21 @@ class MobileAlertsConnector
         return $alarms;
     }
 
+    public function getLowBat()
+    {
+        $lowBat = [];
+        if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {
+            foreach ($this->connectors['mobilealerts']['sensors'] as $sensorId => $sensorConf) {
+                $data = $this->em->getRepository(MobileAlertsDataStore::class)->getLatest($sensorId);
+                if (is_array($data) && array_key_exists(0, $data) && is_array($data[0]) && array_key_exists('lowbattery', $data[0]) && $data[0]['lowbattery']) {
+                    $lowBat[] = $sensorConf[0][0];
+                }
+            }
+        }
+
+        return $lowBat;
+    }
+
     public function contactAvailable()
     {
         if (array_key_exists('mobilealerts', $this->connectors) && is_array($this->connectors['mobilealerts']['sensors'])) {

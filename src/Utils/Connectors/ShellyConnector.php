@@ -24,7 +24,6 @@ class ShellyConnector
     protected $ecar;
     private $client;
     private $baseUrl;
-    private $server;
     private $authkey;
     protected $connectors;
 
@@ -417,6 +416,8 @@ class ShellyConnector
             } else {
                 return $this->createStatus(3, 100, 0, $r['bat']['value']);
             }
+        } else {
+            return $this->createStatus(0);
         }
     }
 

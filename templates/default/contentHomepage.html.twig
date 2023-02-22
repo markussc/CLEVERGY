@@ -3,6 +3,7 @@
 {% if mobilealertsConnector.getAlarms()|length > 0 %}{% set contactActive = true %}{% endif %}
 {% if shellyConnector.getAlarms()|length > 0 %}{% set contactActive = true %}{% endif %}
 {% if mystromConnector.getAlarms()|length > 0 %}{% set motionActive = true %}{% endif %}
+{% set lowBat = mobilealertsConnector.getLowBat() %}
 
 {% if is_granted('ROLE_OWNER') %}
     <div id="mystromTimerModal" class="reveal" data-reveal>
@@ -59,7 +60,7 @@
     </div>
       <script>
         var selectedMystromCar;
-        var carTimerDeviceType
+        var carTimerDeviceType;
         function getCarTimerValue()
         {
             return "cartimer_" + $("#cartimer_car").val() + "_" + $("#cartimer_deadline").val() + "_" + $("#cartimer_percent").val();
@@ -101,6 +102,7 @@
         <div id="visualDashboardNetatmoAuthSymbol" class="refresh">{% if netatmoConnector.requiresUserAuthentication %}<i class="fas fa-user-circle" style="color: red;"></i> <a href="{{ netatmoConnector.getUserAuthenticationLink() }}" style="color: grey;">{% trans %}label.netatmo.user_auth.link{% endtrans %}</a><br/>{% endif %}</div>
         <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-running" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
         <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-door-open" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
+        <div id="visualDashboardLowBatSymbol" class="refresh">{% if lowBat|length > 0 %}<i class="fas fa-battery-empty" style="color: red;"></i> <span style="color: grey;">{{ lowBat|join(', ') }}</span><br/>{% endif %}</div>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap" style="display:block; margin-left: auto; margin-right: auto;">{% endif %}
     </div>
 </div>
@@ -225,7 +227,7 @@
                 {% elseif device['status']['position']|default(50) == 100 %}
                     <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; min-width:120px; max-width:50%; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i>&nbsp;&nbsp;{{ device['name']}}</a>
                 {% elseif device['status']['position']|default(0) > 0 and device['status']['position']|default(100) < 100 %}
-                    <span style="min-width:120px; max-width:50;%"><a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 2])"><i class="fas fa-arrow-circle-up"></i></a> <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i></a><a class="button hollow tiny" style="border:none;"><i class="fas"></i>{{ device['name']}}</a></span>
+                    <span style="min-width:120px; max-width:50%;"><a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 2])"><i class="fas fa-arrow-circle-up"></i></a> <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px; text-align:left;" onclick="sendCommand(['shelly', {{ key }}, 3])"><i class="fas fa-arrow-circle-down"></i></a><a class="button hollow tiny" style="border:none;"><i class="fas"></i>{{ device['name']}}</a></span>
                 {% endif %}
                 {% endif %}
             {% else %}
