@@ -186,13 +186,15 @@ class MobileAlertsConnector
             $value = preg_replace("/[^0-9,.,-]/", "", str_replace(',', '.', $value));
             $unit = $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1];
         }
-        $data = [
-            'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
-            'value' => $value,
-            'unit' => $unit,
-            'dashboard' => $dashboard,
-            'usage' => $usage,
-        ];
+        if ($value != 43530 && $value != 65295) {
+            $data = [
+                'label' => $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][0],
+                'value' => $value,
+                'unit' => $unit,
+                'dashboard' => $dashboard,
+                'usage' => $usage,
+            ];
+        }
 
         return $data;
     }

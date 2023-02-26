@@ -142,7 +142,7 @@
                     {% if measurement['usage']|default('') == 'contact' %}
                         {% set contactAvailable = true %}
                     {% else %}
-                    <li>{{ measurement['label']}}: {{ measurement['value'] }} {{ measurement['unit'] }}</li>
+                    <li>{{ measurement['label']}}: {{ measurement['value']|replace({"43530": "???", "65295": "???"}) }} {{ measurement['unit'] }}</li>
                     {% endif %}
                 {% endfor %}
             {% endfor %}
@@ -528,7 +528,7 @@
                 {% for maData in history['mobileAlerts'][idx] %}
                     {
                         x: new Date("{{ maData.timestamp|date("c") }}"),
-                        y: {{ maData.getData()[dataSetKey+1]['value']|default(0)|replace({'---': dataSet[3]|default(0)}) }}
+                        y: {{ maData.getData()[dataSetKey+1]['value']|default(0)|replace({'---': dataSet[3]|default(0), '43530': 0, '65295': 0}) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
                 ]
