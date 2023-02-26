@@ -455,12 +455,12 @@ class DefaultController extends AbstractController
             $intpower = "";
         }
 
-        if (isset($currentStat['conexio'])) {
+        if (isset($currentStat['conexio']) && is_array($currentStat['conexio'])) {
             $solpower = $currentStat['conexio']['p']." W";
             $soltemp = $currentStat['conexio']['s1']."°C";
             $hightemp = $currentStat['conexio']['s3']."°C";
             $lowtemp = $currentStat['conexio']['s2']."°C";
-        } elseif (isset($currentStat['logoControl'])) {
+        } elseif (isset($currentStat['logoControl']) && is_array($currentStat['logoControl'])) {
             $solpower = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['powerSensor']] . "°C";
             $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . "°C";
             $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . "°C";

@@ -201,7 +201,7 @@ class ShellyConnector
             $autoIntervals = [];
         }
         $latest = $this->em->getRepository(ShellyDataStore::class)->getLatest($connectorId);
-        if (method_exists($latest, "getData")) {
+        if (is_object($latest) && method_exists($latest, "getData")) {
             $status = $latest->getData();
             $timestamp = $latest->getTimestamp();
         } else {
@@ -648,7 +648,7 @@ class ShellyConnector
                         $deviceConf['port'] = 0;
                     }
                     $latest = $this->em->getRepository(ShellyDataStore::class)->getLatest($deviceConf['ip'].'_'.$deviceConf['port']);
-                    if (method_exists($latest, "getData")) {
+                    if (is_object($latest) && method_exists($latest, "getData")) {
                         $status = $latest->getData();
                         $timestamp = $latest->getTimestamp();
                     } else {

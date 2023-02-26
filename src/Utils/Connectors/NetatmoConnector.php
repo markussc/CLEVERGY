@@ -109,6 +109,20 @@ class NetatmoConnector
         return $insideTemp;
     }
 
+    public function getLowBat()
+    {
+        $lowBat = [];
+        if ($this->getAvailable()) {
+            foreach ($this->getAllLatest()->getModulesData() as $data) {
+                if (is_array($data) && array_key_exists('battery', $data) && $data['battery'] <= 25) {
+                    $lowBat[] = $data['name'];
+                }
+            }
+        }
+
+        return $lowBat;
+    }
+
     public function getAllLatest()
     {
         return $this->em->getRepository(NetatmoDataStore::class)->getLatest($this->config['deviceid']);

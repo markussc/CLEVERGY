@@ -56,6 +56,7 @@ class NetatmoDataStore extends DataStoreBase
                     'name' => $module['module_name'],
                     'temp' => $module['dashboard_data']['Temperature'],
                     'humidity' => $module['dashboard_data']['Humidity'],
+                    'battery' => $module['battery_percent'],
                 ];
             }
         }
@@ -71,6 +72,7 @@ class NetatmoDataStore extends DataStoreBase
                     'name' => $module['module_name'],
                     'temp' => $module['dashboard_data']['Temperature'],
                     'humidity' => $module['dashboard_data']['Humidity'],
+                    'battery' => $module['battery_percent'],
                 ];
             }
         }
