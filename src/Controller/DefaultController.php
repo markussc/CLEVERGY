@@ -413,7 +413,7 @@ class DefaultController extends AbstractController
             foreach ($currentStat['mobileAlerts'] as $maDevice) {
                 if (is_array($maDevice)) {
                     foreach ($maDevice as $maSensor) {
-                        if (array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
+                        if (is_array($maSensor ) && array_key_exists('usage', $maSensor) && $maSensor['usage'] !== false) {
                             $climateValues[$maSensor['usage']] = $maSensor['value'];
                         }
                     }
