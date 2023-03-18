@@ -87,7 +87,7 @@ class MobileAlertsConnector
         $tmp = [];
         foreach  ($latest as $device) {
             foreach ($device as $sensor) {
-                if (array_key_exists("usage", $sensor) &&
+                if (is_array($sensor) && array_key_exists("usage", $sensor) &&
                         (   $sensor['usage'] == "insidetemp" ||
                             $sensor['usage'] == "firstfloortemp" ||
                             $sensor['usage'] == "secondfloortemp")) {
@@ -154,6 +154,7 @@ class MobileAlertsConnector
 
     private function createStorageData($currentSensor, $measurementCounter, $value)
     {
+        $data = [];
         $unit = '';
         if (!isset($this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1])) {
             $this->connectors['mobilealerts']['sensors'][$currentSensor][$measurementCounter][1] = '';
