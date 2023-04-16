@@ -477,7 +477,7 @@ class DefaultController extends AbstractController
             $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . "°C";
             $lowtemp = "";
         } elseif (isset($currentStat['taCmi']) && is_array($currentStat['taCmi'])) {
-            $solpower = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['powerSensor']] . "%";
+            $solpower = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['powerSensor']] . " %";
             $soltemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['collectorSensor']] . "°C";
             $hightemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['heatStorageSensor']] . "°C";
             $lowtemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['lowStorageSensor']] . "°C";;
