@@ -48,7 +48,35 @@ parameters:
         logocontrol:
             ip: 192.168.1.101
             heatStorageSensor: 'Storage Temp' # This is the name of the sensor which is relevant as storage temperature for heating
+            powerSensor: Roof
+            collectorSensor: Collector
             sensors:
+                2:
+                    - Roof
+                    - °C
+                    - orange
+                3:
+                    - Collector
+                    - °C
+                    - yellow
+                4:
+                    - Storage Temp
+                    - °C
+                    - darkred
+        tacmi: # TA Technische Alternative CMI
+            ip: 102.168.0.35
+            username: admin
+            password: admin
+            query: 'jsonnode=12&jsonparam=I,O' # Refer to https://www.ta.co.at/download/datei/17511763-cmi-json-api/
+            heatStorageSensor: 'Storage Temp' # upper temp
+            lowStorageSensor: 'lower Storage Temp' # lower temp
+            powerSensor: Roof
+            collectorSensor: Collector
+            sensors:
+                2: # the 0-based index of the value in the returned json datafile (continuous numbering among different categories as Inputs, Outputs etc.)
+                    - Roof
+                    - °C
+                    - orange
                 3:
                     - Collector
                     - °C

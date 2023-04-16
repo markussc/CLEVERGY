@@ -72,17 +72,17 @@ class PcoWebConnector
 
         if (array_key_exists('pcoweb', $this->connectors) && array_key_exists('mapping', $this->connectors['pcoweb'])) {
             if (array_key_exists('analog', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping'] as $key => $value) {
+                foreach($this->connectors['pcoweb']['mapping']['analog'] as $key => $value) {
                     $dataArr[$key] = $responseArr['PCO']['ANALOG']['VARIABLE'][intval($value)]['VALUE'];
                 }
             }
             if (array_key_exists('integer', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping'] as $key => $value) {
+                foreach($this->connectors['pcoweb']['mapping']['integer'] as $key => $value) {
                     $dataArr[$key] = $responseArr['PCO']['INTEGER']['VARIABLE'][intval($value)]['VALUE'];
                 }
             }
             if (array_key_exists('digital', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping'] as $key => $value) {
+                foreach($this->connectors['pcoweb']['mapping']['digital'] as $key => $value) {
                     $dataArr[$key] = $responseArr['PCO']['DIGITAL']['VARIABLE'][intval($value)]['VALUE'];
                 }
             }
