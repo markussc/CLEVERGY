@@ -24,6 +24,13 @@ parameters:
         pcoweb:
             ip: 192.168.178.20
             power: 2900 # relevant electrical power requirement in watts
+            mapping: # allows for remapping of default variables. Refer to PcoWebConnector for details. Key is the variable as stored in our database, value is 0-based key in the returned XML from PCOWeb.
+                analog:
+                    storTemp: 1
+                digital:
+                    xyz: 10
+                integer:
+                    abc: 15
         wem: # connector for WEM Portal (Weishaupt Energy Manager)
             username: me@you.com
             password:  mysecret
