@@ -57,7 +57,7 @@
         {% if currentStat['smartFox'] is defined and currentStat['smartFox'] != 0 %}
             <button class="menu-btn fas fa-solar-panel hollow button small" style="border-radius:5px;" onclick="menuToggle($(this), 'smartfox');"><span style="font-family:arial;">&nbsp;&nbsp;{% trans %}label.energy{% endtrans %}</span></button>
         {% endif %}
-        {% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+        {% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or currentStat['taCmi']|default(false)%}
             <button class="menu-btn fas fa-sun hollow button small" style="border-radius:5px;" onclick="menuToggle($(this), 'conexio');"><span style="font-family:arial;">&nbsp;&nbsp;{% trans %}label.solarheat{% endtrans %}</span></button>
         {% endif %}
         {% if currentStat['pcoWeb'] is defined %}
@@ -88,7 +88,7 @@
         </div>
     </div>
 {% endif %}
-{% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) %}
+{% if currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or currentStat['taCmi']|default(false) %}
     <div id="conexio_container" class="content" style="display:none;">
         <div class="small-12 columns refresh" id="conexio">
             <ul>
@@ -97,6 +97,9 @@
             {% endfor %}
             {% for sensor in connectors['logocontrol']['sensors']|default([]) %}
                 {{ sensor[0] }}: {{ currentStat['logoControl'][sensor[0]] }}{{ sensor[1] }}<br/>
+            {% endfor %}
+            {% for sensor in connectors['tacmi']['sensors']|default([]) %}
+                {{ sensor[0] }}: {{ currentStat['taCmi'][sensor[0]] }}{{ sensor[1] }}<br/>
             {% endfor %}
             </ul>
         </div>
@@ -169,7 +172,7 @@
     </div>
 </div>
 {% endif %}
-{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or history['ecar']|default(false) %}
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or currentStat['taCmi']|default(false) or history['ecar']|default(false) %}
 <hr>
 <div class="row">
     <div class="small-12 medium-4 columns">
@@ -398,7 +401,7 @@
         }
     }
     {% endif %}
-    {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or history['ecar']|default(false) %}
+    {% if currentStat['smartFox']|default(false) or currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or currentStat['taCmi']|default(false) or history['ecar']|default(false) %}
     // 24hTemperatures
     charts.twentyFourTemperatures = new Chart(document.getElementById("twentyFourTemperaturesCanvas").getContext('2d'), {
         type: 'line',
@@ -639,6 +642,25 @@
                 fill: false,
                 data: [
                 {% for coData in history['logoControl']|filter(coData => coData.getData()) %}
+                    {% if not loop.first %},{% endif %}
+                    {
+                        x: new Date("{{ coData.timestamp|date('c') }}"),
+                        y: {{ coData.getData()[sensor[0]]|default(0) / sensor[3]|default(1) }}
+                    }
+                {% endfor %}
+                ],
+                yAxisID: "y-axis-°C"
+            }
+            {% endfor %}
+            {% for idx, sensor in connectors['tacmi']['sensors']|default([])|filter(sensor => sensor[2] is defined) %}
+            {% if not firstDataset24  %},{% endif %}
+            {% set firstDataset24 = false %}
+            {
+                label: '{{ sensor[0] }}',
+                borderColor: ['{{ sensor[2] }}'],
+                fill: false,
+                data: [
+                {% for coData in history['taCmi']|filter(coData => coData.getData()) %}
                     {% if not loop.first %},{% endif %}
                     {
                         x: new Date("{{ coData.timestamp|date('c') }}"),

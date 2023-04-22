@@ -52,7 +52,7 @@ class PcoWebConnector
         $json  = json_encode($ob);
         $responseArr = json_decode($json, true);
 
-        return [
+        $dataArr =  [
             'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
             'outsideTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][0]['VALUE'],
             'waterTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][2]['VALUE'],
@@ -69,6 +69,26 @@ class PcoWebConnector
             'ppSourceIn' => $responseArr['PCO']['ANALOG']['VARIABLE'][5]['VALUE'],
             'ppSourceOut' => $responseArr['PCO']['ANALOG']['VARIABLE'][6]['VALUE'],
         ];
+
+        if (array_key_exists('pcoweb', $this->connectors) && array_key_exists('mapping', $this->connectors['pcoweb'])) {
+            if (array_key_exists('analog', $this->connectors['pcoweb']['mapping'])) {
+                foreach($this->connectors['pcoweb']['mapping']['analog'] as $key => $value) {
+                    $dataArr[$key] = $responseArr['PCO']['ANALOG']['VARIABLE'][intval($value)]['VALUE'];
+                }
+            }
+            if (array_key_exists('integer', $this->connectors['pcoweb']['mapping'])) {
+                foreach($this->connectors['pcoweb']['mapping']['integer'] as $key => $value) {
+                    $dataArr[$key] = $responseArr['PCO']['INTEGER']['VARIABLE'][intval($value)]['VALUE'];
+                }
+            }
+            if (array_key_exists('digital', $this->connectors['pcoweb']['mapping'])) {
+                foreach($this->connectors['pcoweb']['mapping']['digital'] as $key => $value) {
+                    $dataArr[$key] = $responseArr['PCO']['DIGITAL']['VARIABLE'][intval($value)]['VALUE'];
+                }
+            }
+        }
+
+        return $dataArr;
         } catch (\Exception $e) {
           return false;
         }

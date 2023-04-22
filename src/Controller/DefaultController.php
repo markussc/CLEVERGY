@@ -11,12 +11,14 @@ use App\Entity\PcoWebDataStore;
 use App\Entity\WemDataStore;
 use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
+use App\Entity\TaCmiDataStore;
 use App\Entity\EcarDataStore;
 use App\Utils\LogicProcessor;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\EcarConnector;
 use App\Utils\Connectors\GardenaConnector;
 use App\Utils\Connectors\LogoControlConnector;
+use App\Utils\Connectors\TaCmiConnector;
 use App\Utils\Connectors\MobileAlertsConnector;
 use App\Utils\Connectors\MyStromConnector;
 use App\Utils\Connectors\NetatmoConnector;
@@ -47,6 +49,7 @@ class DefaultController extends AbstractController
             NetatmoConnector $netatmo,
             MobileAlertsConnector $mobilealerts,
             LogoControlConnector $logocontrol,
+            TaCmiConnector $tacmi,
             OpenWeatherMapConnector $openweather,
             EcarConnector $ecar
         )
@@ -61,6 +64,7 @@ class DefaultController extends AbstractController
        $this->netatmo = $netatmo;
        $this->mobilealerts = $mobilealerts;
        $this->logocontrol = $logocontrol;
+       $this->tacmi = $tacmi;
        $this->openweather = $openweather;
        $this->ecar = $ecar;
     }
@@ -141,6 +145,9 @@ class DefaultController extends AbstractController
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
                 $currentStat['logoControl'] = $this->logocontrol->getAllLatest();
             }
+            if (array_key_exists('tacmi', $this->getParameter('connectors'))) {
+                $currentStat['taCmi'] = $this->tacmi->getAllLatest();
+            }
             if (array_key_exists('netatmo', $this->getParameter('connectors'))) {
                 $currentStat['netatmo'] = $this->netatmo->getAllLatest();
             }
@@ -169,6 +176,9 @@ class DefaultController extends AbstractController
             }
             if (array_key_exists('logocontrol', $this->getParameter('connectors'))) {
                 $history['logoControl'] = $em->getRepository(LogoControlDataStore::class)->getHistory($this->logocontrol->getIp(), $from, $to);
+            }
+            if (array_key_exists('tacmi', $this->getParameter('connectors'))) {
+                $history['taCmi'] = $em->getRepository(TaCmiDataStore::class)->getHistory($this->tacmi->getIp(), $from, $to);
             }
             if (array_key_exists('ecar', $this->getParameter('connectors'))) {
                 foreach ($this->getParameter('connectors')['ecar'] as $ecar) {
@@ -403,6 +413,7 @@ class DefaultController extends AbstractController
             'wem' => true,
             'conexio' => true,
             'logocontrol' => true,
+            'tacmi' => true,
             'netatmo' => true,
         ]);
 
@@ -465,6 +476,11 @@ class DefaultController extends AbstractController
             $soltemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['collectorSensor']] . "°C";
             $hightemp = $currentStat['logoControl'][$this->getParameter('connectors')['logocontrol']['heatStorageSensor']] . "°C";
             $lowtemp = "";
+        } elseif (isset($currentStat['taCmi']) && is_array($currentStat['taCmi'])) {
+            $solpower = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['powerSensor']] . " %";
+            $soltemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['collectorSensor']] . "°C";
+            $hightemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['heatStorageSensor']] . "°C";
+            $lowtemp = $currentStat['taCmi'][$this->getParameter('connectors')['tacmi']['lowStorageSensor']] . "°C";;
         } else {
             $solpower = "";
             $soltemp = "";
@@ -529,11 +545,12 @@ class DefaultController extends AbstractController
                 }
             }
             $storTemp = $currentStat['pcoWeb']['storTemp']."°C";
-        } else {;
+        } else {
             $waterTemp = '';
             $ppStatus = '';
             $storTemp = '';
         }
+
         // write current values into the svg
         $labels = [
             "pvpower",
@@ -573,8 +590,8 @@ class DefaultController extends AbstractController
             $insidehumidity,
             $basementtemp,
             $basementhumidity,
-            $hightemp,
-            $storTemp,
+            max($storTemp, $hightemp),
+            min($storTemp, $hightemp),
             $lowtemp,
             $sourceintemp,
             $sourceouttemp,
@@ -628,6 +645,9 @@ class DefaultController extends AbstractController
         }
         if (($fullSet === true || isset($fullSet['logocontrol'])) && array_key_exists('logocontrol', $this->getParameter('connectors'))) {
             $currentStat['logoControl'] = $this->logocontrol->getAllLatest();
+        }
+        if (($fullSet === true || isset($fullSet['tacmi'])) && array_key_exists('tacmi', $this->getParameter('connectors'))) {
+            $currentStat['taCmi'] = $this->tacmi->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['netatmo'])) && array_key_exists('netatmo', $this->getParameter('connectors'))) {
             $currentStat['netatmo'] = $this->netatmo->getAllLatest();

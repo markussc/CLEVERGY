@@ -5,6 +5,7 @@ namespace App\Utils;
 use App\Entity\Settings;
 use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
+use App\Entity\TaCmiDataStore;
 use App\Entity\PcoWebDataStore;
 use App\Entity\WemDataStore;
 use App\Entity\SmartFoxDataStore;
@@ -19,6 +20,7 @@ use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\WemConnector;
 use App\Utils\Connectors\LogoControlConnector;
+use App\Utils\Connectors\TaCmiConnector;
 use App\Utils\Connectors\ThreemaConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\ConexioConnector;
@@ -45,6 +47,7 @@ class LogicProcessor
     protected $wem;
     protected $conexio;
     protected $logo;
+    protected $tacmi;
     protected $netatmo;
     protected $gardena;
     protected $threema;
@@ -58,7 +61,7 @@ class LogicProcessor
     private $shellyLatest;
     private $mystromLatest;
 
-    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;
@@ -70,6 +73,7 @@ class LogicProcessor
         $this->wem = $wem;
         $this->conexio = $conexio;
         $this->logo = $logo;
+        $this->tacmi = $tacmi;
         $this->netatmo = $netatmo;
         $this->gardena = $gardena;
         $this->ecar = $ecar;
@@ -103,6 +107,9 @@ class LogicProcessor
 
         // logocontrol
         $this->initLogo();
+
+        // taCmi
+        $this->initTaCmi();
 
         // pcoweb
         $this->initPcoweb();
@@ -1085,6 +1092,22 @@ class LogicProcessor
                 $logocontrolEntity->setConnectorId($this->logo->getIp());
                 $logocontrolEntity->setData($logocontrol);
                 $this->em->persist($logocontrolEntity);
+                $this->em->flush();
+            }
+        }
+    }
+
+    public function initTaCmi()
+    {
+        if ($this->tacmi->getIp()) {
+            $taCmi = $this->tacmi->getAll();
+            if ($taCmi) {
+                // we only want to store valid and complete data
+                $taCmiEntity = new TaCmiDataStore();
+                $taCmiEntity->setTimestamp(new \DateTime('now'));
+                $taCmiEntity->setConnectorId($this->tacmi->getIp());
+                $taCmiEntity->setData($taCmi);
+                $this->em->persist($taCmiEntity);
                 $this->em->flush();
             }
         }
