@@ -694,7 +694,6 @@ class LogicProcessor
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
                     // if we are currently in summer mode (probably because before it was too warm inside), we switch back to MODE_2ND so 2nd heating circle can restart if required
                     $activate2ndCircle = true;
-                    $this->pcoweb->executeCommand('cpAutoMode', 0);
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->pcoweb->executeCommand('hc2', 19+$hc2Offset);
                     $log[] = "set hc2=19 due to current inside temp";
@@ -702,15 +701,17 @@ class LogicProcessor
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
                     $log[] = "set hc2=22 due to current inside temp";
+                    $this->pcoweb->executeCommand('cpAutoMode', 0);
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
                     $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
                     $log[] = "set hc2=28 due to current inside temp";
+                    $this->pcoweb->executeCommand('cpAutoMode', 0);
                     $activate2ndCircle = true;
                 }
                 if (!$ppModeChanged && !$emergency && !$warmWater && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {
-                    // do no switch to MODE_2ND if we are in emergency mode or pp is currently running (except water temp is warmer than min + 5°C)
+                    // do not switch to MODE_2ND if we are in emergency mode or pp is currently running (except water temp is warmer than min + 5°C)
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
                     $log[] = "set MODE_2ND instead of MODE_SUMMER due to inside temp dropping towards minInsideTemp";
                     $ppModeChanged = true;
