@@ -592,8 +592,8 @@ class LogicProcessor
                     } else {
                         $this->pcoweb->executeCommand('waterTemp', max($targetWaterTemp-7, $minWaterTemp + 5));
                     }
-                    $this->pcoweb->executeCommand('hwHysteresis', 5);
-                    $log[] = "set hwHysteresis to 5 and reduce waterTemp due to emergency action: we only want minimal water heating";
+                    $this->pcoweb->executeCommand('hwHysteresis', 4);
+                    $log[] = "set hwHysteresis to 4 and reduce waterTemp due to emergency action: we only want minimal water heating";
                     if ($ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                         $log[] = "set MODE_SUMMER due to emergency action (warm water only)";
