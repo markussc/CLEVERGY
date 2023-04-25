@@ -609,6 +609,7 @@ class LogicProcessor
                 } elseif ($insideTemp < $minInsideTemp) {
                     $insideEmergency = true;
                     $this->pcoweb->executeCommand('hc2', 30);
+                    $this->pcoweb->executeCommand('cpAutoMode', 0);
                     $log[] = "set hc2=30 as emergency action";
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
