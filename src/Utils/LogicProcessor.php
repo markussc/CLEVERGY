@@ -508,6 +508,10 @@ class LogicProcessor
         if ($pcoweb['ppStatus'] == "label.device.status.on") {
             $ppStatus = 1;
         }
+        $cpStatus = 0;
+        if ($pcoweb['cpStatus'] == "label.device.status.on") {
+            $cpStatus = 1;
+        }
 
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
@@ -602,7 +606,7 @@ class LogicProcessor
                     $insideEmergency = true;
                     $this->pcoweb->executeCommand('hc2', 30);
                     $log[] = "set hc2=30 as emergency action";
-                    if (!$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && $pcoweb['effDistrTemp'] < 25) {
+                    if (!$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                         $log[] = "set MODE_HOLIDAY due to emergency action";
                     }
