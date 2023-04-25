@@ -182,6 +182,8 @@ class ConditionChecker
             // no differentiation of rates
             $lowRate = true;
         }
+
+        return $lowRate;
     }
 
     private function processConditions($conditionSets)
