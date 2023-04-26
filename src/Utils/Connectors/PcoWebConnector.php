@@ -170,10 +170,18 @@ class PcoWebConnector
      */
     private function setCpAutoMode($value)
     {
-        // set mode
+        // set mode binary
         $data['?script:var(0,1,131,0,1)'] = $value;
         $url = $this->basePath . '/http/index/j_settings_pumpcontrol.html';
+        $this->postRequest($url, $data);
 
+        // set mode temp based
+        $tempval = -15; // always active
+        if (!$value) {
+            // we want optimization, i.e. not always active
+            $tempval = 35;
+        }
+        $data['?script:var(0,3,165,-15,35)'] = $tempval;
         $this->postRequest($url, $data);
     }
 
