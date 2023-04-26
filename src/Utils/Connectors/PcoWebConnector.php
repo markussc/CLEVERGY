@@ -165,8 +165,8 @@ class PcoWebConnector
 
     /*
      * Optimierung Heizungsumwälzpumpe
-     * 0: Ja
-     * 1: Nein
+     * 0: Ja   --> means, that the pump is deactivated as much as possible
+     * 1: Nein --> means, that the pump runs always
      */
     private function setCpAutoMode($value)
     {
@@ -176,10 +176,10 @@ class PcoWebConnector
         $this->postRequest($url, $data);
 
         // set mode temp based
-        $tempval = -15; // always active
+        $tempval = 35; // always active
         if (!$value) {
             // we want optimization, i.e. not always active
-            $tempval = 35;
+            $tempval = -15;
         }
         $data['?script:var(0,3,165,-15,35)'] = $tempval;
         $this->postRequest($url, $data);
