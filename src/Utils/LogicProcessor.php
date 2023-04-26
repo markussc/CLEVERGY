@@ -547,6 +547,7 @@ class LogicProcessor
                 // SmartFox has force heating flag set
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
+                $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
                 $this->pcoweb->executeCommand('hwHysteresis', 5);
                 // we make sure the heating curve (circle 1) is maximized
                 $this->pcoweb->executeCommand('hc1', 40);
@@ -555,6 +556,10 @@ class LogicProcessor
                 if (!$ppModeChanged && $ppMode !== PcoWebConnector::MODE_AUTO) {
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_AUTO);
                     $log[] = "set MODE_AUTO due to PvHighPower";
+                    $ppModeChanged = true;
+                }
+                if ($ppStatus) {
+                    // make sure below code does not change ppMode if it is already running!
                     $ppModeChanged = true;
                 }
             }
@@ -620,7 +625,7 @@ class LogicProcessor
             }
 
             // default cases for energy low rate
-            if (!$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
+            if (!$smartFoxHighPower && !$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
                 if ($avgClouds < 30) {
                     // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
                     $this->pcoweb->executeCommand('hc1', 23);
@@ -720,7 +725,7 @@ class LogicProcessor
             }
 
             // check if minimum requirements are fulfilled during high energy rate
-            if (!$energyLowRate && !$activateHeating && (($insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28) || $heatStorageMidTemp > 35) && $waterTemp > $minWaterTemp + 2) {
+            if (!$smartFoxHighPower && !$energyLowRate && !$activateHeating && (($insideTemp > ($minInsideTemp + 0.5) && $heatStorageMidTemp > 28) || $heatStorageMidTemp > 35) && $waterTemp > $minWaterTemp + 2) {
                 // the minimum requirements are fulfilled, no heating is required during high energy rate
                 $deactivateHeating = true;
                 $this->pcoweb->executeCommand('hwHysteresis', 12);
@@ -742,7 +747,7 @@ class LogicProcessor
             }
 
             // make sure heating is deactivated if not required, during low energy rate
-            if (!$activateHeating && $energyLowRate && !$ppStatus) {
+            if (!$smartFoxHighPower && !$activateHeating && $energyLowRate && !$ppStatus) {
                 if ($insideTemp > ($minInsideTemp + 1.5)) {
                     if (!$ppModeChanged && $ppMode !== PcoWebConnector::MODE_SUMMER) {
                         $this->pcoweb->executeCommand('waterTemp', $minWaterTemp+2);// this will be overwritten in the next loop! the goal is, that during switch to mode_summer, we do not provocate water heating
