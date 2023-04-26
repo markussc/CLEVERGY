@@ -547,7 +547,7 @@ class LogicProcessor
                 // SmartFox has force heating flag set
                 $activateHeating = true;
                 // we make sure the hwHysteresis is set to a lower value, so hot water heating is forced
-                $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp+5);
                 $this->pcoweb->executeCommand('hwHysteresis', 5);
                 // we make sure the heating curve (circle 1) is maximized
                 $this->pcoweb->executeCommand('hc1', 40);
