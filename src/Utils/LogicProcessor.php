@@ -609,7 +609,7 @@ class LogicProcessor
                 } elseif ($insideTemp < $minInsideTemp) {
                     $insideEmergency = true;
                     $this->pcoweb->executeCommand('hc2', 30);
-                    $this->pcoweb->executeCommand('cpAutoMode', 0);
+                    $this->pcoweb->executeCommand('cpAutoMode', 1);
                     $log[] = "set hc2=30 as emergency action";
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
@@ -681,7 +681,7 @@ class LogicProcessor
             if ($insideTemp > $maxInsideTemp) {
                 // it's warm enough, disable 2nd heating circle
                 $this->pcoweb->executeCommand('hc2', 0);
-                $this->pcoweb->executeCommand('cpAutoMode', 1);
+                $this->pcoweb->executeCommand('cpAutoMode', 0);
                 $log[] = "warm enough inside and waterTemp above minimum, disable hc2 (set hc2=0)";
             } else {
                 $activate2ndCircle = false;
@@ -702,13 +702,13 @@ class LogicProcessor
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
                     $log[] = "set hc2=22 due to current inside temp";
-                    $this->pcoweb->executeCommand('cpAutoMode', 0);
+                    $this->pcoweb->executeCommand('cpAutoMode', 1);
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
                     $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
                     $log[] = "set hc2=28 due to current inside temp";
-                    $this->pcoweb->executeCommand('cpAutoMode', 0);
+                    $this->pcoweb->executeCommand('cpAutoMode', 1);
                     $activate2ndCircle = true;
                 }
                 if (!$ppModeChanged && !$emergency && !$warmWater && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {
