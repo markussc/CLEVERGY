@@ -587,6 +587,8 @@ class LogicProcessor
                         $log[] = "set MODE_HOLIDAY due to high PV without flag set";
                         $ppModeChanged = true;
                     }
+                    // set high power flag manually for the rest of the logic decisions
+                    $smartFoxHighPower = true;
                 }
             }
 
