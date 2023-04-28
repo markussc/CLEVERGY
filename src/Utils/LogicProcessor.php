@@ -488,6 +488,7 @@ class LogicProcessor
                 ($nowDateTime->format('H') >= 18 && $nowDateTime->format('H') <= 21)) &&
                 $heatStorageMidTemp < $minWaterTemp) {
                 $minWaterTemp = min($minWaterTemp + (($minWaterTemp - $heatStorageMidTemp) / 2), $targetWaterTemp - 5);
+                $minWaterTemp = max($minWaterTemp, 40); // make sure that during these hours the warm water does not drop below 40°C
             }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
