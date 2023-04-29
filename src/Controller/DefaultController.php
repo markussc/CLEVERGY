@@ -240,6 +240,9 @@ class DefaultController extends AbstractController
                 if ($command[1] == 'mode') {
                     if ($command[2] == 'pcoweb') {
                         $connectorId = $this->pcoweb->getIp();
+                        if ($connectorId && intval($command['3']) !== Settings::MODE_WARMWATER) {
+                            $this->pcoweb->normalizeSettings();
+                        }
                     } elseif ($command[2] == 'wem') {
                         $connectorId = $this->wem->getUsername();
                     } else {

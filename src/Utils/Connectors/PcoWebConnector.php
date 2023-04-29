@@ -135,6 +135,15 @@ class PcoWebConnector
         }
     }
 
+    public function normalizeSettings()
+    {
+        $this->setHotWaterHysteresis(10);
+        $this->setWaterTemp(52);
+        $this->setCpAutoMode(1);
+        $this->setHeatCircle1(20);
+        $this->setHeatCircle2(20);
+    }
+
     private function setMode($mode)
     {
         // set mode
