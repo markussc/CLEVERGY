@@ -24,6 +24,7 @@ parameters:
         pcoweb:
             ip: 192.168.178.20
             power: 2900 # relevant electrical power requirement in watts
+            min_water_temp: 40 # minimum water temp, which will be respected whenever a min water temp is relevant
             mapping: # allows for remapping of default variables. Refer to PcoWebConnector for details. Key is the variable as stored in our database, value is 0-based key in the returned XML from PCOWeb.
                 analog:
                     storTemp: 1
@@ -243,4 +244,4 @@ parameters:
         days:      # days where low rate is active around the clock (according to ISO-8601 [date('N')]: 1: monday, 7: sunday)
             - 6,12 # first integer after the comma specifies a special start hour of the low rate for this week day (example: start of low rate at 12AM on saturdays)
             - 7
-    min_inside_temp: 20 # minimum inside temperature to be adjusted for
+    min_inside_temp: 20 # minimum inside temperature to be adjusted for 

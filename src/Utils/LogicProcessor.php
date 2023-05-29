@@ -490,6 +490,9 @@ class LogicProcessor
                 $minWaterTemp = min($minWaterTemp + (($minWaterTemp - $heatStorageMidTemp) / 2), $targetWaterTemp - 5);
                 $minWaterTemp = max($minWaterTemp, 40); // make sure that during these hours the warm water does not drop below 40°C
             }
+            // if a min water temp is configured, make sure we never fall below it
+            $minWaterTemp = max($minWaterTemp, $this->pcoweb->getConfiguredMinWaterTemp());
+
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = min($this->minInsideTemp + 2, $this->minInsideTemp+1+$tempOffset);

@@ -108,6 +108,15 @@ class PcoWebConnector
         }
     }
 
+    public function getConfiguredMinWaterTemp()
+    {
+        if (array_key_exists('min_water_temp', $this->connectors['pcoweb'])) {
+            return floatval($this->connectors['pcoweb']['min_water_temp']);
+        } else {
+            return 30;
+        }
+    }
+
     public function executeCommand($type, $command)
     {
         switch ($type) {
