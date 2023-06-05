@@ -417,7 +417,7 @@ class ShellyConnector
                 return $this->createStatus(3, 100, 0, $r['bat']['value']);
             }
         } else {
-            return $this->createStatus(0);
+            return $this->createStatus(-1); // undefined (e.g. no connection to device)
         }
     }
 
@@ -429,12 +429,17 @@ class ShellyConnector
                 'val' => 1,
                 'power' => $power,
             ];
-        } elseif ($status == 0) {
-            return [
+        } elseif ($status == 0 || $status == -1) {
+            $stat = [
                 'label' => 'label.device.status.off',
                 'val' => 0,
                 'power' => $power,
             ];
+            if ($status == -1) {
+                // status undefined, add info to status variable
+                $stat['online'] = false;
+            }
+            return $stat;
         } elseif ($status == 2) {
             return [
                 'label' => 'label.device.status.open',
@@ -613,7 +618,8 @@ class ShellyConnector
 
     public function storeStatus($device, $status)
     {
-        if ($status !== null) {
+        if ($status !== null && !(is_array($status) && array_key_exists('online', $status) && $status['online'] == false)) {
+            // if we have no or no current status, we do not want to store it
             $connectorId = $this->getId($device);
             $shellyEntity = new ShellyDataStore();
             $shellyEntity->setTimestamp(new \DateTime('now'));
