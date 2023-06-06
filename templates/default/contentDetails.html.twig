@@ -141,7 +141,7 @@
                 {% endif %}
                 {% if currentStat['pcoWeb']|default(false) %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
             {% for maSensor in currentStat['mobileAlerts']|default([]) %}
-                {% if measurement is iterable %}
+                {% if maSensor is iterable %}
                     {% for measurement in maSensor|filter(measurement => measurement and measurement['label'] != 'timestamp') %}
                         {% if measurement['usage']|default('') == 'contact' %}
                             {% set contactAvailable = true %}
