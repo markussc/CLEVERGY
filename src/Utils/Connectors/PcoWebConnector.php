@@ -60,7 +60,7 @@ class PcoWebConnector
             'effDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][8]['VALUE'],
             'cpStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][50]['VALUE']),
             'ppStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][42]['VALUE']),
-            'ppStatusMsg' => $this->ppStatusMsgToString($responseArr['PCO']['ANALOG']['VARIABLE'][102]['VALUE']*10),
+            'ppStatusMsg' => $this->ppStatusMsgToString(floatval($responseArr['PCO']['ANALOG']['VARIABLE'][102]['VALUE'])*10),
             'ppMode' => $this->ppModeToString($responseArr['PCO']['INTEGER']['VARIABLE'][13]['VALUE']),
             'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
             'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],

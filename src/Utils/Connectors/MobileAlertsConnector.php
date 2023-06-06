@@ -136,6 +136,7 @@ class MobileAlertsConnector
             '01', # MA10120
             '02', # Temperature
             '03', # Temperature + Humidity
+            '06', # 2x Temperature + Humidity (Poolsensor)
             '07', # Base station
             '08', # MA10650
             '09', # MA10320
@@ -281,6 +282,11 @@ class MobileAlertsConnector
                     case '03':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
                         $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['h']);
+                        break;
+                    case '06':
+                        $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
+                        $assocArr[$id][] = $this->createStorageData($id, 1, $device['measurement']['t2']);
+                        $assocArr[$id][] = $this->createStorageData($id, 2, $device['measurement']['h']);
                         break;
                     case '07':
                         $assocArr[$id][] = $this->createStorageData($id, 0, $device['measurement']['t1']);
