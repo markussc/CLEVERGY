@@ -141,13 +141,15 @@
                 {% endif %}
                 {% if currentStat['pcoWeb']|default(false) %}<li>{% trans %}label.pco.outside_temp{% endtrans %}: {{ currentStat['pcoWeb']['outsideTemp'] }} °C</li>{% endif %}
             {% for maSensor in currentStat['mobileAlerts']|default([]) %}
-                {% for measurement in maSensor|filter(measurement => measurement and measurement['label'] != 'timestamp') %}
-                    {% if measurement['usage']|default('') == 'contact' %}
-                        {% set contactAvailable = true %}
-                    {% else %}
-                    <li>{{ measurement['label']}}: {{ measurement['value']|replace({"43530": "???", "65295": "???"}) }} {{ measurement['unit'] }}</li>
-                    {% endif %}
-                {% endfor %}
+                {% if measurement is iterable %}
+                    {% for measurement in maSensor|filter(measurement => measurement and measurement['label'] != 'timestamp') %}
+                        {% if measurement['usage']|default('') == 'contact' %}
+                            {% set contactAvailable = true %}
+                        {% else %}
+                        <li>{{ measurement['label']}}: {{ measurement['value']|replace({"43530": "???", "65295": "???"}) }} {{ measurement['unit'] }}</li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             {% endfor %}
             {%  if currentStat['netatmo']|default(false) %}
                 <li>{{ currentStat['netatmo'].getStationData()['name'] }}: {{ currentStat['netatmo'].getStationData()['temp'] }}°C, {{ currentStat['netatmo'].getStationData()['humidity'] }}%</li>
