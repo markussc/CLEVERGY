@@ -5,7 +5,7 @@ Clever Home Automation
 * Charge your electrical car with your own electricity
 * Minimize cost for heating and warm water production
 * Automate various devices such as lights, blinds, cooling according to your needs
-* Support for a growing variety of devices from world leading manufacturers such as SolarEdge, Siemens, SmartFox, Netatmo, Shelly, MyStrom, Weishaupt, Volkswagen, Gardena, Threema
+* Support for a growing variety of devices from world leading manufacturers such as SolarEdge, Siemens, SmartFox, Netatmo, MobileAlerts, Shelly, MyStrom, Weishaupt, Volkswagen, Gardena, Threema
 * Simple installation and robust operation thanks to state of the art Docker runtime environment
 * Easily extensible and customizable thanks to OpenSource licensing
 
