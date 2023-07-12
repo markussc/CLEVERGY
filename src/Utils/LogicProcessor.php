@@ -451,6 +451,10 @@ class LogicProcessor
             $diffToEndOfLowEnergyRate = 24;
         }
         $pcoweb = $this->pcoweb->getAll();
+        if (!is_array($pcoweb)) {
+            // if no values were retrieved, skip any further processing.
+            return;
+        }
         $outsideTemp = $pcoweb['outsideTemp'];
         $waterTemp = $pcoweb['waterTemp'];
         $heatStorageMidTemp = $pcoweb['storTemp'];
