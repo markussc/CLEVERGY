@@ -88,6 +88,10 @@ class PcoWebConnector
             }
         }
 
+        // catch invalid responses
+        if (!is_numeric($dataArr['waterTemp'])) {
+            $dataArr = false;
+        }
         return $dataArr;
         } catch (\Exception $e) {
           return false;
