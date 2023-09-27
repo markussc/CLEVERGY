@@ -103,7 +103,7 @@ class ConexioConnector
         for ($i=0; $i < $size/2; $i++) {
             $value = $this->convertAtoH($str,4);
             $str = substr($str, 4);
-            if($i != 27 && $value > 32767)
+            if($i != 20 && $i != 27 && $value > 32767)
             {
                 $value -= 65536;
             }
