@@ -381,6 +381,26 @@ class DefaultController extends AbstractController
                     'pv_alt_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYear, $thisYear),
                 ]);
             }
+            if ($this->smartfox->hasStorage()) {
+                $history['smartfox'] = array_merge($history['smartfox'], [
+                    'storage_in_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $today, $now),
+                    'storage_in_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $yesterday, $today),
+                    'storage_in_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisWeek, $now),
+                    'storage_in_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisMonth, $now),
+                    'storage_in_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYearMonth, $lastYearPart),
+                    'storage_in_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisYear, $now),
+                    'storage_in_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYear, $lastYearPart),
+                    'storage_in_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYear, $thisYear),
+                    'storage_out_today' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $today, $now),
+                    'storage_out_yesterday' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $yesterday, $today),
+                    'storage_out_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisWeek, $now),
+                    'storage_out_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisMonth, $now),
+                    'storage_out_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYearMonth, $lastYearPart),
+                    'storage_out_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisYear, $now),
+                    'storage_out_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYear, $lastYearPart),
+                    'storage_out_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYear, $thisYear),
+                ]);
+            }
         }
         if (array_key_exists('conexio', $this->getParameter('connectors'))) {
             $ip = $this->conexio->getIp();
@@ -694,6 +714,21 @@ class DefaultController extends AbstractController
         if ($variable === 'netPower' && $this->smartfox->getIp()) {
             $smartFox = $this->smartfox->getAll();
             $value = $smartFox['power_io'];
+        }
+
+        return new JsonResponse($value);
+    }
+
+    /**
+     * interface for spoofing Shelly Pro 3 EM
+     * @Route("/rpc/EM.GetStatus", name="EMStatus")
+     */
+    public function emStatusAction()
+    {
+        $value = null;
+        if ($this->smartfox->getIp()) {
+            $smartFox = $this->smartfox->getAll();
+            $value = ['total_act_power' => $smartFox['power_io']];
         }
 
         return new JsonResponse($value);

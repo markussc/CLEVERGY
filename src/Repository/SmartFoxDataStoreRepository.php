@@ -102,8 +102,10 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
             } else {
                 return 0;
             }
-        } else {
+        } elseif (array_key_exists($parameter, $endEnergy[0]->getData()) && array_key_exists($parameter, $startEnergy[0]->getData())) {
             return $endEnergy[0]->getData()[$parameter] - $startEnergy[0]->getData()[$parameter];
+        } else {
+            return 0;
         }
     }
 

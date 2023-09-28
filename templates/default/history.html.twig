@@ -19,6 +19,10 @@
                 <th>{% trans %}label.smartfox.self_usage{% endtrans %}</th>
                 <th>{% trans %}label.smartfox.self_suff_degree{% endtrans %}</th>
                 <th>{% trans %}label.smartfox.net{% endtrans %}</th>
+                {% if smartfoxConnector.hasStorage() %}
+                    <th>{% trans %}label.smartfox.storage_power{% endtrans %} {% trans %}label.storage.power_in{% endtrans %}</th>
+                    <th>{% trans %}label.smartfox.storage_power{% endtrans %} {% trans %}label.storage.power_out{% endtrans %}</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -39,6 +43,10 @@
                 <td>{% if history['smartfox']['pv_' ~ interval] and history['smartfox']['pv_' ~ interval] >= history['smartfox']['energy_out_' ~ interval] %}{{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval]) / history['smartfox']['pv_' ~ interval] * 100) |round }} % ( = {{ ((history['smartfox']['pv_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh){% else %}---{% endif %}</td>
                 <td>{% if history['smartfox']['pv_' ~ interval] and history['smartfox']['pv_' ~ interval] >= history['smartfox']['energy_out_' ~ interval] %}{{ (100/(history['smartfox']['pv_' ~ interval] + history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])*(history['smartfox']['pv_' ~ interval]-history['smartfox']['energy_out_' ~ interval]))|round }} %{% else %}---{% endif %}</td>
                 <td>{{ ((history['smartfox']['energy_in_' ~ interval] - history['smartfox']['energy_out_' ~ interval])/1000)|round(1) }} kWh</td>
+                {% if smartfoxConnector.hasStorage() %}
+                    <td>{{ (history['smartfox']['storage_in_' ~ interval]/1000)|round(1) }} kWh</td>
+                    <td>{{ (history['smartfox']['storage_out_' ~ interval]/1000)|round(1) }} kWh</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
