@@ -289,6 +289,6 @@ class SmartFoxConnector
         } catch (\Exception $e) {
             return ['power' => 0, 'soc' => 0];
         }*/
-        return ['power' => round($this->queryMyStromPower($ip)), 'soc' => 80];
+        return ['power' => round($this->queryMyStromPower($ip)), 'soc' => 100];
     }
 }
