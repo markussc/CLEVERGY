@@ -220,8 +220,10 @@ class SmartFoxConnector
                         $storageCounter++;
                         $storageData = $this->queryNelinor($storage['ip']);
                         if ($storageData['power'] >= 0) {
+                            // charging battery
                             $totalStoragePowerIn += $storageData['power'];
                         } else {
+                            // uncharging battery
                             $totalStoragePowerOut += $storageData['power'];
                         }
                         $totalStorageSoc += $storageData['soc'];
