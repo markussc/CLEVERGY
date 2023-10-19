@@ -252,7 +252,7 @@ class ConditionChecker
                 if (strpos($condition, '<') !== false){
                     // we have a smaller than condition
                     $condition = str_replace('<', '', $condition);
-                    if (is_array($sensorData) && array_key_exists('value', $sensorData) && floatval($sensorData['value']) < floatval($condition)) {
+                    if (floatval($sensorData) < floatval($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
@@ -261,7 +261,7 @@ class ConditionChecker
                 } elseif (strpos($condition, '>') !== false) {
                     // we have larger than condition
                     $condition = str_replace('>', '', $condition);
-                    if (is_array($sensorData) && array_key_exists('value', $sensorData) && floatval($sensorData['value']) > floatval($condition)) {
+                    if (floatval($sensorData) > floatval($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
