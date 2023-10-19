@@ -311,8 +311,14 @@
             {% for gardenaDevice in gardenaConnector.availableDevices() %}
                 {% if gardenaDevice.config['type']|default(false) == 'VALVE' %}
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower"></i>&nbsp;&nbsp;{{ gardenaDevice.config['name']}}</a>
-                {% elseif gardenaDevice.config['type']|default(false) == 'SENSOR' and gardenaDevice.config['soilHumidity']|default(false) != false %}
-                {{ gardenaDevice.config['name'] }}: <i class="fas fa-tint" style="color:blue;"></i> {{  gardenaDevice.config['soilHumidity'] }}%
+                {% elseif gardenaDevice.config['type']|default(false) == 'SENSOR'%}
+                    {{ gardenaDevice.config['name'] }}: 
+                    {% if gardenaDevice.config['soilHumidity']|default(false) != false%}
+                        <i class="fas fa-tint" style="color:blue;"></i> {{  gardenaDevice.config['soilHumidity'] }}%
+                    {% endif %}
+                    {% if gardenaDevice.config['soilTemperature']|default(false) != false%}
+                        <i class="fas fa-thermometer-half" style="color:red;"></i> {{  gardenaDevice.config['soilTemperature'] }}°C
+                    {% endif %}
                 {% endif %}
                 {% if not loop.last %}<br/>{% endif %}
             {% endfor %}
