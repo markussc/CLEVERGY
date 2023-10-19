@@ -56,6 +56,20 @@ class GardenaConnector
         return $this->em->getRepository(Settings::class)->findByType('gardena');
     }
 
+    public function getSensorValue($deviceName, $sensor)
+    {
+        $val = null;
+        $devices = $this->availableDevices();
+        foreach ($devices as $device) {
+            $config = $device->getConfig();
+            if (is_array($config) && array_key_exists('name', $config) && $config['name'] == $deviceName && array_key_exists($sensor, $config)) {
+                $val = $config[$sensor];
+            }
+        }
+
+        return $val;
+    }
+
     public function updateDevices($force = false)
     {
         $controlDevice = $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId('gardena');
@@ -85,8 +99,13 @@ class GardenaConnector
                     'name' => $device['name'],
                     'type' => $device['type']
                 ];
-                if ($device['type'] == 'SENSOR' && array_key_exists('soilHumidity', $device)) {
-                    $config['soilHumidity'] = $device['soilHumidity'];
+                if ($device['type'] == 'SENSOR') {
+                    if (array_key_exists('soilHumidity', $device)) {
+                        $config['soilHumidity'] = $device['soilHumidity'];
+                    }
+                    if (array_key_exists('soilTemperature', $device)) {
+                        $config['soilTemperature'] = $device['soilTemperature'];
+                    }
                 }
                 $settings->setConfig($config);
                 $this->em->persist($settings);
@@ -262,10 +281,11 @@ class GardenaConnector
                             $device['name'] = $included['attributes']['name']['value'];
                             $device['type'] = 'VALVE';
                             $devices[] = $device;
-                        } else if ($included['type'] == 'SENSOR' && array_key_exists('attributes', $included) && array_key_exists('soilHumidity', $included['attributes'])) {
+                        } else if ($included['type'] == 'SENSOR' && array_key_exists('attributes', $included) && array_key_exists('soilHumidity', $included['attributes']) && array_key_exists('soilTemperature', $included['attributes'])) {
                             $device['id'] = $included['id'];
                             $device['type'] = 'SENSOR';
                             $device['soilHumidity'] = $included['attributes']['soilHumidity']['value'];
+                            $device['soilTemperature'] = $included['attributes']['soilTemperature']['value'];
                             $devices[] = $device;
                         }
                     }

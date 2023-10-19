@@ -127,6 +127,7 @@ parameters:
             clientId: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx # use the gardena / husqvarna developer site to create your own account (https://developer.husqvarnagroup.cloud)
             username: my.mail@mailer.org
             password: mypassword
+            # note: sensors can be used to trigger auto actions. Use the following notation: 'gardena:MySensor:soilTemperature' : '<5' # valid choices are: soilTemperature, soilHumidity
         ecar:
             -
                 name: my fancy car

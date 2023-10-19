@@ -14,6 +14,7 @@ use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\EcarConnector;
+use App\Utils\Connectors\GardenaConnector;
 use App\Utils\PriorityManager;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -33,9 +34,10 @@ class ConditionChecker
     protected $shelly;
     protected $pcoWeb;
     protected $ecar;
+    protected $gardena;
     protected $energyLowRate;
 
-    public function __construct(EntityManagerInterface $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, $energyLowRate)
+    public function __construct(EntityManagerInterface $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, GardenaConnector $gardena, $energyLowRate)
     {
         $this->em = $em;
         $this->prio = $prio;
@@ -46,6 +48,7 @@ class ConditionChecker
         $this->shelly = $shelly;
         $this->pcoweb = $pcoweb;
         $this->ecar = $ecar;
+        $this->gardena = $gardena;
         $this->energyLowRate = $energyLowRate;
         $this->deviceClass = null;
         $this->ip = null;
@@ -233,6 +236,32 @@ class ConditionChecker
                     // we have larger than condition
                     $condition = str_replace('>', '', $condition);
                     if (is_array($sensorData) && array_key_exists('value', $sensorData) && floatval($sensorData['value']) > floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                }
+            }
+            if ($condArr[0] == 'gardena') {
+                $sensorData = $this->gardena->getSensorValue($condArr[1], $condArr[2]);
+                if ($sensorData === null) {
+                    break;
+                }
+                // check if > or < should be checked
+                if (strpos($condition, '<') !== false){
+                    // we have a smaller than condition
+                    $condition = str_replace('<', '', $condition);
+                    if (floatval($sensorData) < floatval($condition)) {
+                        $fulfilled = true;
+                    } else {
+                        $fulfilled = false;
+                        break;
+                    }
+                } elseif (strpos($condition, '>') !== false) {
+                    // we have larger than condition
+                    $condition = str_replace('>', '', $condition);
+                    if (floatval($sensorData) > floatval($condition)) {
                         $fulfilled = true;
                     } else {
                         $fulfilled = false;
