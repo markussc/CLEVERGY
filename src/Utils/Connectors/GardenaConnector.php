@@ -262,10 +262,11 @@ class GardenaConnector
                             $device['name'] = $included['attributes']['name']['value'];
                             $device['type'] = 'VALVE';
                             $devices[] = $device;
-                        } else if ($included['type'] == 'SENSOR' && array_key_exists('attributes', $included) && array_key_exists('soilHumidity', $included['attributes'])) {
+                        } else if ($included['type'] == 'SENSOR' && array_key_exists('attributes', $included) && array_key_exists('soilHumidity', $included['attributes']) && array_key_exists('soilTemperature', $included['attributes'])) {
                             $device['id'] = $included['id'];
                             $device['type'] = 'SENSOR';
                             $device['soilHumidity'] = $included['attributes']['soilHumidity']['value'];
+                            $device['soilTemperature'] = $included['attributes']['soilTemperature']['value'];
                             $devices[] = $device;
                         }
                     }
