@@ -58,6 +58,8 @@ services:
         public: false
         arguments:
             $connectors: "%connectors%"
+    App\Utils\Connectors\ModbusTcpConnector:
+        public: false
     App\Utils\Connectors\MyStromConnector:
         public: false
         arguments:
