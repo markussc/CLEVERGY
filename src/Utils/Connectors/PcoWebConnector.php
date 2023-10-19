@@ -87,8 +87,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),
                 'ppSourceOut' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEOUT),
             ];
-            dump($dataArr);
-            exit;
+
             // catch invalid responses
             if (!is_numeric($dataArr['waterTemp'])) {
                 $dataArr = false;
