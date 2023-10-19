@@ -21,6 +21,11 @@ parameters:
                     type: shelly
                     ip: 192.168.1.142
                     port: 0
+            storage:
+                -
+                    name: Nelinor 7kWh
+                    type: nelinor
+                    ip: 192.168.1.143
         pcoweb:
             ip: 192.168.178.20
             power: 2900 # relevant electrical power requirement in watts

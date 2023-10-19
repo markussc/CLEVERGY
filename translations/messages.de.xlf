@@ -457,6 +457,30 @@
         <source>label.smartfox.total</source>
         <target>total</target>
       </trans-unit>
+      <trans-unit id="Db_IOMl" resname="label.storage.power_in">
+        <source>label.storage.power_in</source>
+        <target>Ladung</target>
+      </trans-unit>
+      <trans-unit id="sCil74c" resname="label.storage.power_out">
+        <source>label.storage.power_out</source>
+        <target>Entladung</target>
+      </trans-unit>
+      <trans-unit id="Gi_gp0X" resname="label.smartfox.storage_power">
+        <source>label.smartfox.storage_power</source>
+        <target>Batteriespeicher</target>
+      </trans-unit>
+      <trans-unit id="rYitwU4" resname="label.smartfox.storage_in_day">
+        <source>label.smartfox.storage_in_day</source>
+        <target>Füllung Batteriespeicher heute</target>
+      </trans-unit>
+      <trans-unit id="xfN0g4F" resname="label.smartfox.storage_out_day">
+        <source>label.smartfox.storage_out_day</source>
+        <target>Bezug Batteriespeicher heute</target>
+      </trans-unit>
+      <trans-unit id="FqbRRMw" resname="label.smartfox.storage_soc">
+        <source>label.smartfox.storage_soc</source>
+        <target>Batteriefüllstand</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

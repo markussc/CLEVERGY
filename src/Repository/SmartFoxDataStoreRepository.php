@@ -37,6 +37,16 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         foreach ($results as $res) {
             if ($idx === 'PvPower') {
                 $newValue = array_sum($res->getData()[$idx]);
+            } elseif ($idx === 'power_io' && array_key_exists('StoragePower', $res->getData())) {
+                if ($res->getData()['StoragePower'] >= 0) {
+                    // positive StoragePower means: battery charging
+                    // we subtract the power currently consumed by the battery from the average NetPower as we prefer direct consumption
+                    $newValue = $res->getData()['power_io'] - abs($res->getData()['StoragePower']);
+                } else {
+                    // negative StoragePower means: uncharging battery
+                    // we add the power currently delivered from the battery to the average NetPower
+                    $newValue = $res->getData()['power_io'] + abs($res->getData()['StoragePower']);
+                }
             } else {
                 $newValue = $res->getData()[$idx];
             }
@@ -102,8 +112,10 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
             } else {
                 return 0;
             }
-        } else {
+        } elseif (array_key_exists($parameter, $endEnergy[0]->getData()) && array_key_exists($parameter, $startEnergy[0]->getData())) {
             return $endEnergy[0]->getData()[$parameter] - $startEnergy[0]->getData()[$parameter];
+        } else {
+            return 0;
         }
     }
 

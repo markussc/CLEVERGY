@@ -76,6 +76,7 @@
             <ul>
                 <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] + currentStat['smartFox']['PvPower'][1]|default(0) }} W</li> {# TODO: sum up all PV powers #}
                 <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(' W, ') }} W</li>
+                {% if currentStat['smartFox']['StoragePower'] is defined %}<li>{% trans %}label.smartfox.storage_power{% endtrans %} {% if currentStat['smartFox']['StoragePower'] >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ currentStat['smartFox']['StoragePower'] }} W</li>{% endif %}
                 <li>{% trans %}label.smartfox.net_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] }} W</li>
                 <li>{% trans %}label.smartfox.self_usage_today{% endtrans %}: {% if currentStat['smartFox']['energyToday'] and currentStat['smartFox']['energyToday'] >= currentStat['smartFox']['day_energy_out'] %}{{ ((currentStat['smartFox']['energyToday'] - currentStat['smartFox']['day_energy_out']) / currentStat['smartFox']['energyToday'] * 100) |round }} %{% else %}---{% endif %}</li>
                 <li>{% trans %}label.smartfox.self_suff_degree_today{% endtrans %}: {% if currentStat['smartFox']['energyToday'] and currentStat['smartFox']['energyToday'] >= currentStat['smartFox']['day_energy_out'] %}{{ (100/(currentStat['smartFox']['energyToday'] + currentStat['smartFox']['day_energy_in'] - currentStat['smartFox']['day_energy_out'])*(currentStat['smartFox']['energyToday']-currentStat['smartFox']['day_energy_out']))|round }} %{% else %}---{% endif %}</li>
@@ -83,7 +84,7 @@
             </div>
             <div class="chart" style="display:none;">
                 <span class="chartId">energyDay</span>
-                <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}{% if currentStat['smartFox']['altEnergyToday']|default(false) %}, {{ currentStat['smartFox']['altEnergyToday']/1000 }}{% endif %}{% if currentStat['conexio']|default(false) %}, {{ currentStat['conexio']['energyToday']|default(0) }}{% endif %}]</span>
+                <span class="chartData">[{{ currentStat['smartFox']['day_energy_in'] / 1000 }}, {{ currentStat['smartFox']['day_energy_out'] / 1000 }}, {{ currentStat['smartFox']['energyToday']/1000 }}{% if currentStat['smartFox']['altEnergyToday'] is defined %}, {{ currentStat['smartFox']['altEnergyToday']/1000 }}{% endif %}{% if currentStat['smartFox']['storageEnergyToday_in'] is defined %}, {{ currentStat['smartFox']['storageEnergyToday_in']/1000 }}, {{ currentStat['smartFox']['storageEnergyToday_out']/1000 }}{% endif %}{% if currentStat['conexio']|default(false) %}, {{ currentStat['conexio']['energyToday']|default(0) }}{% endif %}]</span>
             </div>
         </div>
     </div>
@@ -252,11 +253,11 @@
             datasets: [
             {
                 label: '{% trans %}label.smartfox.energy_in_day{% endtrans %}',
-                backgroundColor: ['darkblue']
+                backgroundColor: ['grey']
             },
             {
                 label: '{% trans %}label.smartfox.energy_out_day{% endtrans %}',
-                backgroundColor: ['chartreuse']
+                backgroundColor: ['darkblue']
             },
             {
                 label: '{% trans %}label.smartfox.energy_pv_day{% endtrans %}{% if smartfoxConnector.hasAltPv() %} ({% trans %}label.smartfox.total{% endtrans %}){% endif %}',
@@ -265,6 +266,14 @@
             {
                 label: '{% trans %}label.smartfox.energy_pv_alt_day{% endtrans %}',
                 backgroundColor: ['orange']
+            }{% endif %}{%if smartfoxConnector.hasStorage() %},
+            {
+                label: '{% trans %}label.smartfox.storage_in_day{% endtrans %}',
+                backgroundColor: ['green']
+            },
+            {
+                label: '{% trans %}label.smartfox.storage_out_day{% endtrans %}',
+                backgroundColor: ['chartreuse']
             }{% endif %}{% if currentStat['conexio']|default(false) %},
             {
                 label: '{% trans %}label.conexio.energy_day{% endtrans %}',
@@ -313,7 +322,8 @@
                         y: {{ sfData.getData()['power_io']|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
-                ]
+                ],
+                yAxisID: "y-axis-W"
             },
             {
                 label: '{% trans %}label.smartfox.pv_power{% endtrans %}{% if smartfoxConnector.hasAltPv() %} ({% trans %}label.smartfox.total{% endtrans %}){% endif %}',
@@ -326,7 +336,8 @@
                         y: {{ sfData.getData()['PvPower'][0]|default(0) + sfData.getData()['PvPower'][1]|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
-                ]
+                ],
+                yAxisID: "y-axis-W"
             }{% if smartfoxConnector.hasAltPv() %},
             {
                 label: '{% trans %}label.smartfox.pv_power_alternative{% endtrans %}',
@@ -339,7 +350,36 @@
                         y: {{ sfData.getData()['PvPower'][1]|default(0) }}
                     }{% if not loop.last %},{% endif %}
                 {% endfor %}
-                ]
+                ],
+                yAxisID: "y-axis-W"
+            }{% endif %}{% if smartfoxConnector.hasStorage() %},
+            {
+                label: '{% trans %}label.smartfox.storage_power{% endtrans %}',
+                borderColor: ['chartreuse'],
+                fill: false,
+                data: [
+                {% for sfData in history['smartFox']|default([]) %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ -1*sfData.getData()['StoragePower']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+                yAxisID: "y-axis-W"
+            },
+            {
+                label: '{% trans %}label.smartfox.storage_soc{% endtrans %}',
+                borderColor: ['green'],
+                fill: false,
+                data: [
+                {% for sfData in history['smartFox']|default([]) %}
+                    {
+                        x: new Date("{{ sfData.timestamp|date("c") }}"),
+                        y: {{ sfData.getData()['StorageSoc']|default(0) }}
+                    }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ],
+                yAxisID: "y-axis-%"
             }{% endif %}
             ]
         },
@@ -350,16 +390,36 @@
                 } 
             },
             scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero:true
+                yAxes: [
+                    {
+                        position: "left",
+                        id: "y-axis-%",
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: '%',
+                            fontColor: "#546372"
+                        }
                     },
-                    scaleLabel:{
-                        display: true,
-                        labelString: 'W',
-                        fontColor: "#546372"
+                    {
+                        position: "right",
+                        id: "y-axis-W",
+                        ticks: {
+                            beginAtZero:false
+                        },
+                        scaleLabel:{
+                            display: true,
+                            labelString: 'W',
+                            fontColor: "#546372"
+                        },
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
                     }
-                }],
+                ],
                 xAxes: [{
                     type: 'time',
                     time: {

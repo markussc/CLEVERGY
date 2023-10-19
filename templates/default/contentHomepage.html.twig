@@ -126,6 +126,9 @@
         {% if ecarConnector.carAvailable() %}
             <button class="menu-btn fas fa-car hollow button small" style="border-radius:5px; color:blue;" onclick="menuToggle($(this), 'ecar');"></button>
         {% endif %}
+        {% if smartfoxConnector.hasStorage() %}
+            <button class="menu-btn fas fa-battery-half hollow button small" style="border-radius:5px; color:orange;" onclick="menuToggle($(this), 'storage');"></button>
+        {% endif %}
         {% if connectors['command']|default([])|length > 0 %}
             <button class="menu-btn fas fa-laptop hollow button small" style="border-radius:5px; color:#2e4053;" onclick="menuToggle($(this), 'command');"></button>
         {% endif %}
@@ -329,6 +332,20 @@
             <br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ device['data']['soc']|default('???') }} %<br>
             {% trans %}label.ecar.range{% endtrans %}: {{ device['data']['range']|default('???') }} km
+            {% if not loop.last %}<hr>{% endif %}
+        {% endfor %}
+        </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if smartfoxConnector.hasStorage() %}
+    <div class="columns small-12 medium-8 large-6 small-centered">
+        <div id="storage_container" class="content" style="display:none;">
+        <div id="storage" class="refresh">
+        {% for storage in smartfoxConnector.getLiveStorage() %}
+            {{ storage['name'] }} <br>
+            {% trans %}label.ecar.soc{% endtrans %}: {{ storage['soc']|default('???') }} %<br>
+            {% if storage['power'] >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage['power']|default('???') }} W
             {% if not loop.last %}<hr>{% endif %}
         {% endfor %}
         </div>

@@ -54,11 +54,26 @@ class SmartFoxConnector
             }
 
             $responseArr = $this->addAlternativePv($responseArr);
+            $responseArr = $this->addStorage($responseArr);
         } catch (\Exception $e) {
             $responseArr = null;
         }
 
         return $responseArr;
+    }
+
+    public function getLiveStorage()
+    {
+        $storages = [];
+        if ($this->hasStorage()) {
+            foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                $values = $this->queryNelinor($storage['ip']);
+                $values['name'] = $storage['name'];
+                $storages[] = $values;
+            }
+        }
+
+        return $storages;
     }
 
     public function getIp()
@@ -75,6 +90,15 @@ class SmartFoxConnector
         }
     }
 
+    public function hasStorage()
+    {
+        if (array_key_exists('smartfox', $this->connectors) && array_key_exists('storage', $this->connectors['smartfox'])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private function getFromREG9TE()
     {
         $arr = json_decode($this->client->request('GET', $this->basePath . '/all')->getContent(), true);
@@ -83,6 +107,10 @@ class SmartFoxConnector
         $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
         if ($this->hasAltPv()) {
             $arr['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
+        }
+        if ($this->hasStorage()) {
+            $arr['storageEnergyToday_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyIn');
+            $arr['storageEnergyToday_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyOut');
         }
 
         return $arr;
@@ -131,6 +159,10 @@ class SmartFoxConnector
         if ($this->hasAltPv()) {
             $values['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
         }
+        if ($this->hasStorage()) {
+            $arr['storageEnergyToday_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyIn');
+            $arr['storageEnergyToday_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyOut');
+        }
 
         return $values;
     }
@@ -148,9 +180,9 @@ class SmartFoxConnector
                 }
                 foreach ($this->connectors['smartfox']['alternative'] as $alternative) {
                     if ($alternative['type'] == 'mystrom') {
-                        $pvPower = $this->queryMyStromPv($alternative['ip']);
+                        $pvPower = $this->queryMyStromPower($alternative['ip']);
                     } elseif ($alternative['type'] == 'shelly') {
-                        $pvPower = $this->queryShellyPv($alternative['ip'], $alternative['port']);
+                        $pvPower = $this->queryShellyPower($alternative['ip'], $alternative['port']);
                     }
                     // make sure values are positive (independent of device type)
                     $totalAlternativePower += abs($pvPower);
@@ -164,7 +196,51 @@ class SmartFoxConnector
         return $arr;
     }
 
-    private function queryMyStromPv($ip)
+    private function addStorage($arr)
+    {
+        if (array_key_exists('smartfox', $this->connectors)) {
+            if (array_key_exists('storage', $this->connectors['smartfox'])) {
+                $storageCounter = 0;
+                $totalStoragePowerIn = 0;
+                $totalStoragePowerOut = 0;
+                $totalStorageSoc = 0;
+                $latestEntry = $this->getAllLatest();
+                if (array_key_exists('StorageEnergyIn', $latestEntry)) {
+                    $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
+                } else {
+                    $latestStorageEnergyIn = 0;
+                }
+                if (array_key_exists('StorageEnergyOut', $latestEntry)) {
+                    $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
+                } else {
+                    $latestStorageEnergyOut = 0;
+                }
+                foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                    if ($storage['type'] == 'nelinor') {
+                        $storageCounter++;
+                        $storageData = $this->queryNelinor($storage['ip']);
+                        if ($storageData['power'] >= 0) {
+                            // charging battery
+                            $totalStoragePowerIn += $storageData['power'];
+                        } else {
+                            // uncharging battery
+                            $totalStoragePowerOut += $storageData['power'];
+                        }
+                        $totalStorageSoc += $storageData['soc'];
+                    }
+                }
+                // calculate the energy produced at the given power level during one minute
+                $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
+                $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
+                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
+                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+            }
+        }
+
+        return $arr;
+    }
+
+    private function queryMyStromPower($ip)
     {
         $url = 'http://' . $ip . '/report';
         try {
@@ -181,7 +257,7 @@ class SmartFoxConnector
         }
     }
 
-    private function queryShellyPv($ip, $port)
+    private function queryShellyPower($ip, $port)
     {
         $url = 'http://' . $ip . '/meter/' . $port;
         try {
@@ -196,5 +272,25 @@ class SmartFoxConnector
         } catch (\Exception $e) {
             return 0;
         }
+    }
+
+    private function queryNelinor($ip)
+    {
+        /*
+        $url = 'http://' . $ip . '/report'; // to be verified
+        try {
+            $response = $this->client->request('GET', $url);
+            $statusCode = $response->getStatusCode();
+            if ($statusCode != 200) {
+                return 0;
+            }
+            $binaryResp = $response->getContent();
+            $power = 0; // to be extracted from binary response
+            $soc = 0; // to be extracted from binary response
+            return ['power' => $power, 'soc' => $soc];
+        } catch (\Exception $e) {
+            return ['power' => 0, 'soc' => 0];
+        }*/
+        return ['power' => round($this->queryMyStromPower($ip)), 'soc' => 100];
     }
 }
