@@ -5,7 +5,6 @@ namespace App\Utils\Connectors;
 use App\Entity\Settings;
 use App\Entity\PcoWebDataStore;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use ModbusTcpClient\Utils\Types;
 
 /**
@@ -42,14 +41,14 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_CPSTATUS = 51;
     const MODBUSTCP_PPSOURCEIN = 6;
     const MODBUSTCP_PPSOURCEOUT = 7;
-    const MODBUSTCP_HC1 = 41108;
-    const MODBUSTCP_HC2 = 41208;
+    const MODBUSTCP_SELECT_HC2 = 5082;
+    const MODBUSTCP_HC1 = 5036;
+    const MODBUSTCP_HC2 = 5086;
     const MODBUSTCP_MODE = 12;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
-        $this->client = $client;
         $this->ip = null;
         $this->connectors = $connectors;
         if (array_key_exists('pcoweb', $this->connectors)) {
@@ -57,7 +56,6 @@ class PcoWebConnector extends ModbusTcpConnector
             $this->port = 502;
             parent::__construct();
         }
-        $this->basePath = 'http://' . $this->ip;
     }
 
     public function getAllLatest()
@@ -138,9 +136,6 @@ class PcoWebConnector extends ModbusTcpConnector
             case 'hc2':
                 $this->setHeatCircle2($command);
                 break;
-            case 'cpAutoMode':
-                $this->setCpAutoMode($command);
-                break;
             case 'waterTemp':
                 $this->setWaterTemp($command);
                 break;
@@ -151,93 +146,34 @@ class PcoWebConnector extends ModbusTcpConnector
     {
         $this->setHotWaterHysteresis(10);
         $this->setWaterTemp(52);
-        $this->setCpAutoMode(1);
         $this->setHeatCircle1(20);
         $this->setHeatCircle2(20);
     }
 
     private function setMode($mode)
     {
-        // set mode
-        $data['?script:var(0,3,14,0,4)'] = $mode;
-        $url = $this->basePath . '/http/index/j_modus.html';
-
-        $this->postRequest($url, $data);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_PPMODE, $mode);
     }
 
     private function setHotWaterHysteresis($value)
     {
-        // set mode
-        $data['?script:var(0,3,44,2,15)'] = $value;
-        $url = $this->basePath . '/http/index/j_settings_hotwater.html';
-
-        $this->postRequest($url, $data);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_HYST, $value);
     }
 
     private function setHeatCircle1($value)
     {
-        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
 
     private function setHeatCircle2($value)
     {
-        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
-    }
-
-    /*
-     * Optimierung Heizungsumwälzpumpe
-     * 0: Ja   --> means, that the pump is deactivated as much as possible
-     * 1: Nein --> means, that the pump runs always
-     */
-    private function setCpAutoMode($value)
-    {
-        // set mode binary
-        $data['?script:var(0,1,131,0,1)'] = $value;
-        $url = $this->basePath . '/http/index/j_settings_pumpcontrol.html';
-        $this->postRequest($url, $data);
-
-        // set mode temp based
-        $tempval = 35; // always active
-        if (!$value) {
-            // we want optimization, i.e. not always active
-            $tempval = -15;
-        }
-        $data['?script:var(0,3,165,-15,35)'] = $tempval;
-        $this->postRequest($url, $data);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_SELECT_HC2, 2);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
     }
 
     private function setWaterTemp($value)
     {
-        // set mode
-        $data['?script:var(0,3,46,30,85)'] = $value;
-        $url = $this->basePath . '/http/index/j_hotwater.html';
-
-        $this->postRequest($url, $data);
-    }
-
-    private function getRequest($url)
-    {
-        try {
-            $response = $this->client->request('GET', $url)->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
-    }
-
-    private function postRequest($url, $data)
-    {
-        // post request
-        try {
-            $response = $this->client->request(
-                    'POST',
-                    $url,
-                    [
-                        'body' => $data
-                    ]
-                )->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_SET, $value);
     }
 
     private function pcowebModeToString($mode)

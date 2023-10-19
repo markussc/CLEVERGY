@@ -26,6 +26,7 @@ class ModbusTcpConnector
         $this->modbusConnection = BinaryStreamConnection::getBuilder()
             ->setPort($this->port)
             ->setHost($this->ip)
+            ->setReadTimeoutSec(1)
             ->build();
     }
 
@@ -108,10 +109,9 @@ class ModbusTcpConnector
     protected function writeBytesFc3ModbusTcp($address, $value)
     {
         $packet = new WriteSingleRegisterRequest($address, $value);
-        $binaryData = $this->modbusConnection->connect()->sendAndReceive($packet);
-        $response = ResponseFactory::parseResponseOrThrow($binaryData);
+        $this->modbusConnection->connect()->sendAndReceive($packet);
 
-        return $response->getWord()->getInt16;
+        return;
     }
 
     protected function toHex($dec)
