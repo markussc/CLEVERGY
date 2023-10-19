@@ -67,9 +67,8 @@ class PcoWebConnector extends ModbusTcpConnector
 
     public function getAll()
     {
-        dump("GETTING PCOWEB");
         // get analog, digital and integer values
-        if (true) {        
+        try {
             $dataArr =  [
                 'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
@@ -93,8 +92,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 $dataArr = false;
             }
             return $dataArr;
-        } else { //catch (\Exception $e) {
-            dump("EXCEPTION!");
+        } catch (\Exception $e) {
           return false;
         }
     }
