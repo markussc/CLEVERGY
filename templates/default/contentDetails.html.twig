@@ -109,6 +109,7 @@
 {% if currentStat['pcoWeb'] is defined %}
     <div id="pcoWeb_container" class="content" style="display:none;">
         <div class="small-12 columns refresh" id="pcoWeb">
+            {% if currentStat['pcoWeb']['ppError']|default(false) %}<strong style="color:red;">{% trans %}label.pcoweb.pp_error{% endtrans %}: {{ currentStat['pcoWeb']['ppError']|default("unknown") }}</strong>{% endif %}
             <ul>
                 <li>{% trans %}label.pco.water_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterTemp']|default('---') }}°C</li>
                 <li>{% trans %}label.pco.storage_temp{% endtrans %}: {{ currentStat['pcoWeb']['storTemp']|default('---') }}°C</li>

@@ -45,6 +45,7 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_HC1 = 5036;
     const MODBUSTCP_HC2 = 5086;
     const MODBUSTCP_MODE = 12;
+    const MODBUSTCP_PP_ERROR = 105;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
@@ -76,6 +77,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'cpStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_CPSTATUS)),
                 'ppStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_PPSTATUS)),
                 'ppStatusMsg' => $this->ppStatusMsgToString($this->readUint16ModbusTcp(self::MODBUSTCP_PPSTATUS_MSG)),
+                'ppError' => $this->ppErrorToString($this->readUint16ModbusTcp(self::MODBUSTCP_PP_ERROR)),
                 'ppMode' => $this->readPpModeModbusTcp(),
                 'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
                 'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
@@ -256,6 +258,44 @@ class PcoWebConnector extends ModbusTcpConnector
                 return "Sperre";
             default:
                 return "andere";
+        }
+    }
+
+    public function ppErrorToString($ppError)
+    {
+        switch ($ppError) {
+            case 0:
+                return null;
+            case 15:
+                return "Sensorik";
+            case 16:
+                return "Niederdruck Sole";
+            case 19:
+                return "!Primärkreis";
+            case 20:
+                return "!Abtauen";
+            case 21:
+                return "!Niederdruck Sole";
+            case 22:
+                return "!Warmwasser";
+            case 23:
+                return "!Last Verdichter";
+            case 24:
+                return "!Codierung";
+            case 25:
+                return "!Niederdruck";
+            case 26:
+                return "!Frostschutz";
+            case 28:
+                return "!Hochdruck";
+            case 29:
+                return "!Temperatur Differenz";
+            case 30:
+                return "!Heissgasthermostat";
+            case 31:
+                return "!Durchfluss";
+            default:
+                "undefined";
         }
     }
 
