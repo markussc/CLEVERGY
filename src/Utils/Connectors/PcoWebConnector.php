@@ -84,6 +84,24 @@ class PcoWebConnector extends ModbusTcpConnector
                 'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),
                 'ppSourceOut' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEOUT),
             ];
+            // check for mapping
+            if (array_key_exists('mapping', $this->connectors['pcoweb']) && is_array($this->connectors['pcoweb']['mapping'])) {
+                if (array_key_exists('analog', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['analog'] as $key => $val) {
+                        $dataArr[$key] = $this->readTempModbusTcp(intval($val));
+                    }
+                }
+                if (array_key_exists('digital', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['digital'] as $key => $val) {
+                        $dataArr[$key] = $this->readBoolModbusTcp(intval($val));
+                    }
+                }
+                if (array_key_exists('integer', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['integer'] as $key => $val) {
+                        $dataArr[$key] = $this->readUint16ModbusTcp(intval($val));
+                    }
+                }
+            }
 
             // catch invalid responses
             if (!is_numeric($dataArr['waterTemp'])) {
