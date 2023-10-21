@@ -108,8 +108,12 @@ class ModbusTcpConnector
     */
     protected function writeBytesFc3ModbusTcp($address, $value)
     {
-        $packet = new WriteSingleRegisterRequest($address, $value);
-        $this->modbusConnection->connect()->sendAndReceive($packet);
+        try {
+            $packet = new WriteSingleRegisterRequest($address, $value);
+            $this->modbusConnection->connect()->sendAndReceive($packet);
+        } catch (\Exception $e) {
+            // do nothing
+        }
 
         return;
     }
