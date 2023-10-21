@@ -26,7 +26,7 @@ class ModbusTcpConnector
         $this->modbusConnection = BinaryStreamConnection::getBuilder()
             ->setPort($this->port)
             ->setHost($this->ip)
-            ->setReadTimeoutSec(1)
+            ->setReadTimeoutSec(5)
             ->build();
     }
 
