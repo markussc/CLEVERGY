@@ -44,6 +44,8 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_SELECT_HC2 = 5082;
     const MODBUSTCP_HC1 = 5036;
     const MODBUSTCP_HC2 = 5086;
+    const MODBUSTCP_CPOPT = 131;
+    const MODBUSTCP_CPOPTTEMP = 165;
     const MODBUSTCP_MODE = 12;
     const MODBUSTCP_PP_ERROR = 105;
 
@@ -156,6 +158,9 @@ class PcoWebConnector extends ModbusTcpConnector
             case 'hc2':
                 $this->setHeatCircle2($command);
                 break;
+            case 'cpAutoMode':
+                $this->setCpAutoMode($command);
+                break;
             case 'waterTemp':
                 $this->setWaterTemp($command);
                 break;
@@ -166,6 +171,7 @@ class PcoWebConnector extends ModbusTcpConnector
     {
         $this->setHotWaterHysteresis(10);
         $this->setWaterTemp(52);
+        $this->setCpAutoMode();
         $this->setHeatCircle1(20);
         $this->setHeatCircle2(20);
     }
@@ -189,6 +195,33 @@ class PcoWebConnector extends ModbusTcpConnector
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_SELECT_HC2, 2);
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
+    }
+
+    /*
+     * Optimierung Heizungsumwälzpumpe
+     * 0: Ja   --> means, that the pump is deactivated as much as possible
+     * 1: Nein --> means, that the pump runs always
+     */
+    private function setCpAutoMode($value = null)
+    {
+        switch ($value) {
+            case 0:
+                // optimized
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, false);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 3);
+                break;
+            case 1:
+                // not optimized (run always)
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, true);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 25);
+                break;
+            default:
+                // set default behaviour (optimized)
+                // optimized
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, false);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 18);
+                break;
+        }
     }
 
     private function setWaterTemp($value)

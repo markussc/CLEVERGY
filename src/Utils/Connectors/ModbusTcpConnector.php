@@ -7,6 +7,7 @@ use ModbusTcpClient\Packet\ModbusFunction\ReadCoilsRequest;
 use ModbusTcpClient\Packet\ModbusFunction\ReadInputRegistersRequest;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
 use ModbusTcpClient\Packet\ModbusFunction\WriteSingleRegisterRequest;
+use ModbusTcpClient\Packet\ModbusFunction\WriteSingleCoilRequest;
 use ModbusTcpClient\Packet\ResponseFactory;
 use ModbusTcpClient\Utils\Types;
 
@@ -59,9 +60,15 @@ class ModbusTcpConnector
      */
     protected function readBoolModbusTcp($address)
     {
-        $coilVal = $this->readBytesCoilsModbusTcp($address);
+        return $this->readBytesCoilsModbusTcp($address);
+    }
 
-        return $coilVal;
+    /*
+     * write bool via ModbusTCP
+     */
+    protected function writeBoolModbusTcp($address, $value)
+    {
+        return $this->writeCoilFc5ModbusTcp($address, $value);
     }
 
     /*
@@ -110,6 +117,21 @@ class ModbusTcpConnector
     {
         try {
             $packet = new WriteSingleRegisterRequest($address, $value);
+            $this->modbusConnection->connect()->sendAndReceive($packet);
+        } catch (\Exception $e) {
+            // do nothing
+        }
+
+        return;
+    }
+
+    /*
+    * write value into a single coil (FC5 function)
+    */
+    protected function writeCoilFc5ModbusTcp($address, $value)
+    {
+        try {
+            $packet = new WriteSingleCoilRequest($address, $value);
             $this->modbusConnection->connect()->sendAndReceive($packet);
         } catch (\Exception $e) {
             // do nothing
