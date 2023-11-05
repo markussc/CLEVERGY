@@ -45,7 +45,7 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_HC1 = 5036;
     const MODBUSTCP_HC2 = 5086;
     const MODBUSTCP_CPOPT = 131;
-    const MODBUSTCP_CPOPTTEMP = 165;
+    const MODBUSTCP_CPOPTTEMP = 5166;
     const MODBUSTCP_MODE = 12;
     const MODBUSTCP_PP_ERROR = 105;
 
