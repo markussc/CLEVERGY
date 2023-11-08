@@ -705,8 +705,8 @@ class LogicProcessor
             } else {
                 $activate2ndCircle = false;
                 $hc2Offset = 0;
-                if (!$ppStatus) {
-                    // while pp is not running, we set hc2 lower to save storage energy
+                if (!$ppStatus && $insideTemp > ($minInsideTemp +0.5)) {
+                    // while pp is not running and it's not chilly inside, we set hc2 lower to save storage energy
                     $hc2Offset = -5;
                 }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
