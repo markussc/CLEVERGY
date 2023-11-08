@@ -497,6 +497,10 @@ class LogicProcessor
             // if a min water temp is configured, make sure we never fall below it
             $minWaterTemp = max($minWaterTemp, $this->pcoweb->getConfiguredMinWaterTemp());
 
+            // reduce minInsideTemp during night time
+            if ($nowDateTime->format('H') >= 22 && $nowDateTime->format('H') < 5) {
+                $this->minInsideTemp = min($this->minInsideTemp, 19.5);
+            }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = min($this->minInsideTemp + 2, $this->minInsideTemp+1+$tempOffset);
@@ -701,8 +705,8 @@ class LogicProcessor
             } else {
                 $activate2ndCircle = false;
                 $hc2Offset = 0;
-                if (!$ppStatus) {
-                    // while pp is not running, we set hc2 lower to save storage energy
+                if (!$ppStatus && $insideTemp > ($minInsideTemp +0.5)) {
+                    // while pp is not running and it's not chilly inside, we set hc2 lower to save storage energy
                     $hc2Offset = -5;
                 }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
@@ -712,18 +716,19 @@ class LogicProcessor
                     $activate2ndCircle = true;
                 } elseif ($insideTemp > ($minInsideTemp + 0.8) && $insideTemp <= ($minInsideTemp + 1.5)) {
                     $this->pcoweb->executeCommand('hc2', 19+$hc2Offset);
+                    $this->pcoweb->executeCommand('cpAutoMode', 1);
                     $log[] = "set hc2=19 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
-                    $log[] = "set hc2=22 due to current inside temp";
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
+                    $log[] = "set hc2=22 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
                     $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
-                    $log[] = "set hc2=28 due to current inside temp";
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
+                    $log[] = "set hc2=28 due to current inside temp";
                     $activate2ndCircle = true;
                 }
                 if (!$ppModeChanged && !$emergency && !$warmWater && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {

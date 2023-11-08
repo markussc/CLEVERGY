@@ -481,6 +481,14 @@
         <source>label.smartfox.storage_soc</source>
         <target>Batteriefüllstand</target>
       </trans-unit>
+      <trans-unit id="9r9wYWH" resname="label.pcoweb.pp_error">
+        <source>label.pcoweb.pp_error</source>
+        <target>Störung Wärmepumpe</target>
+      </trans-unit>
+      <trans-unit id="GFDERT" resname="label.pco.ppmode.cool">
+        <source>label.pco.ppmode.cool</source>
+        <target>Kühlen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

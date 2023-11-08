@@ -313,7 +313,7 @@
                 <a href="javascript:void(0);" class="button hollow tiny" style="border-radius:5px;" {% if is_granted('ROLE_OWNER') %}onclick="sendCommand(['gardena', '{{ gardenaDevice.connectorId }}', 900]);"{% endif %}><i class="fas fa-shower"></i>&nbsp;&nbsp;{{ gardenaDevice.config['name']}}</a>
                 {% elseif gardenaDevice.config['type']|default(false) == 'SENSOR'%}
                     {{ gardenaDevice.config['name'] }}: 
-                    {% if gardenaDevice.config['soilHumidity']|default(false) != false%}
+                    {% if gardenaDevice.config['soilHumidity']|default(false) is not same as(false) %}
                         <i class="fas fa-tint" style="color:blue;"></i> {{  gardenaDevice.config['soilHumidity'] }}%
                     {% endif %}
                     {% if gardenaDevice.config['soilTemperature']|default(false) != false%}

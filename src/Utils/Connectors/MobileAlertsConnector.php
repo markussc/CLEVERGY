@@ -96,7 +96,7 @@ class MobileAlertsConnector
             }
         }
         if (count($tmp) > 0) {
-            $insideTemp = min($tmp);
+            $insideTemp = (2*min($tmp) + max($tmp))/3; // consider both min and max temperature to get the relevant minInsideTemp
         } else {
             $insideTemp = 20;
         }

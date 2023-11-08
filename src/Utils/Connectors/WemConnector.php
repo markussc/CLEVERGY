@@ -6,11 +6,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nesk\Puphpeteer\Puppeteer;
 use App\Entity\Settings;
 use App\Entity\WemDataStore;
-use ModbusTcpClient\Network\BinaryStreamConnection;
-use ModbusTcpClient\Packet\ModbusFunction\ReadInputRegistersRequest;
-use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
-use ModbusTcpClient\Packet\ModbusFunction\WriteSingleRegisterRequest;
-use ModbusTcpClient\Packet\ResponseFactory;
 use ModbusTcpClient\Utils\Types;
 
 /**
@@ -19,7 +14,7 @@ use ModbusTcpClient\Utils\Types;
  *
  * @author Markus Schafroth
  */
-class WemConnector
+class WemConnector extends ModbusTcpConnector
 {
     protected $em;
     private $basePath;
@@ -27,10 +22,7 @@ class WemConnector
     private $page;
     private $username;
     private $password;
-    private $ip;
-    private $port;
     private $status;
-    private $modbusConnection;
     const UNAUTHENTICATED = 0;
     const AUTHENTICATED = 1;
     const UNAVAILABLE = -1;
@@ -59,10 +51,7 @@ class WemConnector
             $this->password = $connectors['wem']['password'];
             $this->ip = $connectors['wem']['ip'];
             $this->port = $connectors['wem']['port'];
-            $this->modbusConnection = BinaryStreamConnection::getBuilder()
-                ->setPort($this->port)
-                ->setHost($this->ip)
-                ->build();
+            parent::__construct();
         }
         $this->status = self::UNAUTHENTICATED;
     }
@@ -249,20 +238,6 @@ class WemConnector
     }
 
     /*
-     * read warm water temperature via ModbusTCP
-     */
-    private function readTempModbusTcp($address)
-    {
-        $bytes = $this->readBytesFc4ModbusTcp($address);
-        $uint = Types::parseUInt16(Types::byteArrayToByte($bytes));
-        $int = $uint;
-        if ($uint > 65535/2) { // 65535 is the max value for a uint16
-            $int = -1*(65535-$uint);
-        }
-        return $int/10;
-    }
-
-    /*
      * read ppMode via ModbusTCP
      */
     private function readPpModeModbusTcp()
@@ -312,54 +287,6 @@ class WemConnector
         return $ppModes[$ppModeInt];
     }
 
-    /*
-     * read uint16 via ModbusTCP
-     */
-    private function readUint16ModbusTcp($address)
-    {
-        $bytes = $this->readBytesFc4ModbusTcp($address);
-
-        return Types::parseInt16(Types::byteArrayToByte($bytes));
-    }
-
-    /*
-     * read bytes of a single input register (FC4 function)
-     */
-    private function readBytesFc4ModbusTcp($address)
-    {
-        $packet = new ReadInputRegistersRequest($address, 1, 1);
-        $binaryData = $this->modbusConnection->connect()->sendAndReceive($packet);
-        $response = ResponseFactory::parseResponseOrThrow($binaryData);
-        $responseWithStartAddress = $response->withStartAddress($address);
-
-        return $responseWithStartAddress[$address]->getBytes();
-    }
-
-    /*
-     * read bytes of a single holding register (FC3 function)
-     */
-    private function readBytesFc3ModbusTcp($address)
-    {
-        $packet = new ReadHoldingRegistersRequest($address, 1, 1);
-        $binaryData = $this->modbusConnection->connect()->sendAndReceive($packet);
-        $response = ResponseFactory::parseResponseOrThrow($binaryData);
-        $responseWithStartAddress = $response->withStartAddress($address);
-
-        return $responseWithStartAddress[$address]->getBytes();
-    }
-
-    /*
-    * write value into a single holding register (FC6 function)
-    */
-    private function writeBytesFc3ModbusTcp($address, $value)
-    {
-        $packet = new WriteSingleRegisterRequest($address, $value);
-        $binaryData = $this->modbusConnection->connect()->sendAndReceive($packet);
-        $response = ResponseFactory::parseResponseOrThrow($binaryData);
-
-        return $response->getWord()->getInt16;
-    }
-
     private function storePpLevel($ppLevel)
     {
         $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->getUsername());
@@ -389,15 +316,5 @@ class WemConnector
         }
 
         return $ppLevel;
-    }
-
-    private function toHex($dec)
-    {
-        $hex = strtoupper(dechex(intval($dec)));
-        if ($dec < 16) {
-            $hex = '0' . $hex;
-        }
-
-        return $hex;
     }
 }

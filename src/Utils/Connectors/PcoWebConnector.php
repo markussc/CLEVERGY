@@ -5,7 +5,7 @@ namespace App\Utils\Connectors;
 use App\Entity\Settings;
 use App\Entity\PcoWebDataStore;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use ModbusTcpClient\Utils\Types;
 
 /**
  * Connector to retrieve data from the PCO Web device
@@ -13,29 +13,52 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *
  * @author Markus Schafroth
  */
-class PcoWebConnector
+class PcoWebConnector extends ModbusTcpConnector
 {
-    const MODE_SUMMER = 0;
-    const MODE_AUTO = 1;
-    const MODE_HOLIDAY = 2;
-    const MODE_PARTY = 3;
-    const MODE_2ND = 4;
     protected $em;
     protected $client;
     protected $basePath;
     protected $ip;
     protected $connectors;
+    const MODE_SUMMER = 0;
+    const MODE_AUTO = 1;
+    const MODE_HOLIDAY = 2;
+    const MODE_PARTY = 3;
+    const MODE_2ND = 4;
+    const MODE_COOL = 5;
+    const MODBUSTCP_OUTSIDETEMP = 1;
+    const MODBUSTCP_WARMWATER = 3;
+    const MODBUSTCP_WARMWATER_HYST = 5045;
+    const MODBUSTCP_WARMWATER_SET = 5047;
+    const MODBUSTCP_PRETEMP = 5;
+    const MODBUSTCP_BACKTEMP = 2;
+    const MODBUSTCP_STORTEMP = 10;
+    const MODBUSTCP_SETDISTRTEMP = 54;
+    const MODBUSTCP_EFFDISTRTEMP = 9;
+    const MODBUSTCP_PPMODE = 5015;
+    const MODBUSTCP_PPSTATUS = 41;
+    const MODBUSTCP_PPSTATUS_MSG = 103;
+    const MODBUSTCP_CPSTATUS = 51;
+    const MODBUSTCP_PPSOURCEIN = 6;
+    const MODBUSTCP_PPSOURCEOUT = 7;
+    const MODBUSTCP_SELECT_HC2 = 5082;
+    const MODBUSTCP_HC1 = 5036;
+    const MODBUSTCP_HC2 = 5086;
+    const MODBUSTCP_CPOPT = 131;
+    const MODBUSTCP_CPOPTTEMP = 5166;
+    const MODBUSTCP_MODE = 12;
+    const MODBUSTCP_PP_ERROR = 105;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
-        $this->client = $client;
         $this->ip = null;
         $this->connectors = $connectors;
         if (array_key_exists('pcoweb', $this->connectors)) {
             $this->ip = $this->connectors['pcoweb']['ip'];
+            $this->port = 502;
+            parent::__construct();
         }
-        $this->basePath = 'http://' . $this->ip;
     }
 
     public function getAllLatest()
@@ -47,52 +70,48 @@ class PcoWebConnector
     {
         // get analog, digital and integer values
         try {
-        $responseXml = $this->client->request('GET', $this->basePath . '/usr-cgi/xml.cgi?|A|1|127|D|1|127|I|1|127')->getContent();
-        $ob = simplexml_load_string($responseXml);
-        $json  = json_encode($ob);
-        $responseArr = json_decode($json, true);
-
-        $dataArr =  [
-            'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
-            'outsideTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][0]['VALUE'],
-            'waterTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][2]['VALUE'],
-            'setDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][53]['VALUE'],
-            'effDistrTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][8]['VALUE'],
-            'cpStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][50]['VALUE']),
-            'ppStatus' => $this->statusToString($responseArr['PCO']['DIGITAL']['VARIABLE'][42]['VALUE']),
-            'ppStatusMsg' => $this->ppStatusMsgToString(floatval($responseArr['PCO']['ANALOG']['VARIABLE'][102]['VALUE'])*10),
-            'ppMode' => $this->ppModeToString($responseArr['PCO']['INTEGER']['VARIABLE'][13]['VALUE']),
-            'preTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][4]['VALUE'],
-            'backTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][1]['VALUE'],
-            'hwHist' => $responseArr['PCO']['INTEGER']['VARIABLE'][43]['VALUE'],
-            'storTemp' => $responseArr['PCO']['ANALOG']['VARIABLE'][9]['VALUE'],
-            'ppSourceIn' => $responseArr['PCO']['ANALOG']['VARIABLE'][5]['VALUE'],
-            'ppSourceOut' => $responseArr['PCO']['ANALOG']['VARIABLE'][6]['VALUE'],
-        ];
-
-        if (array_key_exists('pcoweb', $this->connectors) && array_key_exists('mapping', $this->connectors['pcoweb'])) {
-            if (array_key_exists('analog', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping']['analog'] as $key => $value) {
-                    $dataArr[$key] = $responseArr['PCO']['ANALOG']['VARIABLE'][intval($value)]['VALUE'];
+            $dataArr =  [
+                'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
+                'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
+                'waterTemp' => $this->readTempModbusTcp(self::MODBUSTCP_WARMWATER),
+                'setDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_SETDISTRTEMP),
+                'effDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_EFFDISTRTEMP),
+                'cpStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_CPSTATUS)),
+                'ppStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_PPSTATUS)),
+                'ppStatusMsg' => $this->ppStatusMsgToString($this->readUint16ModbusTcp(self::MODBUSTCP_PPSTATUS_MSG)),
+                'ppError' => $this->ppErrorToString($this->readUint16ModbusTcp(self::MODBUSTCP_PP_ERROR)),
+                'ppMode' => $this->readPpModeModbusTcp(),
+                'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
+                'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
+                'hwHist' => $this->readUint16ModbusTcp(self::MODBUSTCP_WARMWATER_HYST),
+                'storTemp' => $this->readTempModbusTcp(self::MODBUSTCP_STORTEMP),
+                'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),
+                'ppSourceOut' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEOUT),
+            ];
+            // check for mapping
+            if (array_key_exists('mapping', $this->connectors['pcoweb']) && is_array($this->connectors['pcoweb']['mapping'])) {
+                if (array_key_exists('analog', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['analog'] as $key => $val) {
+                        $dataArr[$key] = $this->readTempModbusTcp(intval($val));
+                    }
+                }
+                if (array_key_exists('digital', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['digital'] as $key => $val) {
+                        $dataArr[$key] = $this->readBoolModbusTcp(intval($val));
+                    }
+                }
+                if (array_key_exists('integer', $this->connectors['pcoweb']['mapping'])) {
+                    foreach ($this->connectors['pcoweb']['mapping']['integer'] as $key => $val) {
+                        $dataArr[$key] = $this->readUint16ModbusTcp(intval($val));
+                    }
                 }
             }
-            if (array_key_exists('integer', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping']['integer'] as $key => $value) {
-                    $dataArr[$key] = $responseArr['PCO']['INTEGER']['VARIABLE'][intval($value)]['VALUE'];
-                }
-            }
-            if (array_key_exists('digital', $this->connectors['pcoweb']['mapping'])) {
-                foreach($this->connectors['pcoweb']['mapping']['digital'] as $key => $value) {
-                    $dataArr[$key] = $responseArr['PCO']['DIGITAL']['VARIABLE'][intval($value)]['VALUE'];
-                }
-            }
-        }
 
-        // catch invalid responses
-        if (!is_numeric($dataArr['waterTemp'])) {
-            $dataArr = false;
-        }
-        return $dataArr;
+            // catch invalid responses
+            if (!is_numeric($dataArr['waterTemp'])) {
+                $dataArr = false;
+            }
+            return $dataArr;
         } catch (\Exception $e) {
           return false;
         }
@@ -152,37 +171,30 @@ class PcoWebConnector
     {
         $this->setHotWaterHysteresis(10);
         $this->setWaterTemp(52);
-        $this->setCpAutoMode(1);
+        $this->setCpAutoMode();
         $this->setHeatCircle1(20);
         $this->setHeatCircle2(20);
     }
 
     private function setMode($mode)
     {
-        // set mode
-        $data['?script:var(0,3,14,0,4)'] = $mode;
-        $url = $this->basePath . '/http/index/j_modus.html';
-
-        $this->postRequest($url, $data);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_PPMODE, $mode);
     }
 
     private function setHotWaterHysteresis($value)
     {
-        // set mode
-        $data['?script:var(0,3,44,2,15)'] = $value;
-        $url = $this->basePath . '/http/index/j_settings_hotwater.html';
-
-        $this->postRequest($url, $data);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_HYST, $value);
     }
 
     private function setHeatCircle1($value)
     {
-        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|35|' . $value);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
 
     private function setHeatCircle2($value)
     {
-        $this->getRequest($this->basePath . '/usr-cgi/query.cgi?var|I|85|' . $value);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_SELECT_HC2, 2);
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
     }
 
     /*
@@ -190,72 +202,31 @@ class PcoWebConnector
      * 0: Ja   --> means, that the pump is deactivated as much as possible
      * 1: Nein --> means, that the pump runs always
      */
-    private function setCpAutoMode($value)
+    private function setCpAutoMode($value = null)
     {
-        // set mode binary
-        $data['?script:var(0,1,131,0,1)'] = $value;
-        $url = $this->basePath . '/http/index/j_settings_pumpcontrol.html';
-        $this->postRequest($url, $data);
-
-        // set mode temp based
-        $tempval = 35; // always active
-        if (!$value) {
-            // we want optimization, i.e. not always active
-            $tempval = -15;
+        switch ($value) {
+            case 0:
+                // optimized
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, false);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 3);
+                break;
+            case 1:
+                // not optimized (run always)
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, true);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 25);
+                break;
+            default:
+                // set default behaviour (optimized)
+                // optimized
+                $this->writeBoolModbusTcp(self::MODBUSTCP_CPOPT, false);
+                $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_CPOPTTEMP, 18);
+                break;
         }
-        $data['?script:var(0,3,165,-15,35)'] = $tempval;
-        $this->postRequest($url, $data);
     }
 
     private function setWaterTemp($value)
     {
-        // set mode
-        $data['?script:var(0,3,46,30,85)'] = $value;
-        $url = $this->basePath . '/http/index/j_hotwater.html';
-
-        $this->postRequest($url, $data);
-    }
-
-    private function getRequest($url)
-    {
-        try {
-            $response = $this->client->request('GET', $url)->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
-    }
-
-    private function postRequest($url, $data)
-    {
-        // post request
-        try {
-            $response = $this->client->request(
-                    'POST',
-                    $url,
-                    [
-                        'body' => $data
-                    ]
-                )->getContent();
-        } catch (\Exception $e) {
-        // do nothing
-        }
-    }
-
-    private function ppModeToString($mode)
-    {
-        switch ($mode) {
-            case self::MODE_SUMMER:
-                return 'label.pco.ppmode.summer';
-            case self::MODE_AUTO:
-                return 'label.pco.ppmode.auto';
-            case self::MODE_HOLIDAY:
-                return 'label.pco.ppmode.holiday';
-            case self::MODE_PARTY:
-                return 'label.pco.ppmode.party';
-            case self::MODE_2ND:
-                return 'label.pco.ppmode.2nd';
-        }
-        return 'undefined';
+        $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_SET, $value);
     }
 
     private function pcowebModeToString($mode)
@@ -295,6 +266,8 @@ class PcoWebConnector
                 return self::MODE_PARTY;
             case 'label.pco.ppmode.2nd':
                 return self::MODE_2ND;
+            case 'label.pco.ppmode.cool':
+                return self::MODE_COOL;
         }
         return -1;
     }
@@ -321,6 +294,44 @@ class PcoWebConnector
         }
     }
 
+    public function ppErrorToString($ppError)
+    {
+        switch ($ppError) {
+            case 0:
+                return null;
+            case 15:
+                return "Sensorik";
+            case 16:
+                return "Niederdruck Sole";
+            case 19:
+                return "!Primärkreis";
+            case 20:
+                return "!Abtauen";
+            case 21:
+                return "!Niederdruck Sole";
+            case 22:
+                return "!Warmwasser";
+            case 23:
+                return "!Last Verdichter";
+            case 24:
+                return "!Codierung";
+            case 25:
+                return "!Niederdruck";
+            case 26:
+                return "!Frostschutz";
+            case 28:
+                return "!Hochdruck";
+            case 29:
+                return "!Temperatur Differenz";
+            case 30:
+                return "!Heissgasthermostat";
+            case 31:
+                return "!Durchfluss";
+            default:
+                "undefined";
+        }
+    }
+
     public function switchOK()
     {
         // get current status
@@ -343,5 +354,24 @@ class PcoWebConnector
         }
 
         return false;
+    }
+
+    /*
+     * read ppMode via ModbusTCP
+     */
+    private function readPpModeModbusTcp()
+    {
+        $ppModes = [
+            0 => 'label.pco.ppmode.summer',
+            1 => 'label.pco.ppmode.auto',
+            2 => 'label.pco.ppmode.holiday',
+            3 => 'label.pco.ppmode.party',
+            4 => 'label.pco.ppmode.2nd',
+            5 => 'label.pco.ppmode.cool',
+        ];
+        $bytes = $this->readBytesFc3ModbusTcp(self::MODBUSTCP_PPMODE);
+        $ppModeInt = Types::parseUInt16(Types::byteArrayToByte($bytes));
+
+        return $ppModes[$ppModeInt];
     }
 }
