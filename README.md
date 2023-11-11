@@ -21,3 +21,37 @@ $ ./start.sh
 ```
 $ docker-compose ps
 ```
+
+### Clevergy Meter (use existing SmartFox to simulate Shelly Pro 3EM energy meter)
+* Install (e.g. using a Raspberry Pi) avahi (installed in many Linux distributions by default) and apache2
+```sh
+$ apt-get install avahi-daemon apache2
+$ a2enmod proxy_http
+```
+* Create config file for avahi as /etc/avahi/services/clevergy.service
+```
+<?xml version="1.0" standalone='no'?>
+<service-group>
+  <name>ShellyPro3EM</name>
+  <service>
+    <type>_http._tcp</type>
+    <port>80</port>
+  </service>
+</service-group>
+```
+* Create config file for apache2 as /etc/apache2/sites-available/018-clevergy.conf
+```
+<VirtualHost *:80>
+  ServerAdmin webmaster@netti.ch
+  ServerName clevergy-meter.local
+  ProxyPass / http://myinstance.myhost.com/
+  ProxyPassReverse / http://myinstance.myhost.com/
+</VirtualHost>
+``
+* activate configs, reload services or restart device
+```sh
+$ a2dissite 000-default.conf
+$ a2ensite 018-clevergy
+$ systemctl reload apache2
+$ systemctl reload avahi-daemon
+```
