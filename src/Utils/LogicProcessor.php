@@ -498,8 +498,14 @@ class LogicProcessor
             $minWaterTemp = max($minWaterTemp, $this->pcoweb->getConfiguredMinWaterTemp());
 
             // reduce minInsideTemp during night time
-            if ($nowDateTime->format('H') >= 22 && $nowDateTime->format('H') < 5) {
+            if ($nowDateTime->format('H') >= 21 && $nowDateTime->format('H') < 4) {
+                $this->minInsideTemp = min($this->minInsideTemp, 19);
+            }
+            if ($nowDateTime->format('H') >= 4 && $nowDateTime->format('H') < 5) {
                 $this->minInsideTemp = min($this->minInsideTemp, 19.5);
+            }
+            if ($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') < 6) {
+                $this->minInsideTemp = min($this->minInsideTemp, 20);
             }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
