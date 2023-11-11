@@ -47,7 +47,7 @@ $ a2enmod proxy_http
   ProxyPass / http://myinstance.myhost.com/
   ProxyPassReverse / http://myinstance.myhost.com/
 </VirtualHost>
-``
+```
 * activate configs, reload services or restart device
 ```sh
 $ a2dissite 000-default.conf
