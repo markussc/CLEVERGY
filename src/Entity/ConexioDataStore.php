@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ConexioDataStore extends DataStoreBase
 {
-    protected $archiveClass = ConexioDataArchive::class;
     protected $latestClass = ConexioDataLatest::class;
 
     /**

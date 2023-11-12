@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class OpenWeatherMapDataStore extends DataStoreBase
 {
-    protected $archiveClass = OpenWeatherMapDataArchive::class;
     protected $latestClass = OpenWeatherMapDataLatest::class;
 
     /**

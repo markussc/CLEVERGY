@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class PcoWebDataStore extends DataStoreBase
 {
-    protected $archiveClass = PcoWebDataArchive::class;
     protected $latestClass = PcoWebDataLatest::class;
 
     /**

@@ -39,12 +39,6 @@ abstract class DataStoreBase
      *
      * @var class
      */
-    protected $archiveClass;
-
-    /**
-     *
-     * @var class
-     */
     protected $latestClass;
 
     /**
@@ -116,42 +110,6 @@ abstract class DataStoreBase
     public function isEmpty()
     {
         return empty($this->getData());
-    }
-
-    /**
-    * @ORM\PreRemove
-    * Will be invoked when EntityManager::remove is called, 
-    * to persist a copy of the Entity in the archive table. 
-    */
-    public function onPreRemove(LifecycleEventArgs $eventArgs)
-    {
-        $archive = self::createArchive($this);
-        if ($archive) {
-            $eventArgs->getEntityManager()->persist($archive);
-        }
-    }
-
-    /**
-    * Returns an instance of XXXDataArchive with all class properties copied. 
-    * @param XXXDataStore $item - the Item to copy properties from 
-    * @return XXXDataArchive
-    */
-    protected static function createArchive($item)
-    {
-        $archive = null;
-        if (isset($item->archiveClass)) {
-            $archive = new $item->archiveClass;
-            foreach (get_object_vars($item) as $key => $value) {
-                $setter = 'set' . ucfirst($key);
-                if (is_callable([$archive, $setter])) {
-                    $archive->$setter($value);
-                }
-            }
-            // set data
-            $archive->setData($item->getData());
-        }
-
-      return $archive;
     }
 
     /**

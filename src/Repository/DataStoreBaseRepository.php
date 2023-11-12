@@ -60,19 +60,4 @@ class DataStoreBaseRepository extends EntityRepository
 
         return $qb->getQuery()->getResult();
     }
-
-    public function getArchiveable($maxResults = 100)
-    {
-        $start = new \DateTime('first day of January 2000');
-        $end = new \DateTime('first day of January last year');
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.timestamp >= :start')
-            ->andWhere('e.timestamp < :end')
-            ->orderBy('e.id', 'asc')
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
-            ->setMaxResults($maxResults);
-
-        return $qb->getQuery()->getResult();
-    }
 }

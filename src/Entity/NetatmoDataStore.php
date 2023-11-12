@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class NetatmoDataStore extends DataStoreBase
 {
-    protected $archiveClass = NetatmoDataArchive::class;
     protected $latestClass = NetatmoDataLatest::class;
 
     /**

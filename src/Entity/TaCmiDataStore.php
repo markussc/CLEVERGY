@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class TaCmiDataStore extends DataStoreBase
 {
-    protected $archiveClass = TaCmiDataArchive::class;
     protected $latestClass = TaCmiDataLatest::class;
 
     /**
