@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\DataLatestRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
 class WemDataLatest extends DataLatestBase
 {
