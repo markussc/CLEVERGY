@@ -73,7 +73,8 @@ RUN sed -i -e 's/^ServerTokens\s* .*/ServerTokens Prod/' \
 
 # add cron jobs
 RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/cron.d/oshans
-RUN echo "* * */2 * * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
+# delete will run once a year: on january first at 2am
+RUN echo "0 2 0 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 
 # configure apache2
 COPY ./oshans.conf /etc/apache2/sites-available/oshans.conf

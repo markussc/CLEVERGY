@@ -23,7 +23,7 @@ class DataDeleteCommand extends Command
     {
         $this
             ->setDescription('Delete data which is older than the year before')
-            ->setHelp('This command deletes all data from the storage which is older than the year before. Per call, a maximum of 50 entries are deleted per type.');
+            ->setHelp('This command deletes all data from the storage which is older than the year before.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
