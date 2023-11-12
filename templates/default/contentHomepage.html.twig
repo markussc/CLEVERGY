@@ -127,7 +127,8 @@
             <button class="menu-btn fas fa-car hollow button small" style="border-radius:5px; color:blue;" onclick="menuToggle($(this), 'ecar');"></button>
         {% endif %}
         {% if smartfoxConnector.hasStorage() %}
-            <button class="menu-btn fas fa-battery-half hollow button small" style="border-radius:5px; color:orange;" onclick="menuToggle($(this), 'storage');"></button>
+            {% set totalSoc = smartfoxConnector.getLiveStorageTotalSoc() %}
+            <button class="menu-btn fas fa-battery-{% if totalSoc > 87 %}full{% elseif totalSoc > 62 %}three-quarters{% elseif totalSoc > 37 %}half{% elseif totalSoc > 12 %}quarter{% else %}empty{% endif %} hollow button small" style="border-radius:5px; color:rgb({{ min([255, 510 - 510/100*totalSoc])|round }}, {{ min([255, 510/100*totalSoc])|round }}, 0);" onclick="menuToggle($(this), 'storage');"></button>
         {% endif %}
         {% if connectors['command']|default([])|length > 0 %}
             <button class="menu-btn fas fa-laptop hollow button small" style="border-radius:5px; color:#2e4053;" onclick="menuToggle($(this), 'command');"></button>

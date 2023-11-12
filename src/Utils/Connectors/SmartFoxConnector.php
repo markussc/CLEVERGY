@@ -76,6 +76,20 @@ class SmartFoxConnector
         return $storages;
     }
 
+    public function getLiveStorageTotalSoc()
+    {
+        $storages = $this->getLiveStorage();
+        $soc = 0;
+        foreach ($storages as $storage) {
+            $soc += $storage['soc'];
+        }
+        if (count($storages)) {
+            return $soc / count($storages);
+        } else {
+            return 0;
+        }
+    }
+
     public function getIp()
     {
         return $this->ip;
