@@ -9,11 +9,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Base class for custom field tables
  *
  * @ORM\Entity
- * @ORM\Table(name="data_archive")
+ * @ORM\Table(name="data_latest")
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discr_type", type="string")
  */
-abstract class DataArchiveBase
+abstract class DataLatestBase
 {
     /**
      * @var integer

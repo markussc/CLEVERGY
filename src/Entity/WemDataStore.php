@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class WemDataStore extends DataStoreBase
 {
-    protected $archiveClass = PcoWebDataArchive::class;
+    protected $latestClass = WemDataLatest::class;
 
     /**
      * @var array

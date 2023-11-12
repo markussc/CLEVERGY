@@ -5,12 +5,12 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
-class OpenWeatherMapDataArchive extends DataArchiveBase
+class EcarDataLatest extends DataLatestBase
 {
     /**
-     * @var bool
+     * @var array
      *
      * @ORM\Column(type="json")
      */
@@ -21,7 +21,7 @@ class OpenWeatherMapDataArchive extends DataArchiveBase
      *
      * @param array $data
      *
-     * @return OpenWeatherMapDataStorage $this
+     * @return EcarDataStorage $this
      */
     public function setData($data = array())
     {

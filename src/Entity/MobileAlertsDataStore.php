@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MobileAlertsDataStore extends DataStoreBase
 {
-    protected $archiveClass = MobileAlertsDataArchive::class;
+    protected $latestClass = MobileAlertsDataLatest::class;
 
     /**
      * @var bool

@@ -11,13 +11,21 @@ class DataStoreBaseRepository extends EntityRepository
 {
     public function getLatest($ip)
     {
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.connectorId = :ip')
-            ->orderBy('e.timestamp', 'desc')
-            ->setParameter('ip', $ip)
-            ->setMaxResults(1);
+        $class = get_called_class();
+        $entityClass = str_replace("DataStoreRepository", "DataLatest", str_replace("App\Repository", "App\Entity", $class));
+        $latest = null;
+        if (class_exists($entityClass)) {
+            $latest = $this->getEntityManager()->getRepository($entityClass)->getLatest($ip);
+        }
+        if ($latest === null) {
+            $qb = $this->createQueryBuilder('e')
+                ->where('e.connectorId = :ip')
+                ->orderBy('e.timestamp', 'desc')
+                ->setParameter('ip', $ip)
+                ->setMaxResults(1);
 
-        $latest = $qb->getQuery()->getOneOrNullResult();
+            $latest = $qb->getQuery()->getOneOrNullResult();
+        }
         if ($latest == null) {
             return 0;
         } else {
@@ -49,21 +57,6 @@ class DataStoreBaseRepository extends EntityRepository
             $qb->andWhere('e.timestamp <= :end')
                 ->setParameter('end', $end);
         }
-
-        return $qb->getQuery()->getResult();
-    }
-
-    public function getArchiveable($maxResults = 100)
-    {
-        $start = new \DateTime('first day of January 2000');
-        $end = new \DateTime('first day of January last year');
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.timestamp >= :start')
-            ->andWhere('e.timestamp < :end')
-            ->orderBy('e.id', 'asc')
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
-            ->setMaxResults($maxResults);
 
         return $qb->getQuery()->getResult();
     }

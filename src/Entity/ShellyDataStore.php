@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ShellyDataStore extends DataStoreBase
 {
+    protected $latestClass = ShellyDataLatest::class;
+
     /**
      * @var array
      *

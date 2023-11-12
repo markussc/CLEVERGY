@@ -5,9 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
-class ConexioDataArchive extends DataArchiveBase
+class TaCmiDataLatest extends DataLatestBase
 {
     /**
      * @var array
@@ -21,7 +21,7 @@ class ConexioDataArchive extends DataArchiveBase
      *
      * @param array $data
      *
-     * @return ConexioDataStorage $this
+     * @return LogoControlLatest $this
      */
     public function setData($data = array())
     {

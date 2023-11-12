@@ -5,9 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
-class LogoControlDataArchive extends DataStoreBase
+class ShellyDataLatest extends DataLatestBase
 {
     /**
      * @var array
@@ -21,7 +21,7 @@ class LogoControlDataArchive extends DataStoreBase
      *
      * @param array $data
      *
-     * @return LogoControlStorage $this
+     * @return ShellyDataLatest $this
      */
     public function setData($data = array())
     {
