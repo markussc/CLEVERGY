@@ -5,12 +5,10 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\EcarDataStoreRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
-class EcarDataStore extends DataStoreBase
+class ShellyDataLatest extends DataLatestBase
 {
-    protected $latestClass = EcarDataLatest::class;
-
     /**
      * @var array
      *
@@ -23,7 +21,7 @@ class EcarDataStore extends DataStoreBase
      *
      * @param array $data
      *
-     * @return EcarDataStorage $this
+     * @return ShellyDataLatest $this
      */
     public function setData($data = array())
     {

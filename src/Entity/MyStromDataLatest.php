@@ -5,12 +5,10 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\MyStromDataStoreRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
  */
-class MyStromDataStore extends DataStoreBase
+class MyStromDataLatest extends DataLatestBase
 {
-    protected $latestClass = MyStromDataLatest::class;
-
     /**
      * @var bool
      *
@@ -30,7 +28,7 @@ class MyStromDataStore extends DataStoreBase
      *
      * @param bool $data
      *
-     * @return MyStromDataStorage $this
+     * @return MyStromDataLatest $this
      */
     public function setData($data = false)
     {
@@ -49,7 +47,7 @@ class MyStromDataStore extends DataStoreBase
      *
      * @param array $data
      *
-     * @return MyStromDataStorage $this
+     * @return MyStromDataLatest $this
      */
     public function setExtendedData($data = array())
     {

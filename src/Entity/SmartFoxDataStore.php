@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class SmartFoxDataStore extends DataStoreBase
 {
     protected $archiveClass = SmartFoxDataArchive::class;
+    protected $latestClass = SmartFoxDataLatest::class;
 
     /**
      * @var bool

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,6 +40,12 @@ abstract class DataStoreBase
      * @var class
      */
     protected $archiveClass;
+
+    /**
+     *
+     * @var class
+     */
+    protected $latestClass;
 
     /**
      * Get id
@@ -145,6 +152,45 @@ abstract class DataStoreBase
         }
 
       return $archive;
+    }
+
+    /**
+    * @ORM\PrePersist
+    * Will be invoked when EntityManager::persist is called,
+    * to persist a copy of the Entity in the latest table.
+    */
+    public function onPrePersist(LifecycleEventArgs $eventArgs)
+    {
+        $latest = self::createLatest($eventArgs->getEntityManager(), $this);
+        if ($latest) {
+            $eventArgs->getEntityManager()->persist($latest);
+        }
+    }
+
+    /**
+    * Returns an instance of XXXDataLatest with all class properties copied.
+    * @param XXXDataStore $item - the Item to copy properties from
+    * @return XXXDataLatest
+    */
+    protected static function createLatest(EntityManagerInterface $em, $item)
+    {
+        $latest = null;
+        if (isset($item->latestClass)) {
+            $latest = $em->getRepository($item->latestClass)->getLatest($item->getConnectorId());
+            if (!$latest) {
+                $latest = new $item->latestClass;
+            }
+            foreach (get_object_vars($item) as $key => $value) {
+                $setter = 'set' . ucfirst($key);
+                if (is_callable([$latest, $setter])) {
+                    $latest->$setter($value);
+                }
+            }
+            // set data
+            $latest->setData($item->getData());
+        }
+
+      return $latest;
     }
 
     /**
