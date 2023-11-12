@@ -38,13 +38,14 @@ class DataArchiveCommand extends Command
             \App\Entity\LogoControlDataStore::class,
             \App\Entity\OpenWeatherMapDataStore::class,
             \App\Entity\NetatmoDataStore::class,
+            \App\Entity\TaCmiDataStore::class,
             // without archive functionality
             \App\Entity\MyStromDataStore::class,
             \App\Entity\ShellyDataStore::class,
             \App\Entity\EcarDataStore::class,
         ];
         foreach ($archiveClasses as $archiveClass) {
-            $items = $this->em->getRepository($archiveClass)->getArchiveable(50);
+            $items = $this->em->getRepository($archiveClass)->getArchiveable(100);
             foreach ($items as $item) {
                 $this->em->remove($item);
             }
