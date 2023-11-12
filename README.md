@@ -34,8 +34,16 @@ $ a2enmod proxy_http
 <service-group>
   <name>ShellyPro3EM</name>
   <service>
+    <type>_shelly._tcp</type>
+    <port>80</port>
+    <txt-record>app=Pro3EM</txt-record>
+    <txt-record>gen=2</txt-record>
+  </service>
+  <service>
     <type>_http._tcp</type>
     <port>80</port>
+    <txt-record>app=Pro3EM</txt-record>
+    <txt-record>gen=2</txt-record>
   </service>
 </service-group>
 ```
