@@ -236,6 +236,7 @@ class PcoWebConnector extends ModbusTcpConnector
     private function resetWaterTemp()
     {
         $this->writeBoolModbusTcp(self::MODBUSTCP_WARMWATER_RESET, true);
+        dump("reset");
     }
 
     private function pcowebModeToString($mode)
