@@ -30,6 +30,7 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_WARMWATER = 3;
     const MODBUSTCP_WARMWATER_HYST = 5045;
     const MODBUSTCP_WARMWATER_SET = 5047;
+    const MODBUSTCP_WARMWATER_RESET = 136;
     const MODBUSTCP_PRETEMP = 5;
     const MODBUSTCP_BACKTEMP = 2;
     const MODBUSTCP_STORTEMP = 10;
@@ -164,6 +165,9 @@ class PcoWebConnector extends ModbusTcpConnector
             case 'waterTemp':
                 $this->setWaterTemp($command);
                 break;
+            case 'waterTempReset':
+                $this->resetWaterTemp();
+                break;
         }
     }
 
@@ -227,6 +231,11 @@ class PcoWebConnector extends ModbusTcpConnector
     private function setWaterTemp($value)
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_SET, $value);
+    }
+
+    private function resetWaterTemp()
+    {
+        $this->writeBoolModbusTcp(self::MODBUSTCP_WARMWATER_RESET, true);
     }
 
     private function pcowebModeToString($mode)

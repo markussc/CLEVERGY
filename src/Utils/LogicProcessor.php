@@ -628,6 +628,7 @@ class LogicProcessor
                     $log[] = "set hwHysteresis to 4 and reduce waterTemp due to emergency action: we only want minimal water heating";
                     if (!$ppModeChanged && $ppMode !== PcoWebConnector::MODE_SUMMER && $ppMode !== PcoWebConnector::MODE_AUTO) {
                         $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
+                        $this->pcoweb->executeCommand('waterTempReset'); // forces the "Reset WP Maximum" functionality of the WP
                         $log[] = "set MODE_SUMMER due to emergency action (warm water only)";
                         $ppModeChanged = true;
                     }
