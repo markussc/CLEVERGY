@@ -498,7 +498,7 @@ class LogicProcessor
             $minWaterTemp = max($minWaterTemp, $this->pcoweb->getConfiguredMinWaterTemp());
 
             // reduce minInsideTemp during night time
-            if ($nowDateTime->format('H') >= 21 && $nowDateTime->format('H') < 4) {
+            if ($nowDateTime->format('H') >= 21 || $nowDateTime->format('H') < 4) {
                 $this->minInsideTemp = min($this->minInsideTemp, 19);
             }
             if ($nowDateTime->format('H') >= 4 && $nowDateTime->format('H') < 5) {
