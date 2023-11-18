@@ -646,9 +646,17 @@ class LogicProcessor
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
                     $log[] = "set hc2=30 as emergency action";
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
-                        $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
-                        $log[] = "set MODE_HOLIDAY due to emergency action";
-                        $ppModeChanged = true;
+                        if ($pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2) {
+                            $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
+                            $log[] = "set MODE_HOLIDAY due to emergency action (storage temp not sufficient)";
+                            $ppModeChanged = true;
+                        } elseif ($ppMode === PcoWebConnector::MODE_SUMMER) {
+                            $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_2ND);
+                            $log[] = "set MODE_2ND due to emergency action (storage temp might be sufficient)";
+                            $ppModeChanged = true;
+                        } else {
+                            $log[] = "no PP mode change required currently";
+                        }
                     }
                 }
             }
