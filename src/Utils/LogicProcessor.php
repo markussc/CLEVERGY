@@ -61,7 +61,7 @@ class LogicProcessor
     private $shellyLatest;
     private $mystromLatest;
 
-    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;
@@ -81,6 +81,7 @@ class LogicProcessor
         $this->conditionchecker = $conditionchecker;
         $this->energyLowRate = $energyLowRate;
         $this->minInsideTemp = $minInsideTemp;
+        $this->nightTemp = $nightTemp;
         $this->connectors = $connectors;
         $this->translator = $translator;
 
@@ -498,17 +499,19 @@ class LogicProcessor
             $minWaterTemp = max($minWaterTemp, $this->pcoweb->getConfiguredMinWaterTemp());
 
             // reduce minInsideTemp during night time
-            if ($nowDateTime->format('H') >= 21 || $nowDateTime->format('H') < 3) {
-                $this->minInsideTemp = min($this->minInsideTemp, 19.5);
-            }
-            if ($nowDateTime->format('H') >= 3 && $nowDateTime->format('H') < 5) {
-                $this->minInsideTemp = min($this->minInsideTemp, 19.7);
-            }
-            if ($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') < 6) {
-                $this->minInsideTemp = min($this->minInsideTemp, 19.8);
-            }
-            if ($nowDateTime->format('H') >= 6 && $nowDateTime->format('H') < 8) {
-                $this->minInsideTemp = min($this->minInsideTemp, 20.0);
+            if ($this->nightTemp) {
+                if ($nowDateTime->format('H') >= 21 || $nowDateTime->format('H') < 3) {
+                    $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp);
+                }
+                if ($nowDateTime->format('H') >= 3 && $nowDateTime->format('H') < 5) {
+                    $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.25);
+                }
+                if ($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') < 6) {
+                    $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.5);
+                }
+                if ($nowDateTime->format('H') >= 6 && $nowDateTime->format('H') < 8) {
+                    $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.75);
+                }
             }
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
@@ -824,6 +827,7 @@ class LogicProcessor
         $netPower = $smartfox['power_io'];
         $avgPower = $this->getAvgPower();
         $avgPvPower = $this->getAvgPvPower();
+        $nowDateTime = new \DateTime();
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
         // readout current temperature values
@@ -857,6 +861,21 @@ class LogicProcessor
             $lowStorage = true;
         }
 
+        // reduce minInsideTemp during night time
+        if ($this->nightTemp) {
+            if ($nowDateTime->format('H') >= 21 || $nowDateTime->format('H') < 3) {
+                $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp);
+            }
+            if ($nowDateTime->format('H') >= 3 && $nowDateTime->format('H') < 5) {
+                $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.25);
+            }
+            if ($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') < 6) {
+                $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.5);
+            }
+            if ($nowDateTime->format('H') >= 6 && $nowDateTime->format('H') < 8) {
+                $this->minInsideTemp = min($this->minInsideTemp, $this->nightTemp + 0.75);
+            }
+        }
         $minInsideTemp = $this->minInsideTemp-0.5+$tempOffset/5;
         if ($wemMode == Settings::MODE_HOLIDAY) {
             $minInsideTemp = $minInsideTemp - 2;
