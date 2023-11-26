@@ -729,6 +729,15 @@ class DefaultController extends AbstractController
         if ($this->smartfox->getIp()) {
             $smartFox = $this->smartfox->getAll();
             $value = ['total_act_power' => $smartFox['power_io']];
+            if (array_key_exists('StorageSocMean', $smartFox)) {
+                if ($smartFox['StorageSocMean'] > 80 && $smartFox['StorageSoc'] >= 85) {
+                    // battery SOC high over last 48 hours, don't charge higher than 85%
+                    $value = max(0, $value); // announce no negative values in order not to charge battery
+                } elseif ($smartFox['StorageSocMean'] < 20 && $smartFox['StorageSoc'] <= 25) {
+                    // battery SOC low over last 48 hours, don't discharge lower than 25%
+                    $value = min(0, $value);
+                }
+            }
         }
 
         return new JsonResponse($value);

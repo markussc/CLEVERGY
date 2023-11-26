@@ -229,6 +229,11 @@ class SmartFoxConnector
                 } else {
                     $latestStorageEnergyOut = 0;
                 }
+                if (array_key_exists('StorageSocMean', $latestEntry)) {
+                    $latestStorageSocMean = $latestEntry['StorageSocMean'];
+                } else {
+                    $latestStorageSocMean = 0;
+                }
                 foreach ($this->connectors['smartfox']['storage'] as $storage) {
                     if ($storage['type'] == 'nelinor') {
                         $storageCounter++;
@@ -248,6 +253,7 @@ class SmartFoxConnector
                 $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
                 $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+                $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
             }
         }
 
