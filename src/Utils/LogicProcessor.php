@@ -441,7 +441,7 @@ class LogicProcessor
         $smartfox = $this->getSmartfoxLatest();
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $avgPower = $this->getAvgPower();
-        $avgPvPower = $this->getAvgPvPower();
+        $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data
         $nowDateTime = new \DateTime();
         if (isset($this->energyLowRate['end'])) {
             $diffToEndOfLowEnergyRate = $this->energyLowRate['end'] - $nowDateTime->format('H');
