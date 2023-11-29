@@ -826,7 +826,7 @@ class LogicProcessor
         $smartFoxHighPower = $smartfox['digital'][1]['state'];
         $netPower = $smartfox['power_io'];
         $avgPower = $this->getAvgPower();
-        $avgPvPower = $this->getAvgPvPower();
+        $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data
         $nowDateTime = new \DateTime();
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
