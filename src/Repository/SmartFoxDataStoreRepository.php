@@ -47,8 +47,10 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
                     // we add the power currently delivered from the battery to the average NetPower
                     $newValue = $res->getData()['power_io'] + abs($res->getData()['StoragePower']);
                 }
-            } else {
+            } elseif (array_key_exists($idx, $res->getData())) {
                 $newValue = $res->getData()[$idx];
+            } else {
+                $newValue = 0;
             }
             $avgPower += $newValue;
             $avgIndex++;
