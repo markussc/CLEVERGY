@@ -296,21 +296,30 @@ class SmartFoxConnector
 
     private function queryNelinor($ip)
     {
-        /*
-        $url = 'http://' . $ip . '/report'; // to be verified
+        $port = 9865; // fixed port of nelinor
         try {
-            $response = $this->client->request('GET', $url);
-            $statusCode = $response->getStatusCode();
-            if ($statusCode != 200) {
-                return 0;
+            $buf = '';
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            if ($socket !== false &&
+                    socket_connect($socket, $ip, $port) &&
+                    false !== ($bytes = socket_recv($socket, $buf, 61, MSG_WAITALL))) {
             }
-            $binaryResp = $response->getContent();
-            $power = 0; // to be extracted from binary response
-            $soc = 0; // to be extracted from binary response
-            return ['power' => $power, 'soc' => $soc];
+            socket_close($socket);
+            $retArr = [
+                'status' => unpack('l', $buf, 28), // all values are signed longs (4 bytes long, i.e. 32 bit, little endian)
+                'power' => unpack('l', $buf, 37),
+                'temp' => unpack('l', $buf, 46),
+                'soc' => unpack('l', $buf, 55)
+            ];
         } catch (\Exception $e) {
-            return ['power' => 0, 'soc' => 0];
-        }*/
-        return ['power' => round($this->queryMyStromPower($ip)), 'soc' => 100];
+            $retArr = [
+                'status' => 0,
+                'power' => 0,
+                'temp' => 0,
+                'soc' => 0
+            ];
+        }
+
+        return $retArr;
     }
 }
