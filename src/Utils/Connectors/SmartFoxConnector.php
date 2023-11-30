@@ -303,14 +303,14 @@ class SmartFoxConnector
             if ($socket !== false &&
                     socket_connect($socket, $ip, $port) &&
                     false !== ($bytes = socket_recv($socket, $buf, 61, MSG_WAITALL))) {
+                $retArr = [
+                    'status' => unpack('l', $buf, 28), // all values are signed longs (4 bytes long, i.e. 32 bit, little endian)
+                    'power' => unpack('l', $buf, 37),
+                    'temp' => unpack('l', $buf, 46),
+                    'soc' => unpack('l', $buf, 55)
+                ];
             }
             socket_close($socket);
-            $retArr = [
-                'status' => unpack('l', $buf, 28), // all values are signed longs (4 bytes long, i.e. 32 bit, little endian)
-                'power' => unpack('l', $buf, 37),
-                'temp' => unpack('l', $buf, 46),
-                'soc' => unpack('l', $buf, 55)
-            ];
         } catch (\Exception $e) {
             $retArr = [
                 'status' => 0,
