@@ -642,15 +642,16 @@ class LogicProcessor
                     }
                 } elseif ($insideTemp < $minInsideTemp) {
                     $insideEmergency = true;
-                    if ($insideTemp < $minInsideTemp - 1) {
+                    if ($insideTemp < $minInsideTemp - 2) {
                         // really cold
                         $this->pcoweb->executeCommand('hc2', 30);
+                        $log[] = "set hc2=30 as emergency action";
                     } else {
                         // little cold
-                        $this->pcoweb->executeCommand('hc2', 29);
+                        $this->pcoweb->executeCommand('hc2', 28);
+                        $log[] = "set hc2=28 as emergency action";
                     }
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=30 as emergency action";
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
                         if ($pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2) {
                             $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
@@ -736,7 +737,7 @@ class LogicProcessor
                 $hc2Offset = 0;
                 if (!$ppStatus && $insideTemp > ($minInsideTemp +0.5)) {
                     // while pp is not running and it's not chilly inside, we set hc2 lower to save storage energy
-                    $hc2Offset = -5;
+                    $hc2Offset = -4;
                 }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
@@ -751,13 +752,13 @@ class LogicProcessor
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=22 due to current inside temp";
+                    $log[] = "set hc2=23 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
-                    $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
+                    $this->pcoweb->executeCommand('hc2', 26+$hc2Offset);
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=28 due to current inside temp";
+                    $log[] = "set hc2=26 due to current inside temp";
                     $activate2ndCircle = true;
                 }
                 if (!$ppModeChanged && !$emergency && !$warmWater && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {
