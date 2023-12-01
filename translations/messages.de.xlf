@@ -485,9 +485,13 @@
         <source>label.pcoweb.pp_error</source>
         <target>Störung Wärmepumpe</target>
       </trans-unit>
-      <trans-unit id="GFDERT" resname="label.pco.ppmode.cool">
+      <trans-unit id="JK6X2uY" resname="label.pco.ppmode.cool">
         <source>label.pco.ppmode.cool</source>
         <target>Kühlen</target>
+      </trans-unit>
+      <trans-unit id="2fGK1wQ" resname="label.storage.cell_temp">
+        <source>label.storage.cell_temp</source>
+        <target>Zelltemperatur</target>
       </trans-unit>
     </body>
   </file>

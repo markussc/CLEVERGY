@@ -353,6 +353,9 @@
             {{ storage.name }} <br>
             {% trans %}label.ecar.soc{% endtrans %}: {{ storage.soc }} %<br>
             {% if storage.power >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage.power }} W
+            {% if storage.temp is defined %}
+                <br>{% trans %}label.storage.cell_temp{% endtrans %}: {{ storage.temp }} °C
+            {% endif %}
             {% if not loop.last %}<hr>{% endif %}
         {% endfor %}
         </div>
