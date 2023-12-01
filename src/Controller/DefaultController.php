@@ -733,8 +733,8 @@ class DefaultController extends AbstractController
                 if ($smartFox['StorageSocMean'] > 80 && $smartFox['StorageSoc'] >= 85) {
                     // battery SOC high over last 48 hours, don't charge higher than 85%
                     $value = max(0, $value); // announce no negative values in order not to charge battery
-                } elseif ($smartFox['StorageSocMean'] < 20 && $smartFox['StorageSoc'] <= 25) {
-                    // battery SOC low over last 48 hours, don't discharge lower than 25%
+                } elseif ($smartFox['StorageSocMean'] < 30 && $smartFox['StorageSoc'] <= 40) {
+                    // battery SOC low over last 48 hours, don't discharge lower than 40%
                     $value = min(0, $value); // announce no positive values in order not to discharge battery
                 }
             }
