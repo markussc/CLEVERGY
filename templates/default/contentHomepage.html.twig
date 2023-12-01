@@ -350,9 +350,9 @@
         <div id="storage_container" class="content" style="display:none;">
         <div id="storage" class="refresh">
         {% for storage in smartfoxConnector.getLiveStorage() %}
-            {{ storage['name'] }} <br>
-            {% trans %}label.ecar.soc{% endtrans %}: {{ storage['soc'] }} %<br>
-            {% if storage['power'] >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage['power'] }} W
+            {{ storage.name }} <br>
+            {% trans %}label.ecar.soc{% endtrans %}: {{ storage.soc }} %<br>
+            {% if storage.power >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage.power }} W
             {% if not loop.last %}<hr>{% endif %}
         {% endfor %}
         </div>

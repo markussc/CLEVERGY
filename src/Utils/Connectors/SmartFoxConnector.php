@@ -297,6 +297,12 @@ class SmartFoxConnector
     private function queryNelinor($ip)
     {
         $port = 9865; // fixed port of nelinor
+        $retArr = [
+            'status' => 0,
+            'power' => 0,
+            'temp' => 0,
+            'soc' => 0
+        ];
         try {
             $buf = '';
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -312,12 +318,7 @@ class SmartFoxConnector
             }
             socket_close($socket);
         } catch (\Exception $e) {
-            $retArr = [
-                'status' => 0,
-                'power' => 0,
-                'temp' => 0,
-                'soc' => 0
-            ];
+            // do nothing
         }
 
         return $retArr;
