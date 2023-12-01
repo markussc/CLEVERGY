@@ -218,6 +218,7 @@ class SmartFoxConnector
                 $totalStoragePowerIn = 0;
                 $totalStoragePowerOut = 0;
                 $totalStorageSoc = 0;
+                $maxStorageTemp = 0;
                 $latestEntry = $this->getAllLatest();
                 if (array_key_exists('StorageEnergyIn', $latestEntry)) {
                     $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
@@ -246,6 +247,7 @@ class SmartFoxConnector
                             $totalStoragePowerOut += $storageData['power'];
                         }
                         $totalStorageSoc += $storageData['soc'];
+                        $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                     }
                 }
                 // calculate the energy produced at the given power level during one minute
@@ -254,6 +256,7 @@ class SmartFoxConnector
                 $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
+                $arr['StorageTemp'] = $maxStorageTemp;
             }
         }
 
