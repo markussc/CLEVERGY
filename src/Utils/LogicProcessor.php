@@ -674,9 +674,12 @@ class LogicProcessor
                     // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
                     $this->pcoweb->executeCommand('hc1', 23);
                     $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23)";
-                } else {
+                } elseif ($diffToEndOfLowEnergyRate < 24) {
                     $this->pcoweb->executeCommand('hc1', 28);
-                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28)";
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28). Energy rate differentiation available.";
+                }  else {
+                    $this->pcoweb->executeCommand('hc1', 25);
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=25). Energy rate differentiation not available.";
                 }
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
