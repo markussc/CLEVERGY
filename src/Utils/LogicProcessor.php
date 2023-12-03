@@ -696,8 +696,8 @@ class LogicProcessor
                     $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                     $ppModeChanged = true;
                 }
-                elseif (!$warmWater && $heatStorageMidTemp < 36) {
-                    // storage heating only
+                elseif (!$warmWater && $heatStorageMidTemp < 36 && $diffToEndOfLowEnergyRate < 24) {
+                    // storage heating only (does not apply if no rate differentiation is configured, i.e. diffToEndOfLowEnergyRate = 24)
                     $activateHeating = true;
                     if (!$ppModeChanged && (!$ppStatus || (PcoWebConnector::MODE_SUMMER && $waterTemp > $minWaterTemp + 4)) && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY)) {
                         $this->pcoweb->executeCommand('hwHysteresis', 10);
