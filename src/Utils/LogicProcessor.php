@@ -672,14 +672,19 @@ class LogicProcessor
             if (!$smartFoxHighPower && !$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
                 if ($avgClouds < 30) {
                     // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
-                    $this->pcoweb->executeCommand('hc1', 23);
-                    $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23)";
-                } elseif ($diffToEndOfLowEnergyRate < 24) {
+                    if ($pcoweb['setDistrTemp'] < $heatStorageMidTemp + 3) {
+                        $this->pcoweb->executeCommand('hc1', 20);
+                        $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=20) as current hc2 is fulfilled";
+                    } else {
+                        $this->pcoweb->executeCommand('hc1', 23);
+                        $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23) as current hc2 is not fulfilled";
+                    }
+                } elseif ($diffToEndOfLowEnergyRate < 6) {
                     $this->pcoweb->executeCommand('hc1', 28);
-                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28). Energy rate differentiation available.";
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28). Low energy rate will end within 6 hours.";
                 }  else {
                     $this->pcoweb->executeCommand('hc1', 25);
-                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=25). Energy rate differentiation not available.";
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=25). Low energy rate will not end within 6 hours.";
                 }
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
