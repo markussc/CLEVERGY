@@ -33,6 +33,7 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_WARMWATER_RESET = 136;
     const MODBUSTCP_PRETEMP = 5;
     const MODBUSTCP_BACKTEMP = 2;
+    const MODBUSTCP_BACKSETTEMP = 53;
     const MODBUSTCP_STORTEMP = 10;
     const MODBUSTCP_SETDISTRTEMP = 54;
     const MODBUSTCP_EFFDISTRTEMP = 9;
@@ -84,6 +85,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'ppMode' => $this->readPpModeModbusTcp(),
                 'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
                 'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
+                'backSetTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKSETTEMP),
                 'hwHist' => $this->readUint16ModbusTcp(self::MODBUSTCP_WARMWATER_HYST),
                 'storTemp' => $this->readTempModbusTcp(self::MODBUSTCP_STORTEMP),
                 'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),

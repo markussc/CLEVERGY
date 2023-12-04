@@ -61,6 +61,10 @@
         <source>label.pco.back_temp</source>
         <target>Rücklauftemperatur WP</target>
       </trans-unit>
+      <trans-unit id="RfxV3vA" resname="label.pco.back_set_temp">
+        <source>label.pco.back_set_temp</source>
+        <target>Rücklaufsolltemperatur WP</target>
+      </trans-unit>
       <trans-unit id="DK9JtoI" resname="label.pco.pp_source_in_temp">
         <source>label.pco.pp_source_in_temp</source>
         <target>Quelle Vorlauf</target>
