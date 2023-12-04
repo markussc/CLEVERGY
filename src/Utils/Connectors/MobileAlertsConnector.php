@@ -81,6 +81,37 @@ class MobileAlertsConnector
         return $this->em->getRepository(Settings::class)->getMode('alarm');
     }
 
+    /*
+     * check if current data is older than 2h; the oldest sensor value is relevant.
+     */
+    public function currentInsideTempAvailable()
+    {
+        $latest = $this->getAllLatest();
+        $timestamp = new \DateTime();
+        $thisTimestamp = new \DateTime();
+        $now = new \DateTime();
+        foreach  ($latest as $device) {
+            if (array_key_exists('label', $device[0]) && $device[0]['label'] == 'timestamp') {
+                $thisTimestamp = new \DateTime($device[0]['value']);
+            }
+            foreach ($device as $sensor) {
+                if (is_array($sensor) && array_key_exists("usage", $sensor) &&
+                        (   $sensor['usage'] == "insidetemp" ||
+                            $sensor['usage'] == "firstfloortemp" ||
+                            $sensor['usage'] == "secondfloortemp")) {
+                    if ($thisTimestamp < $timestamp) {
+                        $timestamp = $thisTimestamp;
+                    }
+                }
+            }
+        }
+        if ($now->getTimestamp() - $timestamp->getTimestamp() > 7200) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public function getCurrentMinInsideTemp()
     {
         $latest = $this->getAllLatest();

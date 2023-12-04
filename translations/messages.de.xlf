@@ -493,6 +493,10 @@
         <source>label.storage.cell_temp</source>
         <target>Zelltemperatur</target>
       </trans-unit>
+      <trans-unit id="mOMZmSs" resname="label.device.status.no_inside_temp">
+        <source>label.device.status.no_inside_temp</source>
+        <target>Innentemperatur nicht aktuell!</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
