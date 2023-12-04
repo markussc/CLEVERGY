@@ -668,6 +668,8 @@ class LogicProcessor
                         } else {
                             $log[] = "no PP mode change required currently";
                         }
+                    } else {
+                        $log[] = "no PP mode change required currently due to current PP mode or effDistrTemp";
                     }
                 }
             }
