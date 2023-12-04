@@ -623,7 +623,7 @@ class LogicProcessor
             // apply emergency actions
             $emergency = false;
             $insideEmergency = false;
-            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2)) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
@@ -644,16 +644,20 @@ class LogicProcessor
                     if (!$ppStatus) {
                         $this->pcoweb->executeCommand('waterTempReset', true); // forces the "Reset WP Maximum" functionality of the WP
                     }
-                } elseif ($insideTemp < $minInsideTemp) {
+                } elseif ($insideTemp < $minInsideTemp + 0.5) {
                     $insideEmergency = true;
                     if ($insideTemp < $minInsideTemp - 2) {
                         // really cold
                         $this->pcoweb->executeCommand('hc2', 30);
                         $log[] = "set hc2=30 as emergency action";
-                    } else {
+                    } elseif ($insideTemp < $minInsideTemp){
                         // little cold
                         $this->pcoweb->executeCommand('hc2', 28);
                         $log[] = "set hc2=28 as emergency action";
+                    } else {
+                        // keep temperature
+                        $this->pcoweb->executeCommand('hc2', 26);
+                        $log[] = "set hc2=26 as emergency action";
                     }
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
