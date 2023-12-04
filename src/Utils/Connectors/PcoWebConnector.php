@@ -76,6 +76,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
                 'waterTemp' => $this->readTempModbusTcp(self::MODBUSTCP_WARMWATER),
+                'waterSetTemp' => $this->readUint16ModbusTcp(self::MODBUSTCP_WARMWATER_SET),
                 'setDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_SETDISTRTEMP),
                 'effDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_EFFDISTRTEMP),
                 'cpStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_CPSTATUS)),
@@ -238,7 +239,6 @@ class PcoWebConnector extends ModbusTcpConnector
     private function resetWaterTemp()
     {
         $this->writeBoolModbusTcp(self::MODBUSTCP_WARMWATER_RESET, true);
-        dump("reset");
     }
 
     private function pcowebModeToString($mode)

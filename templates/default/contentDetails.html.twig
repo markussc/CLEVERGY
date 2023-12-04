@@ -127,7 +127,10 @@
                 {% endif %}
                 <li>{% trans %}label.pco.pre_temp{% endtrans %}: {{ currentStat['pcoWeb']['preTemp']|default('---') }}°C</li>
                 <li>{% trans %}label.pco.back_temp{% endtrans %}: {{ currentStat['pcoWeb']['backTemp']|default('---') }}°C</li>
+                {% if pcowebConnector.getIp() %}
                 <li>{% trans %}label.pco.back_set_temp{% endtrans %}: {{ currentStat['pcoWeb']['backSetTemp']|default('---') }}°C</li>
+                <li>{% trans %}label.pco.water_set_temp{% endtrans %}: {{ currentStat['pcoWeb']['waterSetTemp']|default('---') }}°C</li>
+                {% endif %}
                 <li>{% trans %}label.pco.pp_source_in_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceIn']|default('---') }}°C</li>
                 <li>{% trans %}label.pco.pp_source_out_temp{% endtrans %}: {{ currentStat['pcoWeb']['ppSourceOut']|default('---') }}°C</li>
             </ul>

@@ -49,6 +49,10 @@
         <source>label.pco.water_temp</source>
         <target>Warmwasser</target>
       </trans-unit>
+      <trans-unit id="Qued54U" resname="label.pco.water_set_temp">
+        <source>label.pco.water_set_temp</source>
+        <target>Warmwasser Solltemperatur</target>
+      </trans-unit>
       <trans-unit id="EVLAm5X" resname="label.pco.storage_temp">
         <source>label.pco.storage_temp</source>
         <target>Speichertemperatur</target>
