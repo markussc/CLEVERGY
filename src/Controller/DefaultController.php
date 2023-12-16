@@ -727,7 +727,7 @@ class DefaultController extends AbstractController
     {
         $value = null;
         if ($this->smartfox->getIp()) {
-            $smartFox = $this->smartfox->getAll();
+            $smartFox = $this->smartfox->getAllLatest();
             $power = $smartFox['power_io'];
             if (array_key_exists('StorageSocMean', $smartFox)) {
                 if ($smartFox['StorageSocMean'] > 80 && $smartFox['StorageSoc'] >= 85) {
