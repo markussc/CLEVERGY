@@ -1142,7 +1142,7 @@ class LogicProcessor
     {
         $smartfox = null;
         if ($this->smartfox->getIp()) {
-            $smartfox = $this->smartfox->getAll();
+            $smartfox = $this->smartfox->getAll(true);
             if ($smartfox) {
                 $smartfoxEntity = new SmartFoxDataStore();
                 $smartfoxEntity->setTimestamp(new \DateTime('now'));

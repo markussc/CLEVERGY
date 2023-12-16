@@ -44,7 +44,7 @@ class SmartFoxConnector
         return $latest;
     }
 
-    public function getAll()
+    public function getAll($addStorage = false)
     {
         try {
             if ($this->version === "pro") {
@@ -54,7 +54,9 @@ class SmartFoxConnector
             }
 
             $responseArr = $this->addAlternativePv($responseArr);
-            $responseArr = $this->addStorage($responseArr);
+            if ($addStorage) {
+                $responseArr = $this->addStorage($responseArr);
+            }
         } catch (\Exception $e) {
             $responseArr = null;
         }
@@ -64,27 +66,27 @@ class SmartFoxConnector
 
     public function getLiveStorage()
     {
-        $storages = [];
-        if ($this->hasStorage()) {
-            foreach ($this->connectors['smartfox']['storage'] as $storage) {
-                $values = $this->queryNelinor($storage['ip']);
-                $values['name'] = $storage['name'];
-                $storages[] = $values;
-            }
+        $data = $this->getAllLatest();
+        if (array_key_exists('StorageDetails', $data)) {
+            return $data['StorageDetails'];
+        } else {
+            return [];
         }
-
-        return $storages;
     }
 
     public function getLiveStorageTotalSoc()
     {
-        $storages = $this->getLiveStorage();
+        $data = $this->getAllLatest();
         $soc = 0;
-        foreach ($storages as $storage) {
-            $soc += $storage['soc'];
+        $counter = 0;
+        if (array_key_exists('StorageDetails', $data)) {
+            foreach ($data['StorageDetails'] as $storage) {
+                $soc += $storage['soc'];
+                $counter++;
+            }
         }
-        if (count($storages)) {
-            return $soc / count($storages);
+        if ($counter) {
+            return $soc / $counter;
         } else {
             return 0;
         }
@@ -239,6 +241,7 @@ class SmartFoxConnector
                     if ($storage['type'] == 'nelinor') {
                         $storageCounter++;
                         $storageData = $this->queryNelinor($storage['ip']);
+                        $arr['StorageDetails'][$storage['name']] = $storageData;
                         if ($storageData['power'] >= 0) {
                             // charging battery
                             $totalStoragePowerIn += $storageData['power'];
@@ -306,6 +309,7 @@ class SmartFoxConnector
             'temp' => 0,
             'soc' => 0
         ];
+        $socket = null;
         try {
             $buf = '';
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -321,7 +325,9 @@ class SmartFoxConnector
             }
             socket_close($socket);
         } catch (\Exception $e) {
-            // do nothing
+            if ($socket !== null) {
+                socket_close($socket);
+            }
         }
 
         return $retArr;
