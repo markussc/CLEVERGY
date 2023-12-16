@@ -148,6 +148,7 @@ class SmartFoxConnector
     {
         $value = $this->getShellyPro3EMResponse();
         if (is_array($value)) {
+            $now = new \DateTime();
             $value = [
                 'Body' => [
                     'Data' => [
@@ -155,6 +156,18 @@ class SmartFoxConnector
                              "PowerReal_P_Sum" => $value['total_act_power'],
                         ],
                     ],
+                ],
+                'Head' => [
+                    'RequestArguments' => [
+                        'DeviceClass' => 'Meter',
+                        'Scope' => 'System',
+                    ],
+                    'Status' => [
+                        'Code' => 0,
+                        'Reason' => '',
+                        'UserMessage' => '',
+                    ],
+                    'Timestamp' => $now->format('c'),
                 ],
             ];
         }
