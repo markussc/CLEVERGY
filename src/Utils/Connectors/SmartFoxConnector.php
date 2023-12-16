@@ -313,10 +313,10 @@ class SmartFoxConnector
                     socket_connect($socket, $ip, $port) &&
                     false !== ($bytes = socket_recv($socket, $buf, 61, MSG_WAITALL))) {
                 $retArr = [
-                    'status' => unpack('l', $buf, 28), // all values are signed longs (4 bytes long, i.e. 32 bit, little endian)
-                    'power' => unpack('l', $buf, 37),
-                    'temp' => unpack('l', $buf, 46),
-                    'soc' => unpack('l', $buf, 55)
+                    'status' => unpack('C', $buf, 51)[1],
+                    'power' => unpack('l', $buf, 36)[1],
+                    'temp' => unpack('l', $buf, 45)[1],
+                    'soc' => max(100, min(0, intval(unpack('l', $buf, 54)[1]/100))),
                 ];
             }
             socket_close($socket);
