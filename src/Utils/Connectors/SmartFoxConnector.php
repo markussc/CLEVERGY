@@ -152,8 +152,12 @@ class SmartFoxConnector
             $value = [
                 'Body' => [
                     'Data' => [
-                        "0" => [
-                             "PowerReal_P_Sum" => $value['total_act_power'],
+                        '0' => [
+                            'Enable' => 1,
+                            'Visible' => 1,
+                            'Meter_Location_Current' => 0,
+                            'PowerReal_P_Sum' => $value['total_act_power'],
+                            "TimeStamp" => $now->getTimestamp(),
                         ],
                     ],
                 ],

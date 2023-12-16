@@ -738,7 +738,7 @@ class DefaultController extends AbstractController
     {
         $value = $this->smartfox->getFroniusV1MeterResponse();
 
-        return new JsonResponse($value);
+        return new Response(json_encode($value, JSON_FORCE_OBJECT));
     }
 
     /**
