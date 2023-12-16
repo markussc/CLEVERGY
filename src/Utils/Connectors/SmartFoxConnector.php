@@ -115,6 +115,53 @@ class SmartFoxConnector
         }
     }
 
+    public function getShellyPro3EMResponse()
+    {
+        $value = null;
+        if ($this->getIp()) {
+            $smartFox = $this->getAllLatest();
+            $power = $smartFox['power_io'];
+            if (array_key_exists('StorageSocMean', $smartFox)) {
+                if ($smartFox['StorageSocMean'] > 80 && $smartFox['StorageSoc'] >= 85) {
+                    // battery SOC high over last 48 hours, don't charge higher than 85%
+                    $power = max(0, $power); // announce no negative values in order not to charge battery
+                } elseif ($smartFox['StorageSocMean'] < 30 && $smartFox['StorageSoc'] <= 40) {
+                    // battery SOC low over last 48 hours, don't discharge lower than 40%
+                    $power = min(0, $power); // announce no positive values in order not to discharge battery
+                }
+            }
+            // prevent thermal stress (negative effects will occur from 35°C upwards)
+            if (array_key_exists('StorageTemp', $smartFox) && $smartFox['StorageTemp'] > 30) {
+                $power = $power/2; // if battery gets warm, limit charge/discharge to 1/2
+            } elseif (array_key_exists('StorageTemp', $smartFox) && $smartFox['StorageTemp'] > 35) {
+                $power = $power/4; // if battery gets warmer, limit charge/discharge to 1/4
+            } elseif (array_key_exists('StorageTemp', $smartFox) && ($smartFox['StorageTemp'] > 40 || $smartFox['StorageTemp'] < 5)) {
+                $power = 0; // if battery gets really warm or is very cold, do not charge/discharge
+            }
+            $value = ['total_act_power' => intval($power)];
+        }
+
+        return $value;
+    }
+
+    public function getFroniusV1MeterResponse()
+    {
+        $value = $this->getShellyPro3EMResponse();
+        if (is_array($value)) {
+            $value = [
+                'Body' => [
+                    'Data' => [
+                        "0" => [
+                             "PowerReal_P_Sum" => $value['total_act_power'],
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        return $value;
+    }
+
     private function getFromREG9TE()
     {
         $arr = json_decode($this->client->request('GET', $this->basePath . '/all')->getContent(), true);
