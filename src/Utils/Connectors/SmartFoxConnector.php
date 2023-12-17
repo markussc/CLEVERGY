@@ -44,7 +44,7 @@ class SmartFoxConnector
         return $latest;
     }
 
-    public function getAll($addStorage = false)
+    public function getAll($updateStorage = false)
     {
         try {
             if ($this->version === "pro") {
@@ -54,9 +54,7 @@ class SmartFoxConnector
             }
 
             $responseArr = $this->addAlternativePv($responseArr);
-            if ($addStorage) {
-                $responseArr = $this->addStorage($responseArr);
-            }
+            $responseArr = $this->addStorage($responseArr, $updateStorage);
         } catch (\Exception $e) {
             $responseArr = null;
         }
@@ -77,34 +75,6 @@ class SmartFoxConnector
         }
 
         return $responseArr;
-    }
-
-    public function getLiveStorage()
-    {
-        $data = $this->getAllLatest();
-        if (array_key_exists('StorageDetails', $data)) {
-            return $data['StorageDetails'];
-        } else {
-            return [];
-        }
-    }
-
-    public function getLiveStorageTotalSoc()
-    {
-        $data = $this->getAllLatest();
-        $soc = 0;
-        $counter = 0;
-        if (array_key_exists('StorageDetails', $data)) {
-            foreach ($data['StorageDetails'] as $storage) {
-                $soc += $storage['soc'];
-                $counter++;
-            }
-        }
-        if ($counter) {
-            return $soc / $counter;
-        } else {
-            return 0;
-        }
     }
 
     public function getIp()
@@ -296,16 +266,16 @@ class SmartFoxConnector
         return $arr;
     }
 
-    private function addStorage($arr)
+    private function addStorage($arr, $update)
     {
-        if (array_key_exists('smartfox', $this->connectors)) {
-            if (array_key_exists('storage', $this->connectors['smartfox'])) {
+        if (array_key_exists('smartfox', $this->connectors) && array_key_exists('storage', $this->connectors['smartfox'])) {
+            $latestEntry = $this->getAllLatest();
+            if ($update) {
                 $storageCounter = 0;
                 $totalStoragePowerIn = 0;
                 $totalStoragePowerOut = 0;
                 $totalStorageSoc = 0;
                 $maxStorageTemp = 0;
-                $latestEntry = $this->getAllLatest();
                 if (array_key_exists('StorageEnergyIn', $latestEntry)) {
                     $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
                 } else {
@@ -344,6 +314,15 @@ class SmartFoxConnector
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
                 $arr['StorageTemp'] = $maxStorageTemp;
+            } else {
+                // add existing data
+                $arr['StorageDetails'] = $latestEntry['StorageDetails'];
+                $arr['StorageEnergyIn'] = $latestEntry['StorageEnergyIn'];
+                $arr['StorageEnergyOut'] = $latestEntry['StorageEnergyOut'];
+                $arr['StoragePower'] = $latestEntry['StoragePower'];
+                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
+                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
             }
         }
 

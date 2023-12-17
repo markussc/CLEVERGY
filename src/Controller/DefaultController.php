@@ -482,7 +482,11 @@ class DefaultController extends AbstractController
         if (isset($currentStat['smartFox'])) {
             $pvpower = array_sum($currentStat['smartFox']['PvPower'])." W";
             $netpower = $currentStat['smartFox']['power_io']." W";
-            $intpower = ($currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']))." W";
+            $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
+            if (array_key_exists('StoragePower', $currentStat['smartFox'])) {
+                $intpowerVal = $intpowerVal - $currentStat['smartFox']['StoragePower'];
+            }
+            $intpower = $intpowerVal ." W";
         } else {
             $pvpower = "";
             $netpower = "";
@@ -645,6 +649,8 @@ class DefaultController extends AbstractController
         $currentStat = [];
         if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
             $currentStat['smartFox'] = $this->smartfox->getAll();
+        } elseif (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $currentStat['smartFox'] = $this->smartfox->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
             $currentStat['pcoWeb'] = $this->pcoweb->getAllLatest();
