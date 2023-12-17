@@ -238,7 +238,7 @@ class SmartFoxConnector
         }
 
         $values = ["power_io" => $data["detailsPowerValue"]];
-        if ($details) {
+        if ($full) {
             $values = array_merge($values, [
                 "energy_in" => $data["energyValue"],
                 "energy_out" => $data["eToGridValue"],
@@ -402,7 +402,7 @@ class SmartFoxConnector
                     false !== ($bytes = socket_recv($socket, $buf, 61, MSG_WAITALL))) {
                 $retArr = [
                     'status' => unpack('C', $buf, 51)[1],
-                    'power' => unpack('l', $buf, 36)[1],
+                    'power' => min(3000, max(-3000, unpack('l', $buf, 36)[1])), // limit to realistic values
                     'temp' => unpack('l', $buf, 45)[1],
                     'soc' => max(100, min(0, intval(unpack('l', $buf, 54)[1]/100))),
                 ];
