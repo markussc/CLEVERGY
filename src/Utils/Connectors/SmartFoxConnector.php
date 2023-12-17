@@ -399,12 +399,24 @@ class SmartFoxConnector
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             if ($socket !== false &&
                     socket_connect($socket, $ip, $port) &&
-                    false !== ($bytes = socket_recv($socket, $buf, 61, MSG_WAITALL))) {
+                    false !== ($bytes = socket_recv($socket, $buf, 100, MSG_WAITALL))) {
+                $charging = min(1800, max(-1800, intval(unpack('l', $buf, 60)[1])));
+                $chargingDir = intval(unpack('c', $buf, 66)[1]);
+                if ($chargingDir == 52) { // 52 means: discharge; 53 means: charge
+                    // discharge battery
+                    $charging = -1 * $charging;
+                }
+                $batteryLevel = min(7000, max(0, intval(unpack('l', $buf, 78)[1])));
+                if (intval($batteryLevel) > 0) {
+                    $soc = intval(100 / 7000 * $batteryLevel);
+                } else {
+                    $soc = 0;
+                }
                 $retArr = [
                     'status' => unpack('C', $buf, 51)[1],
-                    'power' => min(3000, max(-3000, unpack('l', $buf, 36)[1])), // limit to realistic values
-                    'temp' => unpack('l', $buf, 45)[1],
-                    'soc' => max(100, min(0, intval(unpack('l', $buf, 54)[1]/100))),
+                    'power' => $charging,
+                    'temp' => intval(unpack('l', $buf, 69)[1]) / 100,
+                    'soc' => $soc,
                 ];
             }
             socket_close($socket);
