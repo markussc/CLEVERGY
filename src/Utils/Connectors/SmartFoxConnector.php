@@ -116,12 +116,7 @@ class SmartFoxConnector
                     $power = min(0, $power); // announce no positive values in order not to discharge battery
                 }
             }
-            // prevent thermal stress (negative effects will occur from 35°C upwards)
-            if (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 30) {
-                $power = $power/2; // if battery gets warm, limit charge/discharge to 1/2
-            } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 35) {
-                $power = $power/4; // if battery gets warmer, limit charge/discharge to 1/4
-            } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 40 || $smartFoxLatest['StorageTemp'] < 5)) {
+            if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
                 $power = 0; // if battery gets really warm or is very cold, do not charge/discharge
             }
             $value = ['total_act_power' => intval($power)];
