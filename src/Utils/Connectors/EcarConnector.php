@@ -140,12 +140,12 @@ class EcarConnector
                         if ($switchState && $powerAverage < 3*switchDevice['monimalPower']/4) {
                             // currently charging, we accept 3/4 power from net
                             $priority = true;
-                        }
                         } elseif (!$switchState && $powerAverage < -1*switchDevice['monimalPower']/4) {
                             // currently not charging, we need 1/4 power from self production (after switching on this results in 3/4 net consumption)
                             $priority = true;
                         }
                     }
+                }
                 if ($energyLowRate && $currentPercent < 15) {
                     $priority = true;
                 }
