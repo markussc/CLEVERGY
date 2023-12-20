@@ -107,7 +107,7 @@ class SmartFoxConnector
             $smartFoxLatest = $this->getAllLatest();
             $smartFox = $this->getPowerIo();
             $currentPower = $smartFox['power_io'];
-            $power = null;
+            $power = $currentPower;
             $now = new \DateTime();
             if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                 if ($smartFoxLatest['StorageSocMean'] > 80 && $smartFoxLatest['StorageSoc'] >= 85) {
@@ -117,8 +117,8 @@ class SmartFoxConnector
                     // battery SOC low over last 48 hours, don't discharge lower than 40%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
-                    } elseif ($smartFoxLatest['StoragePower'] < 0 && $now->format('s')%60 == 30) {
-                        $power = min(-25, $currentPower);
+                    } elseif ($smartFoxLatest['StoragePower'] < 0) {
+                        $power = null; // invalid value will lead to stop consumption immediately
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
@@ -127,8 +127,8 @@ class SmartFoxConnector
                     // cloudy sky expected in near future, therefore do not discharge below 30%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
-                    } elseif ($smartFoxLatest['StoragePower'] < 0 && $now->format('s')%60 == 30) {
-                        $power = min(-25, $currentPower);
+                    } elseif ($smartFoxLatest['StoragePower'] < 0) {
+                        $power = null;  // invalid value will lead to stop consumption immediately
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
@@ -148,10 +148,8 @@ class SmartFoxConnector
             if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
                 $power = 0; // if battery gets really warm or is very cold, do not charge/discharge
             }
-            if ($power === null) {
-                $power = $currentPower;
-            }
-            $value = ['total_act_power' => intval($power)];
+
+            $value = ['total_act_power' => $power];
         }
 
         return $value;
