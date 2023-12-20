@@ -118,14 +118,14 @@ class SmartFoxConnector
                 }
                 if ($cloudiness > 50 && $smartFoxLatest['StorageSoc'] <= 30) {
                     // cloudy sky expected in near future, therefore do not discharge below 30%
-                    $power = 0;
+                    $power = min(0, $power);
                 }
                 if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 20) {
                     // do not discharge below 20% after 4pm
-                    $power = 0;
+                    $power = min(0, $power);
                 } elseif ($now->format('H') < 9 && $smartFoxLatest['StorageSoc'] <= 10) {
                     // do not discharge below 10% before 9am
-                    $power = 0;
+                    $power = min(0, $power);
                 }
                 if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 25) {
                     // extremely low battery SOC, charge battery to 25% by accepting net consumption
