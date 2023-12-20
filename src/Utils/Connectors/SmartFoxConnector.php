@@ -111,13 +111,7 @@ class SmartFoxConnector
             if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                 if ($smartFoxLatest['StorageSocMean'] > 80 && $smartFoxLatest['StorageSoc'] >= 85) {
                     // battery SOC high over last 48 hours, don't charge higher than 85%
-                    if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
-                        $power = min(25, $currentPower);
-                    } elseif ($smartFoxLatest['StoragePower'] < 0 && $now->format('s')%60 == 30) {
-                        $power = min(-25, $currentPower);
-                    }  else {
-                        $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
-                    }
+                    $power = max(0, $currentPower); // announce no negative values in order not to charge battery
                 } elseif ($smartFoxLatest['StorageSocMean'] < 30 && $smartFoxLatest['StorageSoc'] <= 40) {
                     // battery SOC low over last 48 hours, don't discharge lower than 40%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
