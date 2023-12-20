@@ -107,6 +107,7 @@ class SmartFoxConnector
             $smartFoxLatest = $this->getAllLatest();
             $smartFox = $this->getPowerIo();
             $currentPower = $smartFox['power_io'];
+            $power = null;
             $now = new \DateTime();
             if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                 if ($smartFoxLatest['StorageSocMean'] > 80 && $smartFoxLatest['StorageSoc'] >= 85) {
@@ -146,6 +147,9 @@ class SmartFoxConnector
             }
             if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
                 $power = 0; // if battery gets really warm or is very cold, do not charge/discharge
+            }
+            if ($power === null) {
+                $power = $currentPower;
             }
             $value = ['total_act_power' => intval($power)];
         }
