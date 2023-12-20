@@ -729,9 +729,9 @@ class DefaultController extends AbstractController
      * interface for spoofing Shelly Pro 3 EM
      * @Route("/rpc/EM.GetStatus", name="EMStatus")
      */
-    public function emStatusAction()
+    public function emStatusAction(OpenWeatherMapConnector $weather)
     {
-        $value = $this->smartfox->getShellyPro3EMResponse();
+        $value = $this->smartfox->getShellyPro3EMResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
         return new JsonResponse($value);
     }
@@ -740,9 +740,9 @@ class DefaultController extends AbstractController
      * interface for spoofing Fronius Meter Solar API v1
      * @Route("/solar_api/v1/GetMeterRealtimeData.cgi", name="FroniusV1Status")
      */
-    public function froniusV1StatusAction()
+    public function froniusV1StatusAction(OpenWeatherMapConnector $weather)
     {
-        $value = $this->smartfox->getFroniusV1MeterResponse();
+        $value = $this->smartfox->getFroniusV1MeterResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
         return new Response(json_encode($value, JSON_FORCE_OBJECT));
     }

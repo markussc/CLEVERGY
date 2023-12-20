@@ -100,7 +100,7 @@ class SmartFoxConnector
         }
     }
 
-    public function getShellyPro3EMResponse()
+    public function getShellyPro3EMResponse($cloudiness = 0)
     {
         $value = null;
         if ($this->getIp()) {
@@ -115,6 +115,14 @@ class SmartFoxConnector
                     // battery SOC low over last 48 hours, don't discharge lower than 40%
                     $power = min(0, $power); // announce no positive values in order not to discharge battery
                 }
+                if ($cloudiness > 50 && $smartFoxLatest['StorageSoc'] <= 30) {
+                    // cloudy sky expected in near future, therefore do not discharge below 30%
+                    $power = 0;
+                }
+                if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 25) {
+                    // extremely low battery SOC, charge battery to 25% by accepting net consumption
+                    $power = -100;
+                }
             }
             if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
                 $power = 0; // if battery gets really warm or is very cold, do not charge/discharge
@@ -125,9 +133,9 @@ class SmartFoxConnector
         return $value;
     }
 
-    public function getFroniusV1MeterResponse()
+    public function getFroniusV1MeterResponse($cloudiness = 0)
     {
-        $value = $this->getShellyPro3EMResponse();
+        $value = $this->getShellyPro3EMResponse($cloudiness);
         if (is_array($value)) {
             $now = new \DateTime();
             $value = [
