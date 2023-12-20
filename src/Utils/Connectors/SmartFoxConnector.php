@@ -107,6 +107,7 @@ class SmartFoxConnector
             $smartFoxLatest = $this->getAllLatest();
             $smartFox = $this->getPowerIo();
             $power = $smartFox['power_io'];
+            $now = new \DateTime();
             if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                 if ($smartFoxLatest['StorageSocMean'] > 80 && $smartFoxLatest['StorageSoc'] >= 85) {
                     // battery SOC high over last 48 hours, don't charge higher than 85%
@@ -117,6 +118,13 @@ class SmartFoxConnector
                 }
                 if ($cloudiness > 50 && $smartFoxLatest['StorageSoc'] <= 30) {
                     // cloudy sky expected in near future, therefore do not discharge below 30%
+                    $power = 0;
+                }
+                if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 20) {
+                    // do not discharge below 20% after 4pm
+                    $power = 0;
+                } elseif ($now->format('H') < 9 && $smartFoxLatest['StorageSoc'] <= 10) {
+                    // do not discharge below 10% before 9am
                     $power = 0;
                 }
                 if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 25) {
