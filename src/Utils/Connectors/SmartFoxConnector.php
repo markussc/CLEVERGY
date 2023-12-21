@@ -388,7 +388,7 @@ class SmartFoxConnector
         }
     }
 
-    private function queryNelinor($ip)
+    private function queryNelinor($ip, $counter = 0)
     {
         $port = 9865; // fixed port of nelinor
         $retArr = [
@@ -419,7 +419,7 @@ class SmartFoxConnector
                 $retArr = [
                     'status' => unpack('C', $buf, 51)[1],
                     'power' => $charging,
-                    'temp' => intval(unpack('l', $buf, 69)[1]) / 100,
+                    'temp' => min(100, max(-100, intval(unpack('l', $buf, 69)[1]) / 100)),
                     'soc' => $soc,
                 ];
             }
@@ -430,6 +430,20 @@ class SmartFoxConnector
             }
         }
 
+        // retry if received values might be corrupted
+        if ($retArr['status'] == 0 && $counter < 1) {
+            // maybe offline, try again once
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter++);
+        } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
+            sleep($counter + 1);
+            // very unlikely temperature, try again twice
+            $retArr = $this->queryNelinor($ip, $counter++);
+        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -1800 && $counter < 2) {
+            // rather unlikely to uncharge will full power while soc is zero, try again twice
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter++);
+        }
         return $retArr;
     }
 }
