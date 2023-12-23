@@ -404,7 +404,7 @@ class SmartFoxConnector
             if ($socket !== false &&
                     socket_connect($socket, $ip, $port) &&
                     false !== ($bytes = socket_recv($socket, $buf, 100, MSG_WAITALL))) {
-                $charging = min(1800, max(-1800, intval(unpack('l', $buf, 60)[1])));
+                $charging = min(2300, max(-2300, intval(unpack('l', $buf, 60)[1])));
                 $chargingDir = intval(unpack('c', $buf, 66)[1]);
                 if ($chargingDir == 52) { // 52 means: discharge; 53 means: charge
                     // discharge battery
