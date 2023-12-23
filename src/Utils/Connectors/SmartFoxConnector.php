@@ -439,7 +439,7 @@ class SmartFoxConnector
             sleep($counter + 1);
             // very unlikely temperature, try again twice
             $retArr = $this->queryNelinor($ip, $counter++);
-        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -1800 && $counter < 2) {
+        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
             // rather unlikely to uncharge will full power while soc is zero, try again twice
             sleep($counter + 1);
             $retArr = $this->queryNelinor($ip, $counter++);
