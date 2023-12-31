@@ -222,6 +222,10 @@ class LogicProcessor
                             if ($this->forceOnMystrom($deviceId, $mystrom)) {
                                 continue;
                             }
+                            if ($this->conditionchecker->checkCondition($mystrom, 'keepOn')) {
+                                // the device shall keep running
+                                continue;
+                            }
                             // check if the device is on and allowed to be turned off
                             if ($mystrom['status']['val'] && $this->mystrom->switchOK($deviceId)) {
                                 $this->mystrom->executeCommand($deviceId, 0);
@@ -348,6 +352,10 @@ class LogicProcessor
                     if ($shelly['nominalPower'] > 0) {
                         // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
                         if ($this->forceOnShelly($deviceId, $shelly)) {
+                            continue;
+                        }
+                        if ($this->conditionchecker->checkCondition($shelly, 'keepOn')) {
+                            // the device shall keep running
                             continue;
                         }
                         // check if the device is on and allowed to be turned off

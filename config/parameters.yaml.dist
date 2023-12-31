@@ -139,7 +139,6 @@ parameters:
             -
                 name: 'My Switch'
                 ip: '192.168.55.3'
-                #other parameters such as lowRateOn and forceOn identical to edimax
                 type: carTimer # type for e-car scenario (currently only supported with mystrom switches)
                 priority: 10
                 nominalPower: 500 # max. expected power in Watt consumed by the device
@@ -163,6 +162,9 @@ parameters:
                     -
                         'mystrom:192.168.55.6': true # use motion sensors to enable / disable other devices (valid choices are true / false)
                         'alarm': true # if alarm is set to true, this condition is only true while alarm mode is activated
+                keepOn:
+                    -
+                        'mobilealerts:XXXXXXXXXXXX:4': '>60' # if device is already running, it will not stopped as long as the condition is fullfilled
                 forceOff:
                     -
                         'openweathermap:dayNight': 'n' # valid choices are 'd' (=day) and 'n' (=night). Refers to sunrise / sunset times for given location
@@ -225,7 +227,7 @@ parameters:
             -
                 name: Wohnzimmer
                 ip: 192.168.2.102
-                edimax:
+                mystrom:
                     - 0
                     - 1
                 streams:

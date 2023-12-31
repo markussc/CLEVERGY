@@ -151,6 +151,13 @@ class ConditionChecker
             }
         }
 
+        // check for keepOn condition
+        if ($type == 'keepOn' && isset($conf['keepOn'])) {
+            if ($this->processConditions($conf['keepOn'])) {
+                return true;
+            }
+        }
+
         return false;
     }
 
