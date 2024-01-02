@@ -113,7 +113,7 @@ class SmartFoxConnector
                 if ($smartFoxLatest['StorageSocMean'] > 80 && $smartFoxLatest['StorageSoc'] >= 85) {
                     // battery SOC high over last 48 hours, don't charge higher than 85%
                     $power = max(0, $currentPower); // announce no negative values in order not to charge battery
-                } elseif ($smartFoxLatest['StorageSocMean'] < 30 && $smartFoxLatest['StorageSoc'] <= 40) {
+                } elseif ($smartFoxLatest['StorageSocMean'] < 25 && $smartFoxLatest['StorageSoc'] <= 30) {
                     // battery SOC low over last 48 hours, don't discharge lower than 40%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
@@ -123,7 +123,7 @@ class SmartFoxConnector
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
                 }
-                if ($cloudiness > 50 && $smartFoxLatest['StorageSoc'] <= 30) {
+                if ($cloudiness > 50 && $smartFoxLatest['StorageSoc'] <= 20) {
                     // cloudy sky expected in near future, therefore do not discharge below 30%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
@@ -140,7 +140,7 @@ class SmartFoxConnector
                     // do not discharge below 10% before 9am
                     $power = min(0, $currentPower+25);
                 }
-                if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 25) {
+                if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 20) {
                     // extremely low battery SOC, charge battery to 25% by accepting net consumption
                     $power = -100;
                 }
