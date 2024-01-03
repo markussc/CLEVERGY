@@ -49,6 +49,10 @@
         <source>label.pco.water_temp</source>
         <target>Warmwasser</target>
       </trans-unit>
+      <trans-unit id="Qued54U" resname="label.pco.water_set_temp">
+        <source>label.pco.water_set_temp</source>
+        <target>Warmwasser Solltemperatur</target>
+      </trans-unit>
       <trans-unit id="EVLAm5X" resname="label.pco.storage_temp">
         <source>label.pco.storage_temp</source>
         <target>Speichertemperatur</target>
@@ -60,6 +64,10 @@
       <trans-unit id="JpxETPi" resname="label.pco.back_temp">
         <source>label.pco.back_temp</source>
         <target>Rücklauftemperatur WP</target>
+      </trans-unit>
+      <trans-unit id="RfxV3vA" resname="label.pco.back_set_temp">
+        <source>label.pco.back_set_temp</source>
+        <target>Rücklaufsolltemperatur WP</target>
       </trans-unit>
       <trans-unit id="DK9JtoI" resname="label.pco.pp_source_in_temp">
         <source>label.pco.pp_source_in_temp</source>
@@ -485,9 +493,17 @@
         <source>label.pcoweb.pp_error</source>
         <target>Störung Wärmepumpe</target>
       </trans-unit>
-      <trans-unit id="GFDERT" resname="label.pco.ppmode.cool">
+      <trans-unit id="JK6X2uY" resname="label.pco.ppmode.cool">
         <source>label.pco.ppmode.cool</source>
         <target>Kühlen</target>
+      </trans-unit>
+      <trans-unit id="2fGK1wQ" resname="label.storage.cell_temp">
+        <source>label.storage.cell_temp</source>
+        <target>Zelltemperatur</target>
+      </trans-unit>
+      <trans-unit id="mOMZmSs" resname="label.device.status.no_inside_temp">
+        <source>label.device.status.no_inside_temp</source>
+        <target>Innentemperatur nicht aktuell!</target>
       </trans-unit>
     </body>
   </file>

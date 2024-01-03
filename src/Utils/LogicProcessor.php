@@ -222,6 +222,10 @@ class LogicProcessor
                             if ($this->forceOnMystrom($deviceId, $mystrom)) {
                                 continue;
                             }
+                            if ($this->conditionchecker->checkCondition($mystrom, 'keepOn')) {
+                                // the device shall keep running
+                                continue;
+                            }
                             // check if the device is on and allowed to be turned off
                             if ($mystrom['status']['val'] && $this->mystrom->switchOK($deviceId)) {
                                 $this->mystrom->executeCommand($deviceId, 0);
@@ -348,6 +352,10 @@ class LogicProcessor
                     if ($shelly['nominalPower'] > 0) {
                         // check for "forceOn" or "lowRateOn" conditions (if true, try to turn it on and skip)
                         if ($this->forceOnShelly($deviceId, $shelly)) {
+                            continue;
+                        }
+                        if ($this->conditionchecker->checkCondition($shelly, 'keepOn')) {
+                            // the device shall keep running
                             continue;
                         }
                         // check if the device is on and allowed to be turned off
@@ -521,6 +529,10 @@ class LogicProcessor
         // readout current temperature values
         if ($this->mobilealerts->getAvailable()) {
             $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
+            if ($outsideTemp < 18 && !$this->mobilealerts->currentInsideTempAvailable()) {
+                // no current data available, set insideTemp just below minInsideTemp
+                $insideTemp = $minInsideTemp-0.2;
+            }
         } elseif ($this->netatmo->getAvailable()) {
             $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
         } else {
@@ -619,7 +631,7 @@ class LogicProcessor
             // apply emergency actions
             $emergency = false;
             $insideEmergency = false;
-            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp) {
+            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2)) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
@@ -640,18 +652,23 @@ class LogicProcessor
                     if (!$ppStatus) {
                         $this->pcoweb->executeCommand('waterTempReset', true); // forces the "Reset WP Maximum" functionality of the WP
                     }
-                } elseif ($insideTemp < $minInsideTemp) {
+                } elseif ($insideTemp < $minInsideTemp + 0.5) {
                     $insideEmergency = true;
-                    if ($insideTemp < $minInsideTemp - 1) {
+                    if ($insideTemp < $minInsideTemp - 2) {
                         // really cold
                         $this->pcoweb->executeCommand('hc2', 30);
-                    } else {
+                        $log[] = "set hc2=30 as emergency action";
+                    } elseif ($insideTemp < $minInsideTemp){
                         // little cold
-                        $this->pcoweb->executeCommand('hc2', 29);
+                        $this->pcoweb->executeCommand('hc2', 28);
+                        $log[] = "set hc2=28 as emergency action";
+                    } else {
+                        // keep temperature
+                        $this->pcoweb->executeCommand('hc2', 26);
+                        $log[] = "set hc2=26 as emergency action";
                     }
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=30 as emergency action";
-                    if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25)) {
+                    if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25 || $insideTemp < $minInsideTemp + 0.2)) {
                         if ($pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2) {
                             $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                             $log[] = "set MODE_HOLIDAY due to emergency action (storage temp not sufficient)";
@@ -663,6 +680,8 @@ class LogicProcessor
                         } else {
                             $log[] = "no PP mode change required currently";
                         }
+                    } else {
+                        $log[] = "no PP mode change required currently due to current PP mode or effDistrTemp";
                     }
                 }
             }
@@ -671,11 +690,19 @@ class LogicProcessor
             if (!$smartFoxHighPower && !$emergency && $energyLowRate && $diffToEndOfLowEnergyRate > 1) {
                 if ($avgClouds < 30) {
                     // we expect clear sky in the next daylight period which will give some extra heat. Reduce heating curve (circle 1)
-                    $this->pcoweb->executeCommand('hc1', 23);
-                    $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23)";
-                } else {
+                    if ($pcoweb['setDistrTemp'] < $heatStorageMidTemp + 3) {
+                        $this->pcoweb->executeCommand('hc1', 20);
+                        $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=20) as current hc2 is fulfilled";
+                    } else {
+                        $this->pcoweb->executeCommand('hc1', 23);
+                        $log[] = "not PvHighPower, expected clear sky, reduce hc1 (set hc1=23) as current hc2 is not fulfilled";
+                    }
+                } elseif ($diffToEndOfLowEnergyRate < 6) {
                     $this->pcoweb->executeCommand('hc1', 28);
-                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28)";
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=28). Low energy rate will end within 6 hours.";
+                }  else {
+                    $this->pcoweb->executeCommand('hc1', 25);
+                    $log[] = "not PvHighPower, expected cloudy sky, increase hc1 (set hc1=25). Low energy rate will not end within 6 hours.";
                 }
                 $warmWater = false;
                 if ($diffToEndOfLowEnergyRate <= 2) {
@@ -695,8 +722,8 @@ class LogicProcessor
                     $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                     $ppModeChanged = true;
                 }
-                elseif (!$warmWater && $heatStorageMidTemp < 36) {
-                    // storage heating only
+                elseif (!$warmWater && $heatStorageMidTemp < 36 && $diffToEndOfLowEnergyRate < 24) {
+                    // storage heating only (does not apply if no rate differentiation is configured, i.e. diffToEndOfLowEnergyRate = 24)
                     $activateHeating = true;
                     if (!$ppModeChanged && (!$ppStatus || (PcoWebConnector::MODE_SUMMER && $waterTemp > $minWaterTemp + 4)) && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY)) {
                         $this->pcoweb->executeCommand('hwHysteresis', 10);
@@ -736,7 +763,7 @@ class LogicProcessor
                 $hc2Offset = 0;
                 if (!$ppStatus && $insideTemp > ($minInsideTemp +0.5)) {
                     // while pp is not running and it's not chilly inside, we set hc2 lower to save storage energy
-                    $hc2Offset = -5;
+                    $hc2Offset = -4;
                 }
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
@@ -751,13 +778,13 @@ class LogicProcessor
                 } elseif ($insideTemp >= ($minInsideTemp + 0.5) && $insideTemp <= ($minInsideTemp + 0.8)) {
                     $this->pcoweb->executeCommand('hc2', 23+$hc2Offset);
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=22 due to current inside temp";
+                    $log[] = "set hc2=23 due to current inside temp";
                     $activate2ndCircle = true;
                 } elseif (!$insideEmergency && $insideTemp < ($minInsideTemp + 0.5)) {
                     // set default value for 2nd heating circle
-                    $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
+                    $this->pcoweb->executeCommand('hc2', 26+$hc2Offset);
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
-                    $log[] = "set hc2=28 due to current inside temp";
+                    $log[] = "set hc2=26 due to current inside temp";
                     $activate2ndCircle = true;
                 }
                 if (!$ppModeChanged && !$emergency && !$warmWater && $activate2ndCircle && $ppMode == PcoWebConnector::MODE_SUMMER && (!$ppStatus || $waterTemp > $minWaterTemp + 5)) {
@@ -1123,7 +1150,7 @@ class LogicProcessor
     {
         $smartfox = null;
         if ($this->smartfox->getIp()) {
-            $smartfox = $this->smartfox->getAll();
+            $smartfox = $this->smartfox->getAll(true);
             if ($smartfox) {
                 $smartfoxEntity = new SmartFoxDataStore();
                 $smartfoxEntity->setTimestamp(new \DateTime('now'));

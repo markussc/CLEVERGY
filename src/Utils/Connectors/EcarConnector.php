@@ -110,6 +110,11 @@ class EcarConnector
                 }
 
                 if ($hours >= 0 && $percentDiff > 0) {
+                    $switchState = $this->em->getRepository(MyStromDataStore::class)->getLatest($switchDevice['ip']);
+                        if ($switchState === null) {
+                            $switchState = $this->em->getRepository(ShellyDataStore::class)->getLatest($switchDevice['ip'] . '_' . $switchDevice['port']);
+                        }
+                        $powerAverage = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 15);
                     // the targetPercent and deadline are not reached yet
                     // check if we need to start charging in order to reach the targetPercent until deadline
                     $percentDuringDiff = $hourlyPercent * $hours;
@@ -123,16 +128,20 @@ class EcarConnector
                         // or low rate and more than 8 hours charging left,
                         // or battery level below 30%
                         // in these cases we want to allow max half of the charging power from the grid
-                        $switchState = $this->em->getRepository(MyStromDataStore::class)->getLatest($switchDevice['ip']);
-                        if ($switchState === null) {
-                            $switchState = $this->em->getRepository(ShellyDataStore::class)->getLatest($switchDevice['ip'] . '_' . $switchDevice['port']);
-                        }
-                        $powerAverage = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 15);
                         if ($switchState && $powerAverage < $switchDevice['nominalPower']/2) {
                             // currently charging, we want at least half of the charging power by self production
                             $priority = true;
                         }  elseif (!$switchState && $powerAverage < -1*$switchDevice['nominalPower']/2) {
                             // currently not charging, we want half of the charging power by self production after switching on
+                            $priority = true;
+                        }
+                    } elseif (($now->format('n') > 10 || $now->format('n') < 3)) {
+                        // during wintertime, higher net consumption is accepted (3/4)
+                        if ($switchState && $powerAverage < 3*$switchDevice['nominalPower']/4) {
+                            // currently charging, we accept 3/4 power from net
+                            $priority = true;
+                        } elseif (!$switchState && $powerAverage < -1*$switchDevice['nominalPower']/4) {
+                            // currently not charging, we need 1/4 power from self production (after switching on this results in 3/4 net consumption)
                             $priority = true;
                         }
                     }

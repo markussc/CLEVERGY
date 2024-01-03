@@ -103,6 +103,7 @@
         <div id="visualDashboardMotionAlarmSymbol" class="refresh">{% if motionActive %}<i class="fas fa-running" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.motion_detected{% endtrans %}</span><br/>{% endif %}</div>
         <div id="visualDashboardContactAlarmSymbol" class="refresh">{% if contactActive %}<i class="fas fa-door-open" style="color: red;"></i> <span style="color: grey;">{% trans %}label.device.status.contact_detected{% endtrans %}</span><br/>{% endif %}</div>
         <div id="visualDashboardLowBatSymbol" class="refresh">{% if lowBat|length > 0 %}<i class="fas fa-battery-quarter" style="color: red;"></i> <span style="color: grey;">{{ lowBat|join(', ') }}</span><br/>{% endif %}</div>
+        <div id="visualDashboardNoInsideTempSymbol" class="refresh">{% if not mobilealertsConnector.currentInsideTempAvailable %}<i class="fas fa-temperature-low" style="color: blue;"></i> <span style="color: grey;">{% trans %}label.device.status.no_inside_temp{% endtrans %}</span><br/>{% endif %}</div>
         {% if not refresh|default(false) %}<img src="{{ path('visual_dashboard')~"?"~date().timestamp()}}" id="visualDashboardMap" style="display:block; margin-left: auto; margin-right: auto;">{% endif %}
     </div>
 </div>
@@ -127,7 +128,7 @@
             <button class="menu-btn fas fa-car hollow button small" style="border-radius:5px; color:blue;" onclick="menuToggle($(this), 'ecar');"></button>
         {% endif %}
         {% if smartfoxConnector.hasStorage() %}
-            {% set totalSoc = smartfoxConnector.getLiveStorageTotalSoc() %}
+            {% set totalSoc = currentStat['smartFox']['StorageSoc'] %}
             <button class="menu-btn fas fa-battery-{% if totalSoc > 87 %}full{% elseif totalSoc > 62 %}three-quarters{% elseif totalSoc > 37 %}half{% elseif totalSoc > 12 %}quarter{% else %}empty{% endif %} hollow button small" style="border-radius:5px; color:rgb({{ min([255, 510 - 510/100*totalSoc])|round }}, {{ min([255, 510/100*totalSoc])|round }}, 0);" onclick="menuToggle($(this), 'storage');"></button>
         {% endif %}
         {% if connectors['command']|default([])|length > 0 %}
@@ -349,10 +350,13 @@
     <div class="columns small-12 medium-8 large-6 small-centered">
         <div id="storage_container" class="content" style="display:none;">
         <div id="storage" class="refresh">
-        {% for storage in smartfoxConnector.getLiveStorage() %}
-            {{ storage['name'] }} <br>
-            {% trans %}label.ecar.soc{% endtrans %}: {{ storage['soc']|default('???') }} %<br>
-            {% if storage['power'] >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage['power']|default('???') }} W
+        {% for name, storage in currentStat['smartFox']['StorageDetails'] %}
+            {{ name }} <br>
+            {% trans %}label.ecar.soc{% endtrans %}: {{ storage.soc }} %<br>
+            {% if storage.power >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ storage.power }} W
+            {% if storage.temp is defined %}
+                <br>{% trans %}label.storage.cell_temp{% endtrans %}: {{ storage.temp }} °C
+            {% endif %}
             {% if not loop.last %}<hr>{% endif %}
         {% endfor %}
         </div>

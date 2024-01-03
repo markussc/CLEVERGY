@@ -482,7 +482,11 @@ class DefaultController extends AbstractController
         if (isset($currentStat['smartFox'])) {
             $pvpower = array_sum($currentStat['smartFox']['PvPower'])." W";
             $netpower = $currentStat['smartFox']['power_io']." W";
-            $intpower = ($currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']))." W";
+            $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
+            if (array_key_exists('StoragePower', $currentStat['smartFox'])) {
+                $intpowerVal = $intpowerVal - $currentStat['smartFox']['StoragePower'];
+            }
+            $intpower = $intpowerVal ." W";
         } else {
             $pvpower = "";
             $netpower = "";
@@ -645,6 +649,8 @@ class DefaultController extends AbstractController
         $currentStat = [];
         if (($fullSet === true || isset($fullSet['smartfox'])) && array_key_exists('smartfox', $this->getParameter('connectors'))) {
             $currentStat['smartFox'] = $this->smartfox->getAll();
+        } elseif (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $currentStat['smartFox'] = $this->smartfox->getAllLatest();
         }
         if (($fullSet === true || isset($fullSet['pcoweb'])) && array_key_exists('pcoweb', $this->getParameter('connectors'))) {
             $currentStat['pcoWeb'] = $this->pcoweb->getAllLatest();
@@ -723,24 +729,22 @@ class DefaultController extends AbstractController
      * interface for spoofing Shelly Pro 3 EM
      * @Route("/rpc/EM.GetStatus", name="EMStatus")
      */
-    public function emStatusAction()
+    public function emStatusAction(OpenWeatherMapConnector $weather)
     {
-        $value = null;
-        if ($this->smartfox->getIp()) {
-            $smartFox = $this->smartfox->getAll();
-            $value = ['total_act_power' => $smartFox['power_io']];
-            if (array_key_exists('StorageSocMean', $smartFox)) {
-                if ($smartFox['StorageSocMean'] > 80 && $smartFox['StorageSoc'] >= 85) {
-                    // battery SOC high over last 48 hours, don't charge higher than 85%
-                    $value = max(0, $value); // announce no negative values in order not to charge battery
-                } elseif ($smartFox['StorageSocMean'] < 20 && $smartFox['StorageSoc'] <= 25) {
-                    // battery SOC low over last 48 hours, don't discharge lower than 25%
-                    $value = min(0, $value); // announce no positive values in order not to discharge battery
-                }
-            }
-        }
+        $value = $this->smartfox->getShellyPro3EMResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
         return new JsonResponse($value);
+    }
+
+    /**
+     * interface for spoofing Fronius Meter Solar API v1
+     * @Route("/solar_api/v1/GetMeterRealtimeData.cgi", name="FroniusV1Status")
+     */
+    public function froniusV1StatusAction(OpenWeatherMapConnector $weather)
+    {
+        $value = $this->smartfox->getFroniusV1MeterResponse($weather->getRelevantCloudsNextDaylightPeriod());
+
+        return new Response(json_encode($value, JSON_FORCE_OBJECT));
     }
 
     /**

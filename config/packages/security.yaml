@@ -37,6 +37,7 @@ security:
         - { path: ^/trigger/, role: PUBLIC_ACCESS }
         - { path: ^/stat/, role: PUBLIC_ACCESS }
         - { path: ^/rpc/, role: PUBLIC_ACCESS }
+        - { path: ^/solar_api/, role: PUBLIC_ACCESS }
         - { path: ^/resetting, role: PUBLIC_ACCESS }
         - { path: ^/admin/, role: ROLE_ADMIN }
         - { path: ^/, role: ROLE_USER }

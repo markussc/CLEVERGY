@@ -33,6 +33,7 @@ class PcoWebConnector extends ModbusTcpConnector
     const MODBUSTCP_WARMWATER_RESET = 136;
     const MODBUSTCP_PRETEMP = 5;
     const MODBUSTCP_BACKTEMP = 2;
+    const MODBUSTCP_BACKSETTEMP = 53;
     const MODBUSTCP_STORTEMP = 10;
     const MODBUSTCP_SETDISTRTEMP = 54;
     const MODBUSTCP_EFFDISTRTEMP = 9;
@@ -75,6 +76,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'mode' => $this->pcowebModeToString($this->em->getRepository(Settings::class)->getMode($this->getIp())),
                 'outsideTemp' => $this->readTempModbusTcp(self::MODBUSTCP_OUTSIDETEMP),
                 'waterTemp' => $this->readTempModbusTcp(self::MODBUSTCP_WARMWATER),
+                'waterSetTemp' => $this->readUint16ModbusTcp(self::MODBUSTCP_WARMWATER_SET),
                 'setDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_SETDISTRTEMP),
                 'effDistrTemp' => $this->readTempModbusTcp(self::MODBUSTCP_EFFDISTRTEMP),
                 'cpStatus' => $this->statusToString($this->readBoolModbusTcp(self::MODBUSTCP_CPSTATUS)),
@@ -84,6 +86,7 @@ class PcoWebConnector extends ModbusTcpConnector
                 'ppMode' => $this->readPpModeModbusTcp(),
                 'preTemp' => $this->readTempModbusTcp(self::MODBUSTCP_PRETEMP),
                 'backTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKTEMP),
+                'backSetTemp' => $this->readTempModbusTcp(self::MODBUSTCP_BACKSETTEMP),
                 'hwHist' => $this->readUint16ModbusTcp(self::MODBUSTCP_WARMWATER_HYST),
                 'storTemp' => $this->readTempModbusTcp(self::MODBUSTCP_STORTEMP),
                 'ppSourceIn' => $this->readTempModbusTcp(self::MODBUSTCP_PPSOURCEIN),
@@ -236,7 +239,6 @@ class PcoWebConnector extends ModbusTcpConnector
     private function resetWaterTemp()
     {
         $this->writeBoolModbusTcp(self::MODBUSTCP_WARMWATER_RESET, true);
-        dump("reset");
     }
 
     private function pcowebModeToString($mode)
