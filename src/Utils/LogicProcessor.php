@@ -929,7 +929,7 @@ class LogicProcessor
         $log[] = 'current ppLevel: ' . $ppLevel;
         // configure minPpPower
         $minPpPower = 10;
-        if ($outsideTemp < 10) {
+        if ($outsideTemp < 15) {
             // cold outside. set minPpPower depending on hc2TempDiff
             if ($hc2TempDiff > 5 && $lowStorage) {
                 $minPpPower = min(100,  $ppLevel + 5);
