@@ -225,7 +225,7 @@ class WemConnector extends ModbusTcpConnector
         // go to Wärmepumpe section and readout the current rwndrnd value (ASP.NET protection system)
         $rwndrnd = (explode("=", $this->page->evaluate('document.querySelector(".rwWindowContent > iframe:nth-child(1)").src'))[1]);
         sleep(5);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=6400180700000000' . $this->toHex($this->getPpLevel()) . '400000AB0300110104&readdata=True&rwndrnd=' . $rwndrnd);
+        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=6400180700000000' . $this->toHex($this->getPpLevel()) . '400007AB0300110104&readdata=True&rwndrnd=' . $rwndrnd);
         $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
         $this->page->evaluate(
             '(() => {
