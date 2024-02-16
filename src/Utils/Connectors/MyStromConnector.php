@@ -595,10 +595,12 @@ class MyStromConnector
             if ($status['val'] && array_key_exists('power', $status) && $status['power'] > 100) {
                 // currently turned on with substantial power flow
                 $config = $this->getConfig($deviceConf['ip']);
-                $carId = $config['carTimerData']['carId'];
-                $this->ecar->stopCharging($carId);
-                // we are trying to stop charging, we therefore do not allow immediate switch-off
-                $retVal = false;
+                if (is_array($config) && array_key_exists('carTimerData', $config) && is_array($config['carTimerData']) && array_key_exists('carId', $config['carTimerData'])) {
+                    $carId = $config['carTimerData']['carId'];
+                    $this->ecar->stopCharging($carId);
+                    // we are trying to stop charging, we therefore do not allow immediate switch-off
+                    $retVal = false;
+                }
             }
         }
 
@@ -610,8 +612,10 @@ class MyStromConnector
         if (array_key_exists('type', $deviceConf) && $deviceConf['type'] == 'carTimer') {
             // turn on the car charcher
             $config = $this->getConfig($deviceConf['ip']);
-            $carId = $config['carTimerData']['carId'];
-            $this->ecar->startCharging($carId);
+            if (is_array($config) && array_key_exists('carTimerData', $config) && is_array($config['carTimerData']) && array_key_exists('carId', $config['carTimerData'])) {
+                $carId = $config['carTimerData']['carId'];
+                $this->ecar->startCharging($carId);
+            }
         }
 
         return true;
