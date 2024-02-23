@@ -116,9 +116,9 @@ class SmartFoxConnector
                 } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
                     // battery SOC low over last 48 hours, don't discharge lower than 15%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
-                        $power = min(25, $currentPower);
+                        $power = min(30, $currentPower);
                     } elseif ($currentPower < 0 && $smartFoxLatest['StoragePower'] < 0) {
-                        $power = min(-25, $currentPower);
+                        $power = min(-30, $currentPower);
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
@@ -126,9 +126,9 @@ class SmartFoxConnector
                 if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
                     // low mean soc, cloudy sky expected in near future, therefore do not discharge below 10%
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
-                        $power = min(25, $currentPower);
+                        $power = min(30, $currentPower);
                     } elseif ($currentPower < 0 && $smartFoxLatest['StoragePower'] < 0) {
-                        $power = min(-25, $currentPower);
+                        $power = min(-30, $currentPower);
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
