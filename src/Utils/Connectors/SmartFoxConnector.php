@@ -139,7 +139,7 @@ class SmartFoxConnector
                 } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
                     // do not discharge below 5% before 5am
                     $power = min(10, $currentPower);
-                    if ($power > 10) {
+                    if ($power > 0) {
                         $power = null;
                     }
                 }
