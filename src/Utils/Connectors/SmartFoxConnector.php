@@ -118,7 +118,7 @@ class SmartFoxConnector
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
                     } elseif ($currentPower < 0 && $smartFoxLatest['StoragePower'] < 0) {
-                        $power = -25;
+                        $power = min(-25, $currentPower);
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
@@ -128,7 +128,7 @@ class SmartFoxConnector
                     if ($smartFoxLatest['StoragePower'] > 0 && $now->format('s')%60 < $smartFoxLatest['StoragePower']/23) {
                         $power = min(25, $currentPower);
                     } elseif ($currentPower < 0 && $smartFoxLatest['StoragePower'] < 0) {
-                        $power = -25;
+                        $power = min(-25, $currentPower);
                     }  else {
                         $power = min(0, $currentPower+30); // announce no positive values in order not to discharge battery
                     }
