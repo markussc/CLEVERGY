@@ -472,6 +472,20 @@ class LogicProcessor
             return;
         }
 
+        // readout current temperature values
+        if ($this->mobilealerts->getAvailable()) {
+            $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
+            if ($outsideTemp < 18 && !$this->mobilealerts->currentInsideTempAvailable()) {
+                // no current data available, set insideTemp just above minInsideTemp
+                $insideTemp = $minInsideTemp + 0.5;
+            }
+        } elseif ($this->netatmo->getAvailable()) {
+            $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
+        } else {
+            // if no inside sensor is available, we assume 0.5°C above min inside temp (this leads to a reasonable heating curve for hc2)
+            $insideTemp = $this->minInsideTemp + 0.5;
+        }
+
         // set temperature levels
         if ($pcoMode == Settings::MODE_HOLIDAY) {
             // use fixed levels when in mode holiday
@@ -524,20 +538,6 @@ class LogicProcessor
             $minInsideTemp = max($this->minInsideTemp, $this->minInsideTemp-0.5+$tempOffset/5);
             // set the max inside temp above which we do not want to have the 2nd heat circle active
             $maxInsideTemp = min($this->minInsideTemp + 2, $this->minInsideTemp+1+$tempOffset);
-        }
-
-        // readout current temperature values
-        if ($this->mobilealerts->getAvailable()) {
-            $insideTemp =  $this->mobilealerts->getCurrentMinInsideTemp();
-            if ($outsideTemp < 18 && !$this->mobilealerts->currentInsideTempAvailable()) {
-                // no current data available, set insideTemp just below minInsideTemp
-                $insideTemp = $minInsideTemp-0.2;
-            }
-        } elseif ($this->netatmo->getAvailable()) {
-            $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
-        } else {
-            // if no inside sensor is available, we assume 0.5°C above min inside temp (this leads to a reasonable heating curve for hc2)
-            $insideTemp = $this->minInsideTemp + 0.5;
         }
 
         $ppMode = $this->pcoweb->ppModeToInt($pcoweb['ppMode']);
@@ -863,8 +863,8 @@ class LogicProcessor
         } elseif ($this->netatmo->getAvailable()) {
             $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
         } else {
-            // if no inside sensor is available, we assume 20°C
-            $insideTemp = 20;
+            // if no inside sensor is available, we assume 0.5°C above min inside temp which will lead to a reasonable hc2
+            $insideTemp = $this->minInsideTemp + 0.5;
         }
         // set the temperature offset for low outside temp
         $tempOffset = 0;
