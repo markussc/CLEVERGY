@@ -536,8 +536,8 @@ class LogicProcessor
         } elseif ($this->netatmo->getAvailable()) {
             $insideTemp = $this->netatmo->getCurrentMinInsideTemp();
         } else {
-            // if no inside sensor is available, we assume 20°C
-            $insideTemp = 20;
+            // if no inside sensor is available, we assume 0.5°C above min inside temp (this leads to a reasonable heating curve for hc2)
+            $insideTemp = $this->minInsideTemp + 0.5;
         }
 
         $ppMode = $this->pcoweb->ppModeToInt($pcoweb['ppMode']);
