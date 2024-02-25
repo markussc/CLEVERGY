@@ -669,7 +669,7 @@ class LogicProcessor
                     }
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
                     if (!$ppModeChanged && !$ppStatus && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY) && ($heatStorageMidTemp < 36 || $ppMode == PcoWebConnector::MODE_SUMMER) && (!$cpStatus || $pcoweb['effDistrTemp'] < 25 || $insideTemp < $minInsideTemp + 0.2)) {
-                        if ($pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2) {
+                        if ($pcoweb['setDistrTemp'] > $heatStorageMidTemp + 5 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 5) {
                             $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
                             $log[] = "set MODE_HOLIDAY due to emergency action (storage temp not sufficient)";
                             $ppModeChanged = true;
@@ -721,8 +721,7 @@ class LogicProcessor
                     $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_SUMMER);
                     $log[] = "set MODE_SUMMER for warm water generation only during low energy rate";
                     $ppModeChanged = true;
-                }
-                elseif (!$warmWater && $heatStorageMidTemp < 36 && $diffToEndOfLowEnergyRate < 24) {
+                } elseif (!$warmWater && $heatStorageMidTemp < 36 && $diffToEndOfLowEnergyRate < 24) {
                     // storage heating only (does not apply if no rate differentiation is configured, i.e. diffToEndOfLowEnergyRate = 24)
                     $activateHeating = true;
                     if (!$ppModeChanged && (!$ppStatus || (PcoWebConnector::MODE_SUMMER && $waterTemp > $minWaterTemp + 4)) && ($ppMode !== PcoWebConnector::MODE_AUTO || $ppMode !== PcoWebConnector::MODE_HOLIDAY)) {
