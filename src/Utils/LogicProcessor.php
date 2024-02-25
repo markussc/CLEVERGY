@@ -87,6 +87,7 @@ class LogicProcessor
 
         $this->smartfoxLatest = null;
         $this->avgPower = null;
+        $this->avg1Power = null;
         $this->avgPvPower = null;
         $this->shellyLatest = null;
         $this->mystromLatest = null;
@@ -193,8 +194,7 @@ class LogicProcessor
             $avgPower = $this->getAvgPower();
 
             // get current net_power
-            $smartfox = $this->getSmartfoxLatest();
-            $netPower = $smartfox['power_io'];
+            $netPower = $this->getAvg1Power();
 
             // get  mystrom values
             $mystromDevices = $this->getMystromLatest();
@@ -310,8 +310,7 @@ class LogicProcessor
         $avgPower = $this->getAvgPower();
 
         // get current net_power
-        $smartfox = $this->getSmartfoxLatest();
-        $netPower = $smartfox['power_io'];
+        $netPower = $this->getAvg1Power();
 
         // get  shelly values
         $shellyDevices = $this->getShellyLatest();
@@ -1348,6 +1347,18 @@ class LogicProcessor
         }
 
         return $this->smartfoxLatest;
+    }
+
+    /*
+     * get net power for latest minute while compensating battery power
+     */
+    private function getAvg1Power()
+    {
+        if ($this->avg1Power === null) {
+            $this->avg1Power = $this->em->getRepository(SmartFoxDataStore::class)->getNetPowerAverage($this->smartfox->getIp(), 1);
+        }
+
+        return $this->avg1Power;
     }
 
     private function getAvgPower()
