@@ -147,6 +147,7 @@ parameters:
                 on: # set a criterion which must be fulfilled for turning the device on (in addition to the power criterion)
                     -
                         'mobilealerts:XXXXXXXXXXXX:4': '>55'
+                        'battery': '>75' # define SOC level for battery which must be fulfilled as condition (> and < are supported)
                         'mobilealerts:XXXXXXXXXXXX:1': 'rain>1.5' # for rain sensors, a condition can be set for "more mm rain than during the last 15 minutes"
                 lowRateOn:
                     -
