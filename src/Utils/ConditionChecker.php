@@ -400,6 +400,33 @@ class ConditionChecker
                     break;
                 }
             }
+            if ($condArr[0] == 'battery') {
+                $smartFox = $this->smartfox->getAllLatest();
+                if (array_key_exists(StorageSoc, $smartFox)) {
+                    $currentSoc = $smartFox['StorageSoc'];
+                    $socThresh = str_replace('<', '', str_replace('>', '', $condition));
+                    // check if > or < should be checked
+                    if (strpos($condition, '>') !== false) {
+                        // we have larger than condition
+                        if ($currentSoc > $socThresh) {
+                            $fulfilled = true;
+                        } else {
+                            $fulfilled = false;
+                            break;
+                        }
+                    } elseif (strpos($condition, '<') !== false) {
+                        // we have a smaller than condition
+                        if ($currentSoc < $socThresh) {
+                            $fulfilled = true;
+                        } else {
+                            $fulfilled = false;
+                            break;
+                        }
+                    }
+                } else {
+                    $fulfilled = true;
+                }
+            }
         }
 
         return $fulfilled;
