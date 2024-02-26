@@ -402,7 +402,7 @@ class ConditionChecker
             }
             if ($condArr[0] == 'battery') {
                 $smartFox = $this->smartfox->getAllLatest();
-                if (array_key_exists(StorageSoc, $smartFox)) {
+                if (array_key_exists('StorageSoc', $smartFox)) {
                     $currentSoc = $smartFox['StorageSoc'];
                     $socThresh = str_replace('<', '', str_replace('>', '', $condition));
                     // check if > or < should be checked
