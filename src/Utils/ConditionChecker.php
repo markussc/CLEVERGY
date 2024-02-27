@@ -391,7 +391,7 @@ class ConditionChecker
                 }
             }
             if ($condArr[0] == 'smartfox') {
-                $smartFox = $this->smartfox->getAll();
+                $smartFox = $this->smartfox->getAllLatest();
                 $value = $smartFox['power_io'];
                 if (-1 * $value > $condition) {
                     $fulfilled = true;
