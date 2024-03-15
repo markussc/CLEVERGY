@@ -111,11 +111,31 @@ class SmartFoxConnector
             $msg = null;
             $now = new \DateTime();
             if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
-                if ($smartFoxLatest['StorageSocMean'] > 60 && $smartFoxLatest['StorageSoc'] >= 65) {
-                    // battery SOC high over last 48 hours, don't charge higher than 65%
+                if (
+                        $smartFoxLatest['StorageSocMean'] > 50 &&
+                        $smartFoxLatest['StorageSoc'] > 15 &&
+                        $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc') > 10
+                    ) {
+                    // if we have
+                    // - relatively larce mean SOC
+                    // - some energy left
+                    // - SOC over the last 24h never below SOC 10%
+                    // --> increase reported power slightly to minimize unnecessary net power consumption
+                    $currentPower = $currentPower + 25;
+                    $power = $currentPower;
+                }
+                if (
+                        $smartFoxLatest['StorageSocMean'] > 60 &&
+                        $smartFoxLatest['StorageSoc'] > 60 &&
+                        $smartFoxLatest['StorageSoc'] >= (115 - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
+                    ) {
+                    // if we have
+                    // - high over last 48 hours
+                    // - current SOC at least 60%
+                    // - current SOC is higher than what we ever required over the last 48h plus 15% reserve
                     $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                     if ($power < 0) {
-                        $msg = 'Mean SOC high, do not charge to more than 65%';
+                        $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
                     }
                 } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
                     // battery SOC low over last 48 hours, don't discharge lower than 15%

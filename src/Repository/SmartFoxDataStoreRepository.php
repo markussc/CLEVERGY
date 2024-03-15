@@ -62,6 +62,50 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         }
     }
 
+    public function getMin($ip, $minutes, $idx)
+    {
+        $date = new \DateTime();
+        $interval = new \DateInterval("PT" . $minutes . "M");
+        $interval->invert = 1;
+        $date->add($interval);
+
+        $qb = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp > :date')
+            ->setParameters([
+                'ip' => $ip,
+                'date' => $date
+            ]);
+        $results = $qb->getQuery()->getResult();
+        $minVal = null;
+        foreach ($results as $res) {
+            if ($idx === 'PvPower') {
+                $newValue = array_sum($res->getData()[$idx]);
+            } elseif ($idx === 'power_io' && array_key_exists('StoragePower', $res->getData())) {
+                if ($res->getData()['StoragePower'] >= 0) {
+                    // positive StoragePower means: battery charging
+                    // we subtract the power currently consumed by the battery from the average NetPower as we prefer direct consumption
+                    $newValue = $res->getData()['power_io'] - abs($res->getData()['StoragePower']);
+                } else {
+                    // negative StoragePower means: uncharging battery
+                    // we add the power currently delivered from the battery to the average NetPower
+                    $newValue = $res->getData()['power_io'] + abs($res->getData()['StoragePower']);
+                }
+            } elseif (array_key_exists($idx, $res->getData())) {
+                $newValue = $res->getData()[$idx];
+            } else {
+                $newValue = 0;
+            }
+            if ($minVal == null) {
+                $minVal = $newValue;
+            } else {
+                $minVal = min($minVal, $newValue);
+            }
+        }
+
+        return $minVal;
+    }
+
     public function getEnergyToday($ip)
     {
         return $this->getEnergyInterval($ip, 'PvEnergy');
