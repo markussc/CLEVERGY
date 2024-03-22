@@ -318,6 +318,8 @@ class DefaultController extends AbstractController
         $thisMonth = new \DateTime('first day of this month midnight');
         $lastYearMonth = new \DateTime('first day of this month midnight');
         $lastYearMonth = $lastYearMonth->sub(new \DateInterval('P1Y'));
+        $lastQuarterStart = (new \DateTime('first day of -' . (((date('n') - 1) % 3) + 3) . ' month'))->modify('00:00:00.000000');
+        $lastQuarterEnd = (new \DateTime('last day of -' . (((date('n') - 1) % 3) + 1) . ' month'))->modify('23:59:59.999999');
         $thisYear = new \DateTime('first day of january this year midnight');
         $lastYearPart = new \DateTime();
         $lastYearPart = $lastYearPart->sub(new \DateInterval('P1Y'));
@@ -329,6 +331,7 @@ class DefaultController extends AbstractController
             'week',
             'month',
             'lastYearMonth',
+            'lastQuarter',
             'year',
             'lastYearPart',
             'lastYear',
@@ -341,6 +344,7 @@ class DefaultController extends AbstractController
                 'pv_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisWeek, $now),
                 'pv_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisMonth, $now),
                 'pv_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYearMonth, $lastYearPart),
+                'pv_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastQuarterStart, $lastQuarterEnd),
                 'pv_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $thisYear, $now),
                 'pv_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYear, $lastYearPart),
                 'pv_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergy', $lastYear, $thisYear),
@@ -359,6 +363,9 @@ class DefaultController extends AbstractController
                 'energy_in_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastYearMonth, $lastYearPart),
                 'energy_in_lastYearMonth_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastYearMonth, $lastYearPart),
                 'energy_out_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
+                'energy_in_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastQuarterStart, $lastQuarterEnd),
+                'energy_in_lastQuarter_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastQuarterStart, $lastQuarterEnd),
+                'energy_out_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
                 'energy_in_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $thisYear, $now),
                 'energy_in_year_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
                 'energy_out_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $thisYear, $now),
@@ -376,6 +383,7 @@ class DefaultController extends AbstractController
                     'pv_alt_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisWeek, $now),
                     'pv_alt_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisMonth, $now),
                     'pv_alt_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYearMonth, $lastYearPart),
+                    'pv_alt_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastQuarterStart, $lastQuarterEnd),
                     'pv_alt_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $thisYear, $now),
                     'pv_alt_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYear, $lastYearPart),
                     'pv_alt_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'PvEnergyAlt', $lastYear, $thisYear),
@@ -388,6 +396,7 @@ class DefaultController extends AbstractController
                     'storage_in_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisWeek, $now),
                     'storage_in_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisMonth, $now),
                     'storage_in_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYearMonth, $lastYearPart),
+                    'storage_in_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastQuarterStart, $lastQuarterEnd),
                     'storage_in_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $thisYear, $now),
                     'storage_in_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYear, $lastYearPart),
                     'storage_in_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyIn', $lastYear, $thisYear),
@@ -396,6 +405,7 @@ class DefaultController extends AbstractController
                     'storage_out_week' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisWeek, $now),
                     'storage_out_month' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisMonth, $now),
                     'storage_out_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYearMonth, $lastYearPart),
+                    'storage_out_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastQuarterStart, $lastQuarterEnd),
                     'storage_out_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $thisYear, $now),
                     'storage_out_lastYearPart' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYear, $lastYearPart),
                     'storage_out_lastYear' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'StorageEnergyOut', $lastYear, $thisYear),
@@ -410,6 +420,7 @@ class DefaultController extends AbstractController
                 'energy_week' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisWeek, $now),
                 'energy_month' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisMonth, $now),
                 'energy_lastYearMonth' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYearMonth, $lastYearPart),
+                'energy_lastQuarter' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastQuarterStart, $lastQuarterEnd),
                 'energy_year' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $thisYear, $now),
                 'energy_lastYearPart' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYear, $lastYearPart),
                 'energy_lastYear' => $em->getRepository(ConexioDataStore::class)->getEnergyInterval($ip, $lastYear, $thisYear),

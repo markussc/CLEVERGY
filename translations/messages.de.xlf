@@ -505,6 +505,10 @@
         <source>label.device.status.no_inside_temp</source>
         <target>Innentemperatur nicht aktuell!</target>
       </trans-unit>
+      <trans-unit id="AKJHRE" resname="label.lastQuarter">
+        <source>label.lastQuarter</source>
+        <target>Vorquartal</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
