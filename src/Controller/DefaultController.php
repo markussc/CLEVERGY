@@ -365,7 +365,7 @@ class DefaultController extends AbstractController
                 'energy_out_lastYearMonth' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
                 'energy_in_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $lastQuarterStart, $lastQuarterEnd),
                 'energy_in_lastQuarter_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $lastQuarterStart, $lastQuarterEnd),
-                'energy_out_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastYearMonth, $lastYearPart),
+                'energy_out_lastQuarter' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $lastQuarterStart, $lastQuarterEnd),
                 'energy_in_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_in', $thisYear, $now),
                 'energy_in_year_highrate' => $em->getRepository(SmartFoxDataStore::class)->getEnergyIntervalHighRate($ip, 'energy_in', $this->getParameter('energy_low_rate'), $thisYear, $now),
                 'energy_out_year' => $em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($ip, 'energy_out', $thisYear, $now),
