@@ -35,6 +35,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class DefaultController extends AbstractController
 {
@@ -72,7 +73,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/", name="homepage")
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request, EntityManagerInterface $em)
     {
         $clientIp = $request->getClientIp();
         $authenticatedIps = $this->getParameter('authenticated_ips');
@@ -80,7 +81,6 @@ class DefaultController extends AbstractController
         $securityContext = $this->container->get('security.authorization_checker');
         if (!$securityContext->isGranted('IS_AUTHENTICATED_REMEMBERED') && array_key_exists($clientIp, $authenticatedIps)) {
             $route = $request->get('route');
-            $em = $this->getDoctrine()->getManager();
             $user = $em->getRepository(User::class)->findOneBy(array('email' => $authenticatedIps[$clientIp]));
             if ($user) {
                 $token = new UsernamePasswordToken($user, $user->getPassword(), "xinstance", $user->getRoles());
@@ -97,7 +97,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/overview", name="overview")
      */
-    public function overviewAction(Request $request)
+    public function overviewAction(Request $request, EntityManagerInterface $em)
     {
         $activePage = "overview";
         $history = [];
@@ -121,7 +121,6 @@ class DefaultController extends AbstractController
             }
 
             $activePage = "details";
-            $em = $this->getDoctrine()->getManager();
             // get current values
             if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
                 $currentStat['smartFox'] = $this->smartfox->getAllLatest();
@@ -213,18 +212,18 @@ class DefaultController extends AbstractController
      * Execute command
      * @Route("/cmd/{command}", name="command_exec")
      */
-    public function commandExecuteAction(Request $request, $command)
+    public function commandExecuteAction(EntityManagerInterface $em, $command)
     {
         // only owners are allowed to execute commands
         $this->denyAccessUnlessGranted('ROLE_OWNER');
 
         // execute the command
-        $success = $this->executeCommand($command);
+        $success = $this->executeCommand($em, $command);
 
         return new JsonResponse(['success' => $success]);
     }
 
-    private function executeCommand($jsonCommand)
+    private function executeCommand($em, $jsonCommand)
     {
         $command = json_decode($jsonCommand);
         switch ($command[0]) {
@@ -253,15 +252,15 @@ class DefaultController extends AbstractController
                         // make sure all mystrom PIR devices have their action URL set correctly
                         $this->mystrom->activateAllPIR();
                     }
-                    $settings = $this->getDoctrine()->getManager()->getRepository(Settings::class)->findOneByConnectorId($connectorId);
+                    $settings = $em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
                     if (!$settings) {
                         $settings = new Settings();
                         $settings->setConnectorId($connectorId);
-                        $this->getDoctrine()->getManager()->persist($settings);
+                        $em->persist($settings);
                     }
                     $settings->setMode($command[3]);
 
-                    $this->getDoctrine()->getManager()->flush();
+                    $em->flush();
                     return true;
                 }
             case 'command':
@@ -308,9 +307,8 @@ class DefaultController extends AbstractController
     /**
      * @Route("/history", name="history")
      */
-    public function historyAction(Request $request)
+    public function historyAction(Request $request, EntityManagerInterface $em)
     {
-        $em = $this->getDoctrine()->getManager();
         $yesterday = new \DateTime('yesterday');
         $now = new \DateTime('now');
         $today = new \DateTime('today');

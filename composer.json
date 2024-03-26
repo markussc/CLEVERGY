@@ -13,21 +13,21 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.7",
         "symfony/apache-pack": "^1.0",
-        "symfony/config": "5.4.*",
-        "symfony/console": "5.4.*",
-        "symfony/css-selector": "5.4.*",
-        "symfony/dom-crawler": "5.4.*",
-        "symfony/dotenv": "5.4.*",
+        "symfony/config": "6.4.*",
+        "symfony/console": "6.4.*",
+        "symfony/css-selector": "6.4.*",
+        "symfony/dom-crawler": "6.4.*",
+        "symfony/dotenv": "6.4.*",
         "symfony/flex": "^1.18",
-        "symfony/form": "5.4.*",
-        "symfony/framework-bundle": "5.4.*",
-        "symfony/http-client": "5.4.*",
-        "symfony/mailer": "5.4.*",
-        "symfony/security-bundle": "5.4.*",
-        "symfony/translation": "5.4.*",
-        "symfony/validator": "5.4.*",
+        "symfony/form": "6.4.*",
+        "symfony/framework-bundle": "6.4.*",
+        "symfony/http-client": "6.4.*",
+        "symfony/mailer": "6.4.*",
+        "symfony/security-bundle": "6.4.*",
+        "symfony/translation": "6.4.*",
+        "symfony/validator": "6.4.*",
         "symfony/webpack-encore-bundle": "^1.13",
-        "symfony/yaml": "5.4.*",
+        "symfony/yaml": "6.4.*",
         "symfonycasts/reset-password-bundle": "^1.11",
         "symfonycasts/verify-email-bundle": "^1.7",
         "twig/extra-bundle": "^3.3",
@@ -36,9 +36,9 @@
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.36",
-        "symfony/stopwatch": "^5.4",
-        "symfony/twig-bundle": "^5.4",
-        "symfony/web-profiler-bundle": "^5.4"
+        "symfony/stopwatch": "^6.4",
+        "symfony/twig-bundle": "^6.4",
+        "symfony/web-profiler-bundle": "^6.4"
     },
     "config": {
         "preferred-install": {
@@ -87,7 +87,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "5.4.*"
+            "require": "6.4.*"
         }
     }
 }

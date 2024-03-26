@@ -119,9 +119,9 @@ abstract class DataStoreBase
     */
     public function onPrePersist(LifecycleEventArgs $eventArgs)
     {
-        $latest = self::createLatest($eventArgs->getEntityManager(), $this);
+        $latest = self::createLatest($eventArgs->getObjectManager(), $this);
         if ($latest) {
-            $eventArgs->getEntityManager()->persist($latest);
+            $eventArgs->getObjectManager()->persist($latest);
         }
     }
 
