@@ -3,7 +3,6 @@
 namespace App\Utils\Connectors;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Nesk\Puphpeteer\Puppeteer;
 use App\Entity\Settings;
 use App\Entity\WemDataStore;
 use ModbusTcpClient\Utils\Types;
@@ -17,12 +16,6 @@ use ModbusTcpClient\Utils\Types;
 class WemConnector extends ModbusTcpConnector
 {
     protected $em;
-    private $basePath;
-    private $browser;
-    private $page;
-    private $username;
-    private $password;
-    private $status;
     const UNAUTHENTICATED = 0;
     const AUTHENTICATED = 1;
     const UNAVAILABLE = -1;
@@ -46,14 +39,10 @@ class WemConnector extends ModbusTcpConnector
     {
         $this->em = $em;
         if (array_key_exists('wem', $connectors)) {
-            $this->basePath = "https://www.wemportal.com/Web/";
-            $this->username = $connectors['wem']['username'];
-            $this->password = $connectors['wem']['password'];
             $this->ip = $connectors['wem']['ip'];
             $this->port = $connectors['wem']['port'];
             parent::__construct();
         }
-        $this->status = self::UNAUTHENTICATED;
     }
 
     public function getAllLatest()
@@ -96,7 +85,7 @@ class WemConnector extends ModbusTcpConnector
 
     public function getUsername()
     {
-        return $this->username;
+        return $this->ip;
     }
 
     public function executeCommand($type, $command)
@@ -133,67 +122,6 @@ class WemConnector extends ModbusTcpConnector
     }
 
     /*
-     * authenticates with user credentials and reloads data from the device
-     */
-    private function authenticate()
-    {
-        // initialize
-        $this->status = self::UNAVAILABLE;
-        $puppeteer = new Puppeteer;
-        $this->browser = $puppeteer->launch([
-            'args' => [
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--no-sandbox',
-            ]
-        ]);
-        $this->page = $this->browser->newPage();
-
-        // authenticate
-        $this->page->goto($this->basePath . 'Login.aspx');
-
-
-        $this->page->evaluate(
-            '(() => {
-                    document.querySelector("#ctl00_content_tbxUserName").value = "' . $this->username.'";
-                    document.querySelector("#ctl00_content_tbxPassword").value = "' . $this->password.'";
-                })()'
-        );
-        $this->page->click("#ctl00_content_btnLogin");
-        $this->page->waitForNavigation();
-
-        $this->status = self::AUTHENTICATED;
-    }
-
-    private function getSpecialistDefault()
-    {
-        $data = [];
-        if ($this->status !== self::AUTHENTICATED) {
-            $this->authenticate();
-        }
-
-        // click "Anlagen" button in top navigation
-        $this->page->click("#ctl00_RMTopMenu a.rmLink");
-        $this->page->waitForSelector("#ctl00_SubMenuControl1_subMenu");
-        // click "Fachmann" in sub navigation
-        $this->page->click("#ctl00_SubMenuControl1_subMenu li:nth-of-type(4)>a");
-        $this->page->waitForSelector("#ctl00_rdMain_C_controlExtension_rptDisplayContent_ctl02_ctl00_rpbGroupData_i0_rptGroupContent_ctl00_ctl00_lwSimpleData_ctrl15_ctl00_lblValue");
-
-        return $data;
-    }
-
-    public function close()
-    {
-        if ($this->browser !== null) {
-            $this->browser->close();
-            $this->browser = null;
-        }
-
-        $this->status = self::UNAUTHENTICATED;
-    }
-
-    /*
      * $value: 0 - 150 in steps of 5; default: 75
      */
     private function setHeatCircle1($value = 75)
@@ -214,27 +142,7 @@ class WemConnector extends ModbusTcpConnector
      */
     private function setPpPower($value = 100)
     {
-        if ($this->status === self::UNAVAILABLE) {
-            return;
-        }
-        if ($this->status === self::UNAUTHENTICATED) {
-           $this->authenticate();
-        }
-        sleep(5);
-        $this->getSpecialistDefault();
-        // go to Wärmepumpe section and readout the current rwndrnd value (ASP.NET protection system)
-        $rwndrnd = (explode("=", $this->page->evaluate('document.querySelector(".rwWindowContent > iframe:nth-child(1)").src'))[1]);
-        sleep(5);
-        $this->page->goto($this->basePath . 'UControls/Weishaupt/DataDisplay/WwpsParameterDetails.aspx?entityvalue=6400180700000000' . $this->toHex($this->getPpLevel()) . '400007AB0300110104&readdata=True&rwndrnd=' . $rwndrnd);
-        $this->page->waitForSelector("#ctl00_DialogContent_ddlNewValue");
-        $this->page->evaluate(
-            '(() => {
-                    document.querySelector("#ctl00_DialogContent_ddlNewValue").value = "' . $value . '";
-                })()'
-        );
-        sleep(5);
-        $this->page->click("#ctl00_DialogContent_BtnSave");
-        $this->storePpLevel($value);
+        // currently not supported
     }
 
     /*
@@ -285,36 +193,5 @@ class WemConnector extends ModbusTcpConnector
         }
 
         return $ppModes[$ppModeInt];
-    }
-
-    private function storePpLevel($ppLevel)
-    {
-        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->getUsername());
-        if (!$device) {
-            $device = new Settings();
-            $device->setConnectorId($this->getUsername());
-            $this->em->persist($device);
-        }
-        $config = $device->getConfig();
-        if(!$config) {
-            $config = [];
-        }
-        $config['ppLevel'] = $ppLevel;
-        $device->setConfig($config);
-        $this->em->flush();
-    }
-
-    private function getPpLevel()
-    {
-        $ppLevel = 100;
-        $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->getUsername());
-        if ($device) {
-            $config = $device->getConfig();
-            if(is_array($config) && array_key_exists('ppLevel', $config)) {
-                $ppLevel = $config['ppLevel'];
-            }
-        }
-
-        return $ppLevel;
     }
 }

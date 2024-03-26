@@ -2,9 +2,6 @@
     "aldas/modbus-tcp-client": {
         "version": "2.1.1"
     },
-    "clue/socket-raw": {
-        "version": "v1.5.0"
-    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -93,12 +90,6 @@
     "laminas/laminas-code": {
         "version": "4.4.3"
     },
-    "nesk/puphpeteer": {
-        "version": "1.6.0"
-    },
-    "nesk/rialto": {
-        "version": "1.4.0"
-    },
     "nikic/php-parser": {
         "version": "v4.13.2"
     },
@@ -122,9 +113,6 @@
     },
     "psr/log": {
         "version": "1.1.3"
-    },
-    "sensio/framework-extra-bundle": {
-        "version": "v3.0.29"
     },
     "symfony/apache-pack": {
         "version": "1.0",
@@ -469,9 +457,6 @@
     },
     "twig/twig": {
         "version": "v2.13.1"
-    },
-    "vierbergenlars/php-semver": {
-        "version": "3.0.2"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"

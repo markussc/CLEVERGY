@@ -37,9 +37,7 @@ parameters:
                     xyz: 10
                 integer:
                     abc: 15
-        wem: # connector for WEM Portal (Weishaupt Energy Manager)
-            username: me@you.com
-            password:  mysecret
+        wem: # connector for Weishaupt WP with WEM Portal (using ModbusTCP)
             ip: 192.168.22.31
             port: 502
         conexio:
