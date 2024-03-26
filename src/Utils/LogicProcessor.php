@@ -1091,9 +1091,6 @@ class LogicProcessor
         // set hc2
         $this->wem->executeCommand('hc2', $hc2);
 
-        // close chromium
-        $this->wem->close();
-
         $commandLog->setLog($log);
         $commandLog->setTimestamp(new \DateTime());
         $this->em->persist($commandLog);

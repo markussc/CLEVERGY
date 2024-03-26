@@ -47,7 +47,7 @@ class WemConnector extends ModbusTcpConnector
 
     public function getAllLatest()
     {
-        return $this->em->getRepository(WemDataStore::class)->getLatest($this->username);
+        return $this->em->getRepository(WemDataStore::class)->getLatest($this->ip);
     }
 
     public function getAll()
