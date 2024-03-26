@@ -4,7 +4,6 @@ namespace App\Utils\Connectors;
 
 use App\Entity\ConexioDataStore;
 use Doctrine\ORM\EntityManagerInterface;
-use Nesk\Puphpeteer\Puppeteer;
 
 /**
  * Connector to retrieve data from the conexio200 web modul (used by Soltop for solar-thermical systems)
@@ -57,24 +56,19 @@ class ConexioConnector
     {
         try {
             $url = $this->basePath . '/medius_val.xml';
-            $puppeteer = new Puppeteer;
-            $browser = $puppeteer->launch([
-                'args' => [
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage',
-                    '--disable-setuid-sandbox',
-                    '--no-sandbox',
-                ]
-            ]);
-            $page = $browser->newPage();
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->connectors['conexio']['username'].':'.$this->connectors['conexio']['password']);
+            curl_setopt($ch, CURLOPT_URL, $url);
+            $content = curl_exec($ch);
+            curl_close($ch);
 
-            // authenticate
-            $page->authenticate(['username' => $this->connectors['conexio']['username'], 'password' => $this->connectors['conexio']['password']]);
-
-            // get data-string
-            $page->goto($url);
-            $rawData = $page->evaluate('document.querySelector("data").innerHTML');
-            $browser->close();
+            $xml = simplexml_load_string($content, "SimpleXMLElement", LIBXML_NOCDATA);
+            $json = json_encode($xml);
+            $array = json_decode($json,TRUE);
+            $rawData = $array['data'];
 
             // extract the required data
             $data = $this->extractData($rawData);
@@ -86,6 +80,7 @@ class ConexioConnector
         } catch (\Exception $e) {
             return false;
         }
+
         return $data;
     }
 
