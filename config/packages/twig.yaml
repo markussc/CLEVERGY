@@ -16,3 +16,8 @@ twig:
         gardenaConnector: '@App\Utils\Connectors\GardenaConnector'
         netatmoConnector: '@App\Utils\Connectors\NetatmoConnector'
         conditionChecker: '@App\Utils\ConditionChecker'
+    file_name_pattern: '*.twig'
+
+when@test:
+    twig:
+        strict_variables: true
