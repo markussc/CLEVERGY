@@ -1,10 +1,13 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
     translator: { fallbacks: ['%env(LOCALE)%'] }
     csrf_protection: true
-    http_method_override: true
     trusted_proxies: '%env(TRUSTED_PROXIES)%'
     trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+    annotations: false
+    http_method_override: false
+    handle_all_throwables: true
 
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
@@ -22,3 +25,8 @@ framework:
     php_errors:
         log: true
 
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file
