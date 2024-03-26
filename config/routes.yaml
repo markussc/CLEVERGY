@@ -1,14 +1,5 @@
-# This file is the entry point to configure your own HTTP routes.
-# Files in the routes/ subdirectory configure the routes for your dependencies.
-
-#index:
-#    path: /
-#    defaults: { _controller: 'App\Controller\DefaultController::index' }
-
 controllers:
-    resource: ../src/Controller/
-    type: annotation
-
-kernel:
-    resource: ../src/Kernel.php
-    type: annotation
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
