@@ -2,16 +2,16 @@
 
 namespace App\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Utils\Connectors\GardenaConnector;
 
+// the name of the command is what users type after "php bin/console"
+#[AsCommand(name: 'oshans:gardena:update')]
 class UpdateGardenaCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'oshans:gardena:update';
-
     public function __construct(GardenaConnector $gardena)
     {
         $this->gardena = $gardena;

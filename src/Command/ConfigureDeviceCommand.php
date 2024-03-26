@@ -2,15 +2,16 @@
 
 namespace App\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Utils\LogicProcessor;
 
+// the name of the command is what users type after "php bin/console"
+#[AsCommand(name: 'oshans:devices:configure')]
 class ConfigureDeviceCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'oshans:devices:configure';
 
     public function __construct(LogicProcessor $logic)
     {

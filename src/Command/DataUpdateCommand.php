@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,11 +12,10 @@ use App\Utils\LogicProcessor;
  * Retrieves data from connectors and stores it into the database
  *
  */
+// the name of the command is what users type after "php bin/console"
+#[AsCommand(name: 'oshans:data:update')]
 class DataUpdateCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'oshans:data:update';
-
     public function __construct(LogicProcessor $logic)
     {
         $this->logic = $logic;
@@ -26,7 +26,6 @@ class DataUpdateCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('oshans:data:update')
             ->setDescription('Retrieve data from connectors and store in database')
         ;
     }

@@ -2,16 +2,16 @@
 
 namespace App\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+// the name of the command is what users type after "php bin/console"
+#[AsCommand(name: 'oshans:data:delete')]
 class DataDeleteCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'oshans:data:delete';
-
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
