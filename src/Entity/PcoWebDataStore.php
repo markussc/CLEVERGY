@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PcoWebDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\PcoWebDataStoreRepository::class)]
 class PcoWebDataStore extends DataStoreBase
 {
     protected $latestClass = PcoWebDataLatest::class;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class PcoWebDataStore extends DataStoreBase
      *
      * @return PcoWebDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

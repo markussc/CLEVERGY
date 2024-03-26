@@ -16,24 +16,24 @@ use ModbusTcpClient\Utils\Types;
 class WemConnector extends ModbusTcpConnector
 {
     protected $em;
-    const UNAUTHENTICATED = 0;
-    const AUTHENTICATED = 1;
-    const UNAVAILABLE = -1;
-    const MODBUSTCP_OUTSIDETEMP = 30001;
-    const MODBUSTCP_WARMWATER = 32102;
-    const MODBUSTCP_PRETEMP = 33104;
-    const MODBUSTCP_BACKTEMP = 33105;
-    const MODBUSTCP_STORTEMP = 33108;
-    const MODBUSTCP_SETDISTRTEMP = 31204;
-    const MODBUSTCP_EFFDISTRTEMP = 31205;
-    const MODBUSTCP_PPMODE = 40001;
-    const MODBUSTCP_PPSTATUS = 33103;
-    const MODBUSTCP_CPSTATUS = 41202;
-    const MODBUSTCP_PPSOURCEIN = 30002;
-    const MODBUSTCP_PPSOURCEOUT = 33106;
-    const MODBUSTCP_HC1 = 41108;
-    const MODBUSTCP_HC2 = 41208;
-    const MODBUSTCP_MODE = 30006;
+    public const UNAUTHENTICATED = 0;
+    public const AUTHENTICATED = 1;
+    public const UNAVAILABLE = -1;
+    public const MODBUSTCP_OUTSIDETEMP = 30001;
+    public const MODBUSTCP_WARMWATER = 32102;
+    public const MODBUSTCP_PRETEMP = 33104;
+    public const MODBUSTCP_BACKTEMP = 33105;
+    public const MODBUSTCP_STORTEMP = 33108;
+    public const MODBUSTCP_SETDISTRTEMP = 31204;
+    public const MODBUSTCP_EFFDISTRTEMP = 31205;
+    public const MODBUSTCP_PPMODE = 40001;
+    public const MODBUSTCP_PPSTATUS = 33103;
+    public const MODBUSTCP_CPSTATUS = 41202;
+    public const MODBUSTCP_PPSOURCEIN = 30002;
+    public const MODBUSTCP_PPSOURCEOUT = 33106;
+    public const MODBUSTCP_HC1 = 41108;
+    public const MODBUSTCP_HC2 = 41208;
+    public const MODBUSTCP_MODE = 30006;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
@@ -124,7 +124,7 @@ class WemConnector extends ModbusTcpConnector
     /*
      * $value: 0 - 150 in steps of 5; default: 75
      */
-    private function setHeatCircle1($value = 75)
+    private function setHeatCircle1($value = 75): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
@@ -132,7 +132,7 @@ class WemConnector extends ModbusTcpConnector
     /*
      * $value: 0 - 150 in steps of 5; default: 75
      */
-    private function setHeatCircle2($value = 75)
+    private function setHeatCircle2($value = 75): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
     }
@@ -140,7 +140,7 @@ class WemConnector extends ModbusTcpConnector
     /*
      * $value: 1 - 100 in steps of 1; default: 100
      */
-    private function setPpPower($value = 100)
+    private function setPpPower($value = 100): void
     {
         // currently not supported
     }

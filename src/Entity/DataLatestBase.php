@@ -7,29 +7,26 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Base class for custom field tables
- *
- * @ORM\Entity
- * @ORM\Table(name="data_latest")
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn("discr_type", type="string")
  */
+#[ORM\Entity]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn('discr_type', type: 'string')]
+#[ORM\Table(name: 'data_latest')]
 abstract class DataLatestBase
 {
     /**
      * @var integer
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(type="string", name="connector_id", nullable=false)
-     * @Assert\NotBlank
      */
+    #[ORM\Column(type: 'string', name: 'connector_id', nullable: false)]
+    #[Assert\NotBlank]
     private $connectorId;
 
     /**
@@ -69,9 +66,8 @@ abstract class DataLatestBase
 
     /**
      * @var datetime
-     *
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     private $timestamp;
 
     /**

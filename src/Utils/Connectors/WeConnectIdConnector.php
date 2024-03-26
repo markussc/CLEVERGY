@@ -60,7 +60,7 @@ class WeConnectIdConnector
         return $data;
     }
 
-    public function startCharging()
+    public function startCharging(): void
     {
         try {
             shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging start');
@@ -69,7 +69,7 @@ class WeConnectIdConnector
         }
     }
 
-    public function stopCharging()
+    public function stopCharging(): void
     {
         try {
             shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging stop');

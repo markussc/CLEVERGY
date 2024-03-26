@@ -70,10 +70,8 @@ class DefaultController extends AbstractController
        $this->ecar = $ecar;
     }
 
-    /**
-     * @Route("/", name="homepage")
-     */
-    public function index(Request $request, EntityManagerInterface $em)
+    #[Route(path: '/', name: 'homepage')]
+    public function index(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $clientIp = $request->getClientIp();
         $authenticatedIps = $this->getParameter('authenticated_ips');
@@ -81,7 +79,7 @@ class DefaultController extends AbstractController
         $securityContext = $this->container->get('security.authorization_checker');
         if (!$securityContext->isGranted('IS_AUTHENTICATED_REMEMBERED') && array_key_exists($clientIp, $authenticatedIps)) {
             $route = $request->get('route');
-            $user = $em->getRepository(User::class)->findOneBy(array('email' => $authenticatedIps[$clientIp]));
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $authenticatedIps[$clientIp]]);
             if ($user) {
                 $token = new UsernamePasswordToken($user, $user->getPassword(), "xinstance", $user->getRoles());
                 $this->get('security.token_storage')->setToken($token);
@@ -94,10 +92,8 @@ class DefaultController extends AbstractController
         return $this->redirectToRoute('overview', $params);
     }
 
-    /**
-     * @Route("/overview", name="overview")
-     */
-    public function overview(Request $request, EntityManagerInterface $em)
+    #[Route(path: '/overview', name: 'overview')]
+    public function overview(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\Response
     {
         $activePage = "overview";
         $history = [];
@@ -210,8 +206,8 @@ class DefaultController extends AbstractController
 
     /**
      * Execute command
-     * @Route("/cmd/{command}", name="command_exec")
      */
+    #[Route(path: '/cmd/{command}', name: 'command_exec')]
     public function commandExecute(EntityManagerInterface $em, $command)
     {
         // only owners are allowed to execute commands
@@ -277,9 +273,9 @@ class DefaultController extends AbstractController
 
     /**
      * Get data which needs regular refresh
-     * @Route("/refresh", name="refresh")
      */
-    public function refresh(Request $request)
+    #[Route(path: '/refresh', name: 'refresh')]
+    public function refresh(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $currentStat = [];
 
@@ -304,10 +300,8 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/history", name="history")
-     */
-    public function history(Request $request, EntityManagerInterface $em)
+    #[Route(path: '/history', name: 'history')]
+    public function history(EntityManagerInterface $em): \Symfony\Component\HttpFoundation\Response
     {
         $yesterday = new \DateTime('yesterday');
         $now = new \DateTime('now');
@@ -434,9 +428,9 @@ class DefaultController extends AbstractController
 
     /**
      * Create the visual dashboard
-     * @Route("/visualdashboard", name="visual_dashboard")
      */
-    public function visualDashboard(Request $request, TranslatorInterface $translator)
+    #[Route(path: '/visualdashboard', name: 'visual_dashboard')]
+    public function visualDashboard(TranslatorInterface $translator)
     {
         $currentStat = $this->getCurrentStat([
             'smartfox' => true,
@@ -698,9 +692,9 @@ class DefaultController extends AbstractController
 
     /**
      * trigger by external event
-     * @Route("/trigger/{deviceId}/{action}", defaults={"deviceId"=null, "action"=null}, name="trigger")
      */
-    public function trigger(Request $request, LogicProcessor $logic, $deviceId, $action)
+    #[Route(path: '/trigger/{deviceId}/{action}', defaults: ['deviceId' => null, 'action' => null], name: 'trigger')]
+    public function trigger(LogicProcessor $logic, $deviceId, $action)
     {
         // init the mystrom device if reasonable
         $logic->initMystrom($deviceId);
@@ -721,8 +715,8 @@ class DefaultController extends AbstractController
     /**
      * interface for external variable requests
      * currently only supports requests for netPower
-     * @Route("/stat/{variable}", name="stat")
      */
+    #[Route(path: '/stat/{variable}', name: 'stat')]
     public function stat($variable)
     {
         $value = null;
@@ -736,8 +730,8 @@ class DefaultController extends AbstractController
 
     /**
      * interface for spoofing Shelly Pro 3 EM
-     * @Route("/rpc/EM.GetStatus", name="EMStatus")
      */
+    #[Route(path: '/rpc/EM.GetStatus', name: 'EMStatus')]
     public function emStatus(OpenWeatherMapConnector $weather)
     {
         $value = $this->smartfox->getShellyPro3EMResponse($weather->getRelevantCloudsNextDaylightPeriod());
@@ -747,8 +741,8 @@ class DefaultController extends AbstractController
 
     /**
      * interface for spoofing Fronius Meter Solar API v1
-     * @Route("/solar_api/v1/GetMeterRealtimeData.cgi", name="FroniusV1Status")
      */
+    #[Route(path: '/solar_api/v1/GetMeterRealtimeData.cgi', name: 'FroniusV1Status')]
     public function froniusV1Status(OpenWeatherMapConnector $weather)
     {
         $value = $this->smartfox->getFroniusV1MeterResponse($weather->getRelevantCloudsNextDaylightPeriod());
@@ -759,9 +753,9 @@ class DefaultController extends AbstractController
     /**
      * callback interface for external authentication responses
      * currently only supports responses for netatmo
-     * @Route("/extauth/{service}", name="extAuth")
      */
-    public function extAuth(Request $request, $service)
+    #[Route(path: '/extauth/{service}', name: 'extAuth')]
+    public function extAuth(Request $request, $service): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         if ($service === 'netatmo_code') {
             $state = $request->query->get('state');

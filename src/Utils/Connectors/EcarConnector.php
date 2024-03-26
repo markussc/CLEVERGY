@@ -155,7 +155,7 @@ class EcarConnector
         return $priority;
     }
 
-    function startCharging($id)
+    function startCharging($id): void
     {
         if ($this->carAvailable() && array_key_exists($id, $this->connectors['ecar']) && array_key_exists('type', $this->connectors['ecar'][$id])) {
             if ($this->connectors['ecar'][$id]['type'] == 'id3') {
@@ -165,7 +165,7 @@ class EcarConnector
         }
     }
 
-    function stopCharging($id)
+    function stopCharging($id): void
     {
         if ($this->carAvailable() && array_key_exists($id, $this->connectors['ecar']) && array_key_exists('type', $this->connectors['ecar'][$id])) {
             if ($this->connectors['ecar'][$id]['type'] == 'id3') {

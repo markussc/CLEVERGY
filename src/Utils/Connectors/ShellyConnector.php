@@ -616,7 +616,7 @@ class ShellyConnector
         }
     }
 
-    public function storeStatus($device, $status)
+    public function storeStatus($device, $status): void
     {
         if ($status !== null && !(is_array($status) && array_key_exists('online', $status) && $status['online'] == false)) {
             // if we have no or no current status, we do not want to store it
@@ -780,7 +780,7 @@ class ShellyConnector
         return $carTimerData;
     }
 
-    private function startTimer($deviceConf, $activeTime)
+    private function startTimer($deviceConf, $activeTime): void
     {
         $connectorId = $this->getId($deviceConf);
         $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);
@@ -797,7 +797,7 @@ class ShellyConnector
         $this->em->flush($device);
     }
 
-    private function startCarTimer($deviceConf, $timerConf)
+    private function startCarTimer($deviceConf, $timerConf): void
     {
         $connectorId = $this->getId($deviceConf);
         $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($connectorId);

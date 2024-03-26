@@ -47,14 +47,14 @@ class CCDefaultMediaPlayer extends CCBaseSender
                 return $success;
 	}
 
-	public function restart() {
+	public function restart(): void {
 		// Restart (after pause)
 		$this->launch(); // Auto-reconnects
 		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"PLAY", "mediaSessionId":' . $this->mediaid . ', "requestId":1}');
 		$this->chromecast->getCastMessage();
 	}
 	
-	public function seek($secs) {
+	public function seek($secs): void {
 		// Seek
 		$this->launch(); // Auto-reconnects
 		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.media",'{"type":"SEEK", "mediaSessionId":' . $this->mediaid . ', "currentTime":' . $secs . ',"requestId":1}');
@@ -80,14 +80,14 @@ class CCDefaultMediaPlayer extends CCBaseSender
 		return json_decode($m[0]);
 	}
 	
-	public function Mute() {
+	public function Mute(): void {
 		// Mute a video
 		$this->launch(); // Auto-reconnects
 		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.receiver", '{"type":"SET_VOLUME", "volume": { "muted": true }, "requestId":1 }');
 		$this->chromecast->getCastMessage();
 	}
 	
-	public function UnMute() {
+	public function UnMute(): void {
 		// Mute a video
 		$this->launch(); // Auto-reconnects
 		$this->chromecast->sendMessage("urn:x-cast:com.google.cast.receiver", '{"type":"SET_VOLUME", "volume": { "muted": false }, "requestId":1 }');

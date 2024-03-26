@@ -35,7 +35,7 @@ class ThreemaConnector
         }
     }
 
-    public function sendMessage($email, $msg)
+    public function sendMessage($email, $msg): void
     {
         $payload = [
             'from' => $this->config['id'],

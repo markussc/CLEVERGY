@@ -195,7 +195,7 @@ class MyStromConnector
         return $result;
     }
 
-    public function activateAllPIR()
+    public function activateAllPIR(): void
     {
         if (array_key_exists('mystrom', $this->connectors) && is_array($this->connectors['mystrom'])) {
             foreach ($this->connectors['mystrom'] as $key => $device) {
@@ -342,7 +342,7 @@ class MyStromConnector
         }
     }
 
-    public function storeStatus($device, $status)
+    public function storeStatus($device, $status): void
     {
         $connectorId = $this->getId($device);
         $mystromEntity = new MyStromDataStore();
@@ -552,7 +552,7 @@ class MyStromConnector
         return $carTimerData;
     }
 
-    private function startTimer($deviceConf, $activeTime)
+    private function startTimer($deviceConf, $activeTime): void
     {
         $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($deviceConf['ip']);
         if (!$device) {
@@ -568,7 +568,7 @@ class MyStromConnector
         $this->em->flush($device);
     }
 
-    private function startCarTimer($deviceConf, $timerConf)
+    private function startCarTimer($deviceConf, $timerConf): void
     {
         $device = $this->em->getRepository(Settings::class)->findOneByConnectorId($deviceConf['ip']);
         if (!$device) {

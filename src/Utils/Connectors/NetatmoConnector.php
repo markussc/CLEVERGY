@@ -186,7 +186,7 @@ class NetatmoConnector
         return $content;
     }
 
-    public function storeAuthConfig($state, $code, $accessToken, $refreshToken)
+    public function storeAuthConfig($state, $code, $accessToken, $refreshToken): void
     {
         $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
         if (!$settings) {
@@ -207,7 +207,7 @@ class NetatmoConnector
      * Manages the authentication workflog according to https://dev.netatmo.com/apidocumentation/oauth
      * Documentation refer to https://dev.netatmo.com/apidocumentation/
      */
-    private function authenticate()
+    private function authenticate(): void
     {
         $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
         if ($settings) {
@@ -225,7 +225,7 @@ class NetatmoConnector
         }
     }
 
-    private function reauthenticate()
+    private function reauthenticate(): void
     {
         $this->token = null;
         $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId("netatmo");
@@ -237,7 +237,7 @@ class NetatmoConnector
         }
     }
 
-    private function getAccessToken($state, $code)
+    private function getAccessToken($state, $code): void
     {
         $url = $this->baseUrl . '/oauth2/token';
         try {
@@ -274,7 +274,7 @@ class NetatmoConnector
         }
     }
 
-    private function refreshAccessToken($refreshToken)
+    private function refreshAccessToken($refreshToken): void
     {
         $url = $this->baseUrl . '/oauth2/token';
         try {

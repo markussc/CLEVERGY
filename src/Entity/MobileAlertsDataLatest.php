@@ -4,16 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\DataLatestBaseRepository::class)]
 class MobileAlertsDataLatest extends DataLatestBase
 {
     /**
      * @var bool
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -23,7 +20,7 @@ class MobileAlertsDataLatest extends DataLatestBase
      *
      * @return MobileAlertsDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

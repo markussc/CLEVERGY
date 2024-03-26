@@ -3,7 +3,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": ">=7.2.5",
+        "php": "^8.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "aldas/modbus-tcp-client": "^2.1",
@@ -35,6 +35,7 @@
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
+        "rector/rector": "^1.0",
         "symfony/error-handler": "6.4.*",
         "symfony/maker-bundle": "^1.36",
         "symfony/phpunit-bridge": "^7.0",

@@ -11,7 +11,7 @@ class DataStoreBaseRepository extends EntityRepository
 {
     public function getLatest($ip)
     {
-        $class = get_called_class();
+        $class = static::class;
         $entityClass = str_replace("DataStoreRepository", "DataLatest", str_replace("App\Repository", "App\Entity", $class));
         $latest = null;
         if (class_exists($entityClass)) {

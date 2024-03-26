@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ConexioDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\ConexioDataStoreRepository::class)]
 class ConexioDataStore extends DataStoreBase
 {
     protected $latestClass = ConexioDataLatest::class;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class ConexioDataStore extends DataStoreBase
      *
      * @return ConexioDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

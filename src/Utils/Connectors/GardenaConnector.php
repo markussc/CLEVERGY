@@ -70,7 +70,7 @@ class GardenaConnector
         return $val;
     }
 
-    public function updateDevices($force = false)
+    public function updateDevices($force = false): void
     {
         $controlDevice = $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId('gardena');
         $now = new \DateTime();
@@ -179,7 +179,7 @@ class GardenaConnector
     /*
      * Sets the bearer token for the usage of the API using the clientId, username and password
      */
-    private function setToken()
+    private function setToken(): void
     {
         try {
             $response = $this->client->request(

@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SmartFoxDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\SmartFoxDataStoreRepository::class)]
 class SmartFoxDataStore extends DataStoreBase
 {
     protected $latestClass = SmartFoxDataLatest::class;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class SmartFoxDataStore extends DataStoreBase
      *
      * @return SmartFoxDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

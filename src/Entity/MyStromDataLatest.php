@@ -4,23 +4,19 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\DataLatestBaseRepository::class)]
 class MyStromDataLatest extends DataLatestBase
 {
     /**
      * @var bool
-     *
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     private $boolValue;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -49,7 +45,7 @@ class MyStromDataLatest extends DataLatestBase
      *
      * @return MyStromDataLatest $this
      */
-    public function setExtendedData($data = array())
+    public function setExtendedData($data = [])
     {
         $this->jsonValue = $data;
 

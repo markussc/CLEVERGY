@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\NetatmoDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\NetatmoDataStoreRepository::class)]
 class NetatmoDataStore extends DataStoreBase
 {
     protected $latestClass = NetatmoDataLatest::class;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class NetatmoDataStore extends DataStoreBase
      *
      * @return NetatmoDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

@@ -5,19 +5,16 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SettingsRepository")
- * @ORM\Table(name="settings")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\SettingsRepository::class)]
+#[ORM\Table(name: 'settings')]
 class Settings
 {
     /**
      * @var integer
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
@@ -32,10 +29,9 @@ class Settings
 
     /**
      * @var string
-     *
-     * @ORM\Column(type="string", nullable=true)
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank]
     private $type;
 
     /**
@@ -65,10 +61,9 @@ class Settings
 
     /**
      * @var string
-     *
-     * @ORM\Column(type="string", nullable=false)
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank]
     private $connectorId;
 
     /**
@@ -98,15 +93,14 @@ class Settings
 
     /**
      * @var int
-     *
-     * @ORM\Column(type="integer", nullable = true)
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $mode;
 
-    const MODE_WARMWATER = -2;
-    const MODE_HOLIDAY = -1;
-    const MODE_AUTO = 0;
-    const MODE_MANUAL = 1;
+    public const MODE_WARMWATER = -2;
+    public const MODE_HOLIDAY = -1;
+    public const MODE_AUTO = 0;
+    public const MODE_MANUAL = 1;
 
     /**
      * Set mode
@@ -129,9 +123,8 @@ class Settings
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json", nullable = true)
      */
+    #[ORM\Column(type: 'json', nullable: true)]
     private $config;
 
     /**

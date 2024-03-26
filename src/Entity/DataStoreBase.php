@@ -9,30 +9,29 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Base class for custom field tables
- *
- * @ORM\Entity
- * @ORM\Table(name="data_store", indexes={@ORM\Index(name="connector_timestamp_idx", columns={"connector_id", "timestamp"}),@ORM\Index(name="discr_type_connector_idx_timestamp", columns={"discr_type", "connector_id", "timestamp"})})
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn("discr_type", type="string")
- * @ORM\HasLifecycleCallbacks
  */
+#[ORM\Entity]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn('discr_type', type: 'string')]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table(name: 'data_store')]
+#[ORM\Index(name: 'connector_timestamp_idx', columns: ['connector_id', 'timestamp'])]
+#[ORM\Index(name: 'discr_type_connector_idx_timestamp', columns: ['discr_type', 'connector_id', 'timestamp'])]
 abstract class DataStoreBase
 {
     /**
      * @var integer
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(type="string", name="connector_id", nullable=false)
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', name: 'connector_id', nullable: false)]
+    #[Assert\NotBlank]
     protected $connectorId;
 
     /**
@@ -78,9 +77,8 @@ abstract class DataStoreBase
 
     /**
      * @var datetime
-     *
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     protected $timestamp;
 
     /**
@@ -112,12 +110,8 @@ abstract class DataStoreBase
         return empty($this->getData());
     }
 
-    /**
-    * @ORM\PrePersist
-    * Will be invoked when EntityManager::persist is called,
-    * to persist a copy of the Entity in the latest table.
-    */
-    public function onPrePersist(LifecycleEventArgs $eventArgs)
+    #[ORM\PrePersist] // Will be invoked when EntityManager::persist is called,
+    public function onPrePersist(LifecycleEventArgs $eventArgs): void
     {
         $latest = self::createLatest($eventArgs->getObjectManager(), $this);
         if ($latest) {

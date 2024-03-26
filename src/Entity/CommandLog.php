@@ -4,19 +4,16 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\CommandLogRepository")
- * @ORM\Table(name="commandlog")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\CommandLogRepository::class)]
+#[ORM\Table(name: 'commandlog')]
 class CommandLog
 {
     /**
      * @var integer
-     *
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
@@ -31,9 +28,8 @@ class CommandLog
     
     /**
      * @var datetime
-     *
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     private $timestamp;
 
     /**
@@ -59,9 +55,8 @@ class CommandLog
      * The operation mode of the heat pump
      *
      * @var string
-     *
-     * @ORM\Column(type="string", nullable = true)
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     private $ppMode;
 
     /**
@@ -87,9 +82,8 @@ class CommandLog
      * The pv high power flag
      *
      * @var bool
-     *
-     * @ORM\Column(type="boolean", nullable = true)
      */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $highPvPower;
 
     /**
@@ -115,9 +109,8 @@ class CommandLog
      * The average PV power
      *
      * @var int
-     *
-     * @ORM\Column(type="integer", nullable = true)
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $avgPvPower;
 
     /**
@@ -143,9 +136,8 @@ class CommandLog
      * The average power
      *
      * @var int
-     *
-     * @ORM\Column(type="integer", nullable = true)
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $avgPower;
 
     /**
@@ -171,9 +163,8 @@ class CommandLog
      * The inside temperature
      *
      * @var int
-     *
-     * @ORM\Column(type="float", nullable = true)
      */
+    #[ORM\Column(type: 'float', nullable: true)]
     private $insideTemp;
 
     /**
@@ -199,9 +190,8 @@ class CommandLog
      * The water temperature
      *
      * @var float
-     *
-     * @ORM\Column(type="float", nullable = true)
      */
+    #[ORM\Column(type: 'float', nullable: true)]
     private $waterTemp;
 
     /**
@@ -227,9 +217,8 @@ class CommandLog
      * The heat storage mid temperature
      *
      * @var float
-     *
-     * @ORM\Column(type="float", nullable = true)
      */
+    #[ORM\Column(type: 'float', nullable: true)]
     private $heatStorageMidTemp;
 
     /**
@@ -255,9 +244,8 @@ class CommandLog
      * The average clouds
      *
      * @var int
-     *
-     * @ORM\Column(type="integer", nullable = true)
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $avgClouds;
 
     /**
@@ -281,9 +269,8 @@ class CommandLog
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json", nullable = true)
      */
+    #[ORM\Column(type: 'json', nullable: true)]
     private $log;
 
     /**

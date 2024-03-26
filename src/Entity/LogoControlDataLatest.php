@@ -4,16 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\DataLatestBaseRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\DataLatestBaseRepository::class)]
 class LogoControlDataLatest extends DataLatestBase
 {
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -23,7 +20,7 @@ class LogoControlDataLatest extends DataLatestBase
      *
      * @return LogoControlStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

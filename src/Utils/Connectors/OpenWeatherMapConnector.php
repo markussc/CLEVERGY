@@ -34,7 +34,7 @@ class OpenWeatherMapConnector
         ];
     }
 
-    public function saveCurrentWeatherToDb($force = false)
+    public function saveCurrentWeatherToDb($force = false): void
     {
         $id = 'current';
         $latest = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest($id);
@@ -59,7 +59,7 @@ class OpenWeatherMapConnector
         return;
     }
 
-    public function save5DayForecastToDb($force = false)
+    public function save5DayForecastToDb($force = false): void
     {
         $id = '5dayforecast';
         $latest = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest($id);

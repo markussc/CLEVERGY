@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ShellyDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\ShellyDataStoreRepository::class)]
 class ShellyDataStore extends DataStoreBase
 {
     protected $latestClass = ShellyDataLatest::class;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class ShellyDataStore extends DataStoreBase
      *
      * @return ShellyDataStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

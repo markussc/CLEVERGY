@@ -71,7 +71,7 @@ class CastMessage {
 		// A variant is returned least significant part first.
 		// Number is represented in 7 bit portions. The 8th (MSB) of a byte represents if there
 		// is a following byte.
-		$r = array();
+		$r = [];
 		while ($inval / 128 > 1) {
 			$thisval = ($inval - ($inval % 128)) / 128;
 			array_push($r, $thisval);

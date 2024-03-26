@@ -72,7 +72,7 @@ class Chromecast
 		$filetoget = 1;
 		$dontrequery = 0;
 		set_time_limit($wait * 2);
-		$chromecasts = array();
+		$chromecasts = [];
 		while ($cc > 0) {
 			$inpacket = "";
 			while ($inpacket == "") {
@@ -131,12 +131,7 @@ class Chromecast
 									}
 									$target.= ".local";
 									if (!isset($chromecasts[$inpacket->additionalrrs[$p]->name])) {
-										$chromecasts[$inpacket->additionalrrs[$x]->name] = array(
-											"port" => $port,
-											"ip" => "",
-											"target" => "",
-											"friendlyname" => ""
-										);
+										$chromecasts[$inpacket->additionalrrs[$x]->name] = ["port" => $port, "ip" => "", "target" => "", "friendlyname" => ""];
 									}
 									$chromecasts[$inpacket->additionalrrs[$x]->name]['target'] = $target;
 								}
@@ -152,12 +147,7 @@ class Chromecast
 									$etp = strpos($fn, "ca=");
 									$fn = substr($fn, $stp, $etp - $stp - 1);
 									if (!isset($chromecasts[$inpacket->additionalrrs[$p]->name])) {
-										$chromecasts[$inpacket->additionalrrs[$x]->name] = array(
-											"port" => 8009,
-											"ip" => "",
-											"target" => "",
-											"friendlyname" => ""
-										);
+										$chromecasts[$inpacket->additionalrrs[$x]->name] = ["port" => 8009, "ip" => "", "target" => "", "friendlyname" => ""];
 									}
 									$chromecasts[$inpacket->additionalrrs[$x]->name]['friendlyname'] = $fn;
 								}
@@ -221,12 +211,7 @@ class Chromecast
 						}
 						$target.= ".local";
 						if (!isset($chromecasts[$inpacket->answerrrs[$x]->name])) {
-							$chromecasts[$inpacket->answerrrs[$x]->name] = array(
-								"port" => $port,
-								"ip" => "",
-								"target" => $target,
-								"friendlyname" => ""
-							);
+							$chromecasts[$inpacket->answerrrs[$x]->name] = ["port" => $port, "ip" => "", "target" => $target, "friendlyname" => ""];
 						}
 						else {
 							$chromecasts[$inpacket->answerrrs[$x]->name]['target'] = $target;
@@ -245,12 +230,7 @@ class Chromecast
 						$etp = strpos($fn, "ca=");
 						$fn = substr($fn, $stp, $etp - $stp - 1);
 						if (!isset($chromecasts[$inpacket->answerrrs[$x]->name])) {
-							$chromecasts[$inpacket->answerrrs[$x]->name] = array(
-								"port" => 8009,
-								"ip" => "",
-								"target" => "",
-								"friendlyname" => $fn
-							);
+							$chromecasts[$inpacket->answerrrs[$x]->name] = ["port" => 8009, "ip" => "", "target" => "", "friendlyname" => $fn];
 						}
 						else {
 							$chromecasts[$inpacket->answerrrs[$x]->name]['friendlyname'] = $fn;
@@ -283,7 +263,7 @@ class Chromecast
 		return $chromecasts;
 	}
 	
-	function testLive()
+	function testLive(): void
 	{
 		// If there is a difference of 10 seconds or more between $this->lastactivetime and the current time, then we've been kicked off and need to reconnect
 		if ($this->lastip == "") {
@@ -304,7 +284,7 @@ class Chromecast
 		}
 	}
 	
-	function cc_connect($tl = 0)
+	function cc_connect($tl = 0): void
 	{
 		// CONNECT TO CHROMECAST
 		// This connects to the chromecast in general.
@@ -325,7 +305,7 @@ class Chromecast
 		$this->lastactivetime = time();
 	}
 	
-	public function launch($appid)
+	public function launch($appid): void
 	{
 		// Launches the chromecast app on the connected chromecast
 		// CONNECT
@@ -374,7 +354,7 @@ class Chromecast
                 return $r;
 	}
 	
-	function connect($tl = 0)
+	function connect($tl = 0): void
 	{
 		// This connects to the transport of the currently running app
 		// (you need to have launched it yourself or connected and got the status)
@@ -451,7 +431,7 @@ class Chromecast
 		return $response;
 	}
 	
-	public function pingpong()
+	public function pingpong(): void
 	{
 		// Officially you should run this every 5 seconds or so to keep
 		// the device alive. Doesn't seem to be necessary if an app is running
@@ -469,7 +449,7 @@ class Chromecast
 		$response = $this->getCastMessage();
 	}
 	
-	public function pong()
+	public function pong(): void
 	{
 		// To answer a pingpong
 		$c = new CastMessage();

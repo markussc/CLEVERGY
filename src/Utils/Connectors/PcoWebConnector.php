@@ -20,36 +20,36 @@ class PcoWebConnector extends ModbusTcpConnector
     protected $basePath;
     protected $ip;
     protected $connectors;
-    const MODE_SUMMER = 0;
-    const MODE_AUTO = 1;
-    const MODE_HOLIDAY = 2;
-    const MODE_PARTY = 3;
-    const MODE_2ND = 4;
-    const MODE_COOL = 5;
-    const MODBUSTCP_OUTSIDETEMP = 1;
-    const MODBUSTCP_WARMWATER = 3;
-    const MODBUSTCP_WARMWATER_HYST = 5045;
-    const MODBUSTCP_WARMWATER_SET = 5047;
-    const MODBUSTCP_WARMWATER_RESET = 136;
-    const MODBUSTCP_PRETEMP = 5;
-    const MODBUSTCP_BACKTEMP = 2;
-    const MODBUSTCP_BACKSETTEMP = 53;
-    const MODBUSTCP_STORTEMP = 10;
-    const MODBUSTCP_SETDISTRTEMP = 54;
-    const MODBUSTCP_EFFDISTRTEMP = 9;
-    const MODBUSTCP_PPMODE = 5015;
-    const MODBUSTCP_PPSTATUS = 41;
-    const MODBUSTCP_PPSTATUS_MSG = 103;
-    const MODBUSTCP_CPSTATUS = 51;
-    const MODBUSTCP_PPSOURCEIN = 6;
-    const MODBUSTCP_PPSOURCEOUT = 7;
-    const MODBUSTCP_SELECT_HC2 = 5082;
-    const MODBUSTCP_HC1 = 5036;
-    const MODBUSTCP_HC2 = 5086;
-    const MODBUSTCP_CPOPT = 131;
-    const MODBUSTCP_CPOPTTEMP = 5166;
-    const MODBUSTCP_MODE = 12;
-    const MODBUSTCP_PP_ERROR = 105;
+    public const MODE_SUMMER = 0;
+    public const MODE_AUTO = 1;
+    public const MODE_HOLIDAY = 2;
+    public const MODE_PARTY = 3;
+    public const MODE_2ND = 4;
+    public const MODE_COOL = 5;
+    public const MODBUSTCP_OUTSIDETEMP = 1;
+    public const MODBUSTCP_WARMWATER = 3;
+    public const MODBUSTCP_WARMWATER_HYST = 5045;
+    public const MODBUSTCP_WARMWATER_SET = 5047;
+    public const MODBUSTCP_WARMWATER_RESET = 136;
+    public const MODBUSTCP_PRETEMP = 5;
+    public const MODBUSTCP_BACKTEMP = 2;
+    public const MODBUSTCP_BACKSETTEMP = 53;
+    public const MODBUSTCP_STORTEMP = 10;
+    public const MODBUSTCP_SETDISTRTEMP = 54;
+    public const MODBUSTCP_EFFDISTRTEMP = 9;
+    public const MODBUSTCP_PPMODE = 5015;
+    public const MODBUSTCP_PPSTATUS = 41;
+    public const MODBUSTCP_PPSTATUS_MSG = 103;
+    public const MODBUSTCP_CPSTATUS = 51;
+    public const MODBUSTCP_PPSOURCEIN = 6;
+    public const MODBUSTCP_PPSOURCEOUT = 7;
+    public const MODBUSTCP_SELECT_HC2 = 5082;
+    public const MODBUSTCP_HC1 = 5036;
+    public const MODBUSTCP_HC2 = 5086;
+    public const MODBUSTCP_CPOPT = 131;
+    public const MODBUSTCP_CPOPTTEMP = 5166;
+    public const MODBUSTCP_MODE = 12;
+    public const MODBUSTCP_PP_ERROR = 105;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
@@ -144,7 +144,7 @@ class PcoWebConnector extends ModbusTcpConnector
         }
     }
 
-    public function executeCommand($type, $command)
+    public function executeCommand($type, $command): void
     {
         switch ($type) {
             case 'mode':
@@ -174,7 +174,7 @@ class PcoWebConnector extends ModbusTcpConnector
         }
     }
 
-    public function normalizeSettings()
+    public function normalizeSettings(): void
     {
         $this->setHotWaterHysteresis(10);
         $this->setWaterTemp(52);
@@ -183,22 +183,22 @@ class PcoWebConnector extends ModbusTcpConnector
         $this->setHeatCircle2(20);
     }
 
-    private function setMode($mode)
+    private function setMode($mode): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_PPMODE, $mode);
     }
 
-    private function setHotWaterHysteresis($value)
+    private function setHotWaterHysteresis($value): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_HYST, $value);
     }
 
-    private function setHeatCircle1($value)
+    private function setHeatCircle1($value): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
 
-    private function setHeatCircle2($value)
+    private function setHeatCircle2($value): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_SELECT_HC2, 2);
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
@@ -209,7 +209,7 @@ class PcoWebConnector extends ModbusTcpConnector
      * 0: Ja   --> means, that the pump is deactivated as much as possible
      * 1: Nein --> means, that the pump runs always
      */
-    private function setCpAutoMode($value = null)
+    private function setCpAutoMode($value = null): void
     {
         switch ($value) {
             case 0:
@@ -231,12 +231,12 @@ class PcoWebConnector extends ModbusTcpConnector
         }
     }
 
-    private function setWaterTemp($value)
+    private function setWaterTemp($value): void
     {
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_WARMWATER_SET, $value);
     }
 
-    private function resetWaterTemp()
+    private function resetWaterTemp(): void
     {
         $this->writeBoolModbusTcp(self::MODBUSTCP_WARMWATER_RESET, true);
     }

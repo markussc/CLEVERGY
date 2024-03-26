@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\TaCmiDataStoreRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\TaCmiDataStoreRepository::class)]
 class TaCmiDataStore extends DataStoreBase
 {
     protected $latestClass = TaCmiDataLatest::class;
 
     /**
      * @var array
-     *
-     * @ORM\Column(type="json")
      */
+    #[ORM\Column(type: 'json')]
     private $jsonValue;
 
     /**
@@ -25,7 +22,7 @@ class TaCmiDataStore extends DataStoreBase
      *
      * @return LogoControlStorage $this
      */
-    public function setData($data = array())
+    public function setData($data = [])
     {
         $this->jsonValue = $data;
 

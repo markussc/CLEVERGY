@@ -188,7 +188,7 @@ class LogicProcessor
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached mystrom devices
      */
-    public function autoActionsMystrom($connectorId = null)
+    public function autoActionsMystrom($connectorId = null): void
     {
         if ($connectorId === null || $this->mystrom->hasConnectorId($connectorId)) {
             $avgPower = $this->getAvgPower();
@@ -305,7 +305,7 @@ class LogicProcessor
      * Based on the available environmental data, decide whether any commands should be sent to attached shelly devices
      * NOTE: currently only implemented for roller devices
      */
-    public function autoActionsShelly()
+    public function autoActionsShelly(): void
     {
         $avgPower = $this->getAvgPower();
 
@@ -440,7 +440,7 @@ class LogicProcessor
     /**
      * Based on the available values in the DB, decide whether any commands should be sent to attached pcoweb heating
      */
-    private function autoActionsPcoWeb($pcoMode)
+    private function autoActionsPcoWeb($pcoMode): void
     {
         $log = [];
         $ppModeChanged = false;
@@ -842,7 +842,7 @@ class LogicProcessor
         $this->em->flush();
     }
 
-    public function autoActionsWem($wemMode, $doWemPortal)
+    public function autoActionsWem($wemMode, $doWemPortal): void
     {
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $wem = $this->wem->getAllLatest();
@@ -1097,7 +1097,7 @@ class LogicProcessor
         $this->em->flush();
     }
 
-    public function initMystrom($deviceId = null)
+    public function initMystrom($deviceId = null): void
     {
         if ($deviceId !== null) {
             $device = $this->mystrom->getConfig($deviceId);
@@ -1113,7 +1113,7 @@ class LogicProcessor
         }
     }
 
-    public function initShelly($deviceId = null, $action = null) // $deviceId is a string in the form ip_port
+    public function initShelly($deviceId = null, $action = null): void // $deviceId is a string in the form ip_port
     {
         if ($deviceId !== null) {
             $device = $this->shelly->getConfig($deviceId);
@@ -1168,7 +1168,7 @@ class LogicProcessor
         return $smartfox;
     }
 
-    public function initConexio()
+    public function initConexio(): void
     {
         if ($this->conexio->getIp()) {
             $conexio = $this->conexio->getAll();
@@ -1184,7 +1184,7 @@ class LogicProcessor
         }
     }
 
-    public function initLogo()
+    public function initLogo(): void
     {
         if ($this->logo->getIp()) {
             $logocontrol = $this->logo->getAll();
@@ -1200,7 +1200,7 @@ class LogicProcessor
         }
     }
 
-    public function initTaCmi()
+    public function initTaCmi(): void
     {
         if ($this->tacmi->getIp()) {
             $taCmi = $this->tacmi->getAll();
@@ -1216,7 +1216,7 @@ class LogicProcessor
         }
     }
 
-    public function initPcoweb()
+    public function initPcoweb(): void
     {
         if ($this->pcoweb->getIp()) {
             $pcoweb = $this->pcoweb->getAll();
@@ -1231,7 +1231,7 @@ class LogicProcessor
         }
     }
 
-    public function initWem()
+    public function initWem(): void
     {
         if ($this->wem->getUsername()) {
             $wem = $this->wem->getAll(false);
@@ -1246,7 +1246,7 @@ class LogicProcessor
         }
     }
 
-    public function initMobilealerts()
+    public function initMobilealerts(): void
     {
         if ($this->mobilealerts->getAvailable()) {
             foreach ($this->mobilealerts->getAll() as $sensorId => $sensorData) {
@@ -1260,7 +1260,7 @@ class LogicProcessor
         }
     }
 
-    public function initNetatmo()
+    public function initNetatmo(): void
     {
         if ($this->netatmo->getAvailable()) {
             $sensorData = $this->netatmo->getAll();
@@ -1275,14 +1275,14 @@ class LogicProcessor
         }
     }
 
-    public function initGardena()
+    public function initGardena(): void
     {
         if ($this->gardena->getAvailable()) {
             $this->gardena->updateDevices();
         }
     }
 
-     public function initEcar()
+     public function initEcar(): void
     {
         foreach ($this->ecar->getAll() as $ecar) {
             if (is_array($ecar) && array_key_exists('data', $ecar) && is_array($ecar['data']) && array_key_exists('soc', $ecar['data']) && $ecar['data']['soc'] != '') {
@@ -1296,7 +1296,7 @@ class LogicProcessor
         }
     }
 
-    public function processAlarms()
+    public function processAlarms(): void
     {
         $maAlarms = $this->mobilealerts->getAlarms();
         $msAlarms = $this->mystrom->getAlarms();
@@ -1323,7 +1323,7 @@ class LogicProcessor
         }
     }
 
-    public function configureDevices()
+    public function configureDevices(): void
     {
         // currently only required and available for Shelly Sensors
         if (array_key_exists('shelly', $this->connectors)) {
