@@ -73,7 +73,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/", name="homepage")
      */
-    public function indexAction(Request $request, EntityManagerInterface $em)
+    public function index(Request $request, EntityManagerInterface $em)
     {
         $clientIp = $request->getClientIp();
         $authenticatedIps = $this->getParameter('authenticated_ips');
@@ -97,7 +97,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/overview", name="overview")
      */
-    public function overviewAction(Request $request, EntityManagerInterface $em)
+    public function overview(Request $request, EntityManagerInterface $em)
     {
         $activePage = "overview";
         $history = [];
@@ -212,7 +212,7 @@ class DefaultController extends AbstractController
      * Execute command
      * @Route("/cmd/{command}", name="command_exec")
      */
-    public function commandExecuteAction(EntityManagerInterface $em, $command)
+    public function commandExecute(EntityManagerInterface $em, $command)
     {
         // only owners are allowed to execute commands
         $this->denyAccessUnlessGranted('ROLE_OWNER');
@@ -279,7 +279,7 @@ class DefaultController extends AbstractController
      * Get data which needs regular refresh
      * @Route("/refresh", name="refresh")
      */
-    public function refreshAction(Request $request)
+    public function refresh(Request $request)
     {
         $currentStat = [];
 
@@ -307,7 +307,7 @@ class DefaultController extends AbstractController
     /**
      * @Route("/history", name="history")
      */
-    public function historyAction(Request $request, EntityManagerInterface $em)
+    public function history(Request $request, EntityManagerInterface $em)
     {
         $yesterday = new \DateTime('yesterday');
         $now = new \DateTime('now');
@@ -436,7 +436,7 @@ class DefaultController extends AbstractController
      * Create the visual dashboard
      * @Route("/visualdashboard", name="visual_dashboard")
      */
-    public function visualDashboardAction(Request $request, TranslatorInterface $translator)
+    public function visualDashboard(Request $request, TranslatorInterface $translator)
     {
         $currentStat = $this->getCurrentStat([
             'smartfox' => true,
@@ -700,7 +700,7 @@ class DefaultController extends AbstractController
      * trigger by external event
      * @Route("/trigger/{deviceId}/{action}", defaults={"deviceId"=null, "action"=null}, name="trigger")
      */
-    public function triggerAction(Request $request, LogicProcessor $logic, $deviceId, $action)
+    public function trigger(Request $request, LogicProcessor $logic, $deviceId, $action)
     {
         // init the mystrom device if reasonable
         $logic->initMystrom($deviceId);
@@ -723,7 +723,7 @@ class DefaultController extends AbstractController
      * currently only supports requests for netPower
      * @Route("/stat/{variable}", name="stat")
      */
-    public function statAction($variable)
+    public function stat($variable)
     {
         $value = null;
         if ($variable === 'netPower' && $this->smartfox->getIp()) {
@@ -738,7 +738,7 @@ class DefaultController extends AbstractController
      * interface for spoofing Shelly Pro 3 EM
      * @Route("/rpc/EM.GetStatus", name="EMStatus")
      */
-    public function emStatusAction(OpenWeatherMapConnector $weather)
+    public function emStatus(OpenWeatherMapConnector $weather)
     {
         $value = $this->smartfox->getShellyPro3EMResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
@@ -749,7 +749,7 @@ class DefaultController extends AbstractController
      * interface for spoofing Fronius Meter Solar API v1
      * @Route("/solar_api/v1/GetMeterRealtimeData.cgi", name="FroniusV1Status")
      */
-    public function froniusV1StatusAction(OpenWeatherMapConnector $weather)
+    public function froniusV1Status(OpenWeatherMapConnector $weather)
     {
         $value = $this->smartfox->getFroniusV1MeterResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
@@ -761,7 +761,7 @@ class DefaultController extends AbstractController
      * currently only supports responses for netatmo
      * @Route("/extauth/{service}", name="extAuth")
      */
-    public function extAuthAction(Request $request, $service)
+    public function extAuth(Request $request, $service)
     {
         if ($service === 'netatmo_code') {
             $state = $request->query->get('state');
