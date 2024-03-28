@@ -91,16 +91,18 @@ class MobileAlertsConnector
         $thisTimestamp = new \DateTime();
         $now = new \DateTime();
         foreach  ($latest as $device) {
-            if (array_key_exists('label', $device[0]) && $device[0]['label'] == 'timestamp') {
+            if (is_array($device) && array_key_exists(0, $device) && is_array($device[0]) && array_key_exists('label', $device[0]) && $device[0]['label'] == 'timestamp') {
                 $thisTimestamp = new \DateTime($device[0]['value']);
             }
-            foreach ($device as $sensor) {
-                if (is_array($sensor) && array_key_exists("usage", $sensor) &&
-                        (   $sensor['usage'] == "insidetemp" ||
-                            $sensor['usage'] == "firstfloortemp" ||
-                            $sensor['usage'] == "secondfloortemp")) {
-                    if ($thisTimestamp < $timestamp) {
-                        $timestamp = $thisTimestamp;
+            if (is_array($device)) {
+                foreach ($device as $sensor) {
+                    if (is_array($sensor) && array_key_exists("usage", $sensor) &&
+                            (   $sensor['usage'] == "insidetemp" ||
+                                $sensor['usage'] == "firstfloortemp" ||
+                                $sensor['usage'] == "secondfloortemp")) {
+                        if ($thisTimestamp < $timestamp) {
+                            $timestamp = $thisTimestamp;
+                        }
                     }
                 }
             }
