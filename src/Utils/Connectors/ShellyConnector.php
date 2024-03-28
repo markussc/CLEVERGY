@@ -403,6 +403,7 @@ class ShellyConnector
                 $powerResp = $this->queryShelly($device, 'power');
                 if (!empty($powerResp) && array_key_exists('power', $powerResp)) {
                     $power = $powerResp['power'];
+                } elseif ($powerResp = $this->queryShelly($device, 'apower') && !empty($powerResp) && array_key_exists('apower', $powerResp)) {
                 } else {
                     $power = 0;
                 }
@@ -574,6 +575,9 @@ class ShellyConnector
                     break;
                 case 'power':
                     $reqUrl = 'meter/'.$device['port'];
+                    break;
+                case 'apower':
+                    $reqUrl = 'rpc/Switch.GetStatus?id='.$device['port'];
                     break;
                 case 'on':
                     $reqUrl = 'relay/'.$device['port'].'?turn=on';
