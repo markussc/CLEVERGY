@@ -446,6 +446,10 @@ class LogicProcessor
         $ppModeChanged = false;
         $energyLowRate = $this->conditionchecker->checkEnergyLowRate();
         $smartfox = $this->getSmartfoxLatest();
+        if (!is_array($smartfox)) {
+            // if we have no informaton from smartfox, skip any further processing
+            return;
+        }
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $avgPower = $this->getAvgPower();
         $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data

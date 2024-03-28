@@ -392,8 +392,7 @@ class ConditionChecker
             }
             if ($condArr[0] == 'smartfox') {
                 $smartFox = $this->smartfox->getAllLatest();
-                $value = $smartFox['power_io'];
-                if (-1 * $value > $condition) {
+                if (is_array($smartFox) && -1 * $smartFox['power_io'] > $condition) {
                     $fulfilled = true;
                 } else {
                     $fulfilled = false;
@@ -402,7 +401,7 @@ class ConditionChecker
             }
             if ($condArr[0] == 'battery') {
                 $smartFox = $this->smartfox->getAllLatest();
-                if (array_key_exists('StorageSoc', $smartFox)) {
+                if (is_array($smartFox) && array_key_exists('StorageSoc', $smartFox)) {
                     $currentSoc = $smartFox['StorageSoc'];
                     $socThresh = str_replace('<', '', str_replace('>', '', $condition));
                     // check if > or < should be checked

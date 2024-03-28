@@ -401,12 +401,14 @@ class ShellyConnector
         } elseif (!empty($r) && ($device['type'] == 'relay' || $device['type'] == 'battery' || $device['type'] == 'carTimer')) {
             if (array_key_exists('ison', $r) && $r['ison'] == true) {
                 $powerResp = $this->queryShelly($device, 'power');
+                $power = 0;
                 if (!empty($powerResp) && array_key_exists('power', $powerResp)) {
                     $power = $powerResp['power'];
-                } elseif ($powerResp = $this->queryShelly($device, 'apower') && !empty($powerResp) && array_key_exists('apower', $powerResp)) {
-                    $power = $powerResp['apower'];
                 } else {
-                    $power = 0;
+                    $powerResp = $this->queryShelly($device, 'apower');
+                    if (!empty($powerResp) && array_key_exists('apower', $powerResp)) {
+                        $power = $powerResp['apower'];
+                    }
                 }
                 return $this->createStatus(1, 0, $power);
             } else {
