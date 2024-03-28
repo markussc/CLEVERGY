@@ -103,82 +103,86 @@ class SmartFoxConnector
     public function getShellyPro3EMResponse($cloudiness = 0)
     {
         $value = null;
-        if ($this->getIp()) {
-            $smartFoxLatest = $this->getAllLatest();
-            $smartFox = $this->getPowerIo();
-            $currentPower = $smartFox['power_io'];
-            $power = $currentPower;
-            $msg = null;
-            $now = new \DateTime();
-            if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
-                if (
-                        $smartFoxLatest['StorageSocMean'] > 50 &&
-                        $smartFoxLatest['StorageSoc'] > 15 &&
-                        $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc') > 10
-                    ) {
-                    // if we have
-                    // - relatively larce mean SOC
-                    // - some energy left
-                    // - SOC over the last 24h never below SOC 10%
-                    // --> increase reported power slightly to minimize unnecessary net power consumption
-                    $currentPower = $currentPower + 25;
-                    $power = $currentPower;
-                }
-                if (
-                        $smartFoxLatest['StorageSocMean'] > 60 &&
-                        $smartFoxLatest['StorageSoc'] > 60 &&
-                        $smartFoxLatest['StorageSoc'] >= (115 - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
-                    ) {
-                    // if we have
-                    // - high over last 48 hours
-                    // - current SOC at least 60%
-                    // - current SOC is higher than what we ever required over the last 48h plus 15% reserve
-                    $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
-                    if ($power < 0) {
-                        $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
+        try {
+            if ($this->getIp()) {
+                $smartFoxLatest = $this->getAllLatest();
+                $smartFox = $this->getPowerIo();
+                $currentPower = $smartFox['power_io'];
+                $power = $currentPower;
+                $msg = null;
+                $now = new \DateTime();
+                if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
+                    if (
+                            $smartFoxLatest['StorageSocMean'] > 50 &&
+                            $smartFoxLatest['StorageSoc'] > 15 &&
+                            $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc') > 10
+                        ) {
+                        // if we have
+                        // - relatively larce mean SOC
+                        // - some energy left
+                        // - SOC over the last 24h never below SOC 10%
+                        // --> increase reported power slightly to minimize unnecessary net power consumption
+                        $currentPower = $currentPower + 25;
+                        $power = $currentPower;
                     }
-                } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
-                    // battery SOC low over last 48 hours, don't discharge lower than 15%
-                    $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
-                    if ($power > 0) {
-                        $msg = 'Mean SOC low, do not discharge below 15%';
+                    if (
+                            $smartFoxLatest['StorageSocMean'] > 60 &&
+                            $smartFoxLatest['StorageSoc'] > 60 &&
+                            $smartFoxLatest['StorageSoc'] >= (115 - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
+                        ) {
+                        // if we have
+                        // - high over last 48 hours
+                        // - current SOC at least 60%
+                        // - current SOC is higher than what we ever required over the last 48h plus 15% reserve
+                        $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
+                        if ($power < 0) {
+                            $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
+                        }
+                    } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
+                        // battery SOC low over last 48 hours, don't discharge lower than 15%
+                        $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
+                        if ($power > 0) {
+                            $msg = 'Mean SOC low, do not discharge below 15%';
+                        }
+                    }
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
+                        // low mean soc, cloudy sky expected in near future, therefore do not discharge below 10%
+                        $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
+                        if ($power > 0) {
+                            $msg = 'Mean SOC low, cloudy sky expected, do not discharge below 10%';
+                        }
+                    }
+                    if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
+                        // do not discharge below 10% after 4pm
+                        $power = min(10, $currentPower);
+                        if ($power > 0) {
+                            $msg = 'Do not discharge below 10% after 4pm';
+                        }
+                    } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
+                        // do not discharge below 5% before 5am
+                        $power = min(10, $currentPower);
+                        if ($power > 0) {
+                            $msg = 'Do not discharge below 5% before 5am';
+                        }
+                    }
+                    if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
+                        // extremely low battery SOC, charge battery to 10% by accepting net consumption
+                        $power = -100;
                     }
                 }
-                if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
-                    // low mean soc, cloudy sky expected in near future, therefore do not discharge below 10%
-                    $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
-                    if ($power > 0) {
-                        $msg = 'Mean SOC low, cloudy sky expected, do not discharge below 10%';
-                    }
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
+                    // if battery gets really warm or is very cold, do not charge/discharge
+                    $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
-                if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
-                    // do not discharge below 10% after 4pm
-                    $power = min(10, $currentPower);
-                    if ($power > 0) {
-                        $msg = 'Do not discharge below 10% after 4pm';
-                    }
-                } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
-                    // do not discharge below 5% before 5am
-                    $power = min(10, $currentPower);
-                    if ($power > 0) {
-                        $msg = 'Do not discharge below 5% before 5am';
-                    }
-                }
-                if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
-                    // extremely low battery SOC, charge battery to 10% by accepting net consumption
-                    $power = -100;
-                }
-            }
-            if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
-                // if battery gets really warm or is very cold, do not charge/discharge
-                $msg = 'Excess cell temperature, do not use battery until normalized';
-            }
 
-            if ($msg === null) {
-                $value = ['total_act_power' => $power];
-            } else {
-                $value = ['message' => $msg];
+                if ($msg === null) {
+                    $value = ['total_act_power' => $power];
+                } else {
+                    $value = ['message' => $msg];
+                }
             }
+        } catch (\Exception $e) {
+            $value = ['message' => 'Exception during SmartFox value retrieval'];
         }
 
         return $value;
