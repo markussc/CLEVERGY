@@ -404,6 +404,7 @@ class ShellyConnector
                 if (!empty($powerResp) && array_key_exists('power', $powerResp)) {
                     $power = $powerResp['power'];
                 } elseif ($powerResp = $this->queryShelly($device, 'apower') && !empty($powerResp) && array_key_exists('apower', $powerResp)) {
+                    $power = $powerResp['apower'];
                 } else {
                     $power = 0;
                 }
