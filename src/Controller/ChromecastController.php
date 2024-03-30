@@ -8,6 +8,7 @@ use App\Entity\Settings;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Chromecast controller.
@@ -15,11 +16,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 #[Route(path: '/cc')]
 class ChromecastController extends AbstractController
 {
+    private $em;
     private $mystrom;
     private $cc;
 
-    public function __construct(MyStromConnector $mystrom, ChromecastConnector $ccConnector)
+    public function __construct(EntityManagerInterface $em, MyStromConnector $mystrom, ChromecastConnector $ccConnector)
     {
+        $this->em = $em;
         $this->mystrom = $mystrom;
         $this->ccConnector = $ccConnector;
     }
@@ -27,10 +30,9 @@ class ChromecastController extends AbstractController
     #[Route(path: '/power/{ccId}/{power}', name: 'chromecast_power')]
     public function power($ccId, $power)
     {
-        $em = $this->getDoctrine()->getManager();
         $chromecast = $this->getParameter('connectors')['chromecast'][$ccId];
         $ip = $chromecast['ip'];
-        $settings = $em->getRepository(Settings::class)->findOneByConnectorId($ip);
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($ip);
         if (!$settings) {
             $settings = new Settings();
             $settings->setConnectorId($ip);
@@ -66,8 +68,8 @@ class ChromecastController extends AbstractController
                 }
             }
         }
-        $em->persist($settings);
-        $em->flush();
+        $this->em->persist($settings);
+        $this->em->flush();
 
         return new JsonResponse(['success' => true]);
     }
