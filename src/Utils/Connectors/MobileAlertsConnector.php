@@ -107,7 +107,7 @@ class MobileAlertsConnector
                 }
             }
         }
-        if ($now->getTimestamp() - $timestamp->getTimestamp() > 7200) {
+        if ($now->getTimestamp() - $timestamp->getTimestamp() > 10800) { // 3h offset are accepted
             return false;
         } else {
             return true;
