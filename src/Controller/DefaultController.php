@@ -36,10 +36,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class DefaultController extends AbstractController
 {
     public function __construct(
+            TokenStorageInterface $ts,
             EntityManagerInterface $em,
             MyStromConnector $mystrom,
             ShellyConnector $shelly,
@@ -56,6 +58,7 @@ class DefaultController extends AbstractController
             EcarConnector $ecar
         )
     {
+       $this->ts = $ts;
        $this->em = $em;
        $this->mystrom = $mystrom;
        $this->shelly = $shelly;
@@ -84,7 +87,7 @@ class DefaultController extends AbstractController
             $user = $this->em->getRepository(User::class)->findOneBy(['email' => $authenticatedIps[$clientIp]]);
             if ($user) {
                 $token = new UsernamePasswordToken($user, "xinstance", $user->getRoles());
-                $this->get('security.token_storage')->setToken($token);
+                $this->ts->setToken($token);
                 if ($route) {
                     return $this->redirectToRoute($route, $params);
                 }
