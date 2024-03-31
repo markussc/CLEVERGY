@@ -83,7 +83,7 @@ class DefaultController extends AbstractController
             $route = $request->get('route');
             $user = $this->em->getRepository(User::class)->findOneBy(['email' => $authenticatedIps[$clientIp]]);
             if ($user) {
-                $token = new UsernamePasswordToken($user, $user->getPassword(), "xinstance", $user->getRoles());
+                $token = new UsernamePasswordToken($user, "xinstance", $user->getRoles());
                 $this->get('security.token_storage')->setToken($token);
                 if ($route) {
                     return $this->redirectToRoute($route, $params);
