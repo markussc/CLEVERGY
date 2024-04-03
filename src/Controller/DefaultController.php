@@ -219,12 +219,12 @@ class DefaultController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_OWNER');
 
         // execute the command
-        $success = $this->executeCommand($em, $command);
+        $success = $this->executeCommand($command);
 
         return new JsonResponse(['success' => $success]);
     }
 
-    private function executeCommand($em, $jsonCommand)
+    private function executeCommand($jsonCommand)
     {
         $command = json_decode($jsonCommand);
         switch ($command[0]) {

@@ -204,6 +204,7 @@
         var to = $("#to").val();
         window.location = "?details=true&from=" + from + "&to=" + to;
     }
+    window.setHistoryInterval = setHistoryInterval;
 
     function updateChartCallback(chart, data, color)
     {
