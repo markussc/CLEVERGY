@@ -21,20 +21,9 @@ RUN apt-get -y update && apt-get install -y \
         cron \
         python3 \
         python3-pip \
+        composer \
         htop \
         nano \
-    && true
-
-RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-
-RUN apt-get -y update && apt-get install -y \
-        nodejs \
-        yarn \
-        composer \
     && true
 
 # install Symfony CLI
@@ -89,9 +78,8 @@ RUN a2enmod headers
 WORKDIR "/www"
 COPY ./ /www
 RUN /usr/bin/composer install --no-interaction
-RUN yarn install
-RUN yarn run encore prod
-RUN bin/console cache:warmup
+RUN symfony console asset-map:compile
+RUN symfony console importmap:install
 
 # set permissions
 RUN HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
@@ -99,5 +87,5 @@ RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run apache2 web server
-CMD wait-for-it db:3306 -- env >> /etc/environment ; bin/console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it db:3306 -- env >> /etc/environment ; rm -rf public/assets/* ; symfony console cache:clear ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443

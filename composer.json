@@ -13,6 +13,8 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.7",
         "symfony/apache-pack": "^1.0",
+        "symfony/asset": "6.4.*",
+        "symfony/asset-mapper": "6.4.*",
         "symfony/config": "6.4.*",
         "symfony/console": "6.4.*",
         "symfony/css-selector": "6.4.*",
@@ -27,7 +29,6 @@
         "symfony/security-bundle": "6.4.*",
         "symfony/translation": "6.4.*",
         "symfony/validator": "6.4.*",
-        "symfony/webpack-encore-bundle": "^1.13",
         "symfony/yaml": "6.4.*",
         "symfonycasts/reset-password-bundle": "^1.11",
         "symfonycasts/verify-email-bundle": "^1.7",
@@ -76,7 +77,8 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd",
+            "importmap:install": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"

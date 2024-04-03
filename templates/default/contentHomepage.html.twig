@@ -31,14 +31,6 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-    <script>
-        var selectedMystrom;
-        var timerDeviceType;
-        function getTimerValue()
-        {
-            return $("input:radio[name='mystromTimer']:checked").val();
-        }
-    </script>
     <div id="mystromCarTimerModal" class="reveal" data-reveal>
       <h4 id="mystromCarTimerModalTitle">{% trans %}label.mystrom.cartimer{% endtrans %}</h4>
       <p class="lead">{% trans %}label.mystrom.select_mystrom_cartimer_lead{% endtrans %}</p>
@@ -58,14 +50,6 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-      <script>
-        var selectedMystromCar;
-        var carTimerDeviceType;
-        function getCarTimerValue()
-        {
-            return "cartimer_" + $("#cartimer_car").val() + "_" + $("#cartimer_deadline").val() + "_" + $("#cartimer_percent").val();
-        }
-    </script>
 {% endif %}
 <div id="deviceModal" class="reveal" data-reveal>
     <h4 id="deviceModalTitle"></h4>
@@ -75,27 +59,6 @@
       <span aria-hidden="true">&times;</span>
     </button>
 </div>
-<script>
-    function loadDeviceModal(title, lead, content) {
-        $("#deviceModalTitle").html(title);
-        $("#deviceModalLead").html(lead);
-        $("#deviceModalContent").html(content);
-    }
-    function menuToggle(btn, elemId)
-    {
-        if (btn.hasClass('hollow')) {
-            // is inactive
-            $('.content').hide();
-            $('.menu-btn').addClass('hollow');
-            btn.removeClass('hollow');
-            $('#'+elemId+'_container').toggle();
-        } else {
-            // is active
-            $('.content').hide();
-            $('.menu-btn').addClass('hollow');
-        }
-    }
-</script>
 <div class="row">
     <div class="columns small-12 medium-5 large-5 small-centered">
         <i id="visualDashboardWeatherSymbol" class="owf owf-{{ currentStat['openweathermap']['currentCode'] }}-{{ currentStat['openweathermap']['dayNight'] }} owf-3x refresh" style="color:silver;"></i>
@@ -376,3 +339,9 @@
     </div>
     {% endif %}
 </div>
+<script>
+    var selectedMystrom;
+    var timerDeviceType;
+    var selectedMystromCar;
+    var carTimerDeviceType;
+</script>
