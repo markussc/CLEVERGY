@@ -195,11 +195,8 @@
 </div>
 {% endif %}
 <script type="module">
-    
-    //import { Chart, LinearScale } from 'chart.js';
-    import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title,CategoryScale } from 'chart.js';
-    Chart.register(LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale);
-    //import 'moment';
+    import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+    Chart.register(LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend);
     import 'chartjs-adapter-moment';
     function setHistoryInterval()
     {
@@ -285,20 +282,21 @@
                     ticks: {
                         beginAtZero:true
                     },
-                    scaleLabel:{
+                    title:{
                         display: true,
-                        labelString: 'kWh',
+                        text: 'kWh',
                         fontColor: "#546372"
                     }
                 }
             },
-            animation: false,
-            tooltip: {
-                enabled: true,
-                mode: 'single',
-                callbacks: {
-                    label: function(tooltipItems, data) {
-                        return data.datasets[tooltipItems.datasetIndex].label + ': ' + tooltipItems.yLabel + ' kWh';
+            animation: true,
+            plugins: {
+                tooltip: {
+                    enabled: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.formattedValue + ' kWh';
+                        }
                     }
                 }
             }
@@ -312,7 +310,7 @@
             datasets: [
             {
                 label: '{% trans %}label.smartfox.net_power{% endtrans %}',
-                backgroundColor: ['darkblue'],
+                backgroundColor: ['grey'],
                 data: [
                 {% for sfData in history['smartFox']|default([]) %}
                     {
@@ -388,27 +386,25 @@
                 } 
             },
             scales: {
-                A: {
+                'y-axis-%': {
                         position: "left",
-                        id: "y-axis-%",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: '%',
+                            text: '%',
                             fontColor: "#546372"
                         }
                     },
-                B: {
+                'y-axis-W': {
                         position: "right",
-                        id: "y-axis-W",
                         ticks: {
                             beginAtZero:false
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: 'W',
+                            text: 'W',
                             fontColor: "#546372"
                         },
                         // grid line settings
@@ -738,27 +734,25 @@
                 } 
             },
             scales: {
-                A: {
+                'y-axis-°C': {
                         position: "left",
-                        id: "y-axis-°C",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: '°C, %',
+                            text: '°C, %',
                             fontColor: "#546372"
                         }
                     },
-                B: {
+                'y-axis-W': {
                         position: "right",
-                        id: "y-axis-W",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: 'W',
+                            text: 'W',
                             fontColor: "#546372"
                         },
                         // grid line settings
