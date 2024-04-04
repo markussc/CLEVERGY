@@ -16,6 +16,7 @@ class NetatmoConnector
 {
     protected $em;
     protected $connectors;
+    private $config;
     private $client;
     private $clientId;
     private $clientSecret;
