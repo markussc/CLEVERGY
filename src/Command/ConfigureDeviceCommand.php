@@ -20,7 +20,7 @@ class ConfigureDeviceCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Sends configuration data to all configurable devices');

@@ -19,7 +19,7 @@ class DataDeleteCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Delete data which is older than the year before')

@@ -1,8 +1,6 @@
 # To get started with security, check out the documentation:
 # https://symfony.com/doc/current/security.html
 security:
-    enable_authenticator_manager: true
-
     role_hierarchy:
         ROLE_OWNER:         ROLE_USER
         ROLE_ADMIN:         ROLE_OWNER

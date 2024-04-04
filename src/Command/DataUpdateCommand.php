@@ -23,7 +23,7 @@ class DataUpdateCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Retrieve data from connectors and store in database')

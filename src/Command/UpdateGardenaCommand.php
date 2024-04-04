@@ -19,7 +19,7 @@ class UpdateGardenaCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Get list of gardena devices from the user account')
