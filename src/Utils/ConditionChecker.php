@@ -32,10 +32,13 @@ class ConditionChecker
     protected $openweathermap;
     protected $mystrom;
     protected $shelly;
-    protected $pcoWeb;
+    protected $pcoweb;
     protected $ecar;
     protected $gardena;
     protected $energyLowRate;
+    private $deviceClass;
+    private $ip;
+    private $port;
 
     public function __construct(EntityManagerInterface $em, PriorityManager $prio, SmartFoxConnector $smartfox, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, PcoWebConnector $pcoweb, EcarConnector $ecar, GardenaConnector $gardena, $energyLowRate)
     {

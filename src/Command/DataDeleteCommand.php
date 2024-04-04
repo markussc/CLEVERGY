@@ -12,6 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'oshans:data:delete')]
 class DataDeleteCommand extends Command
 {
+    private $em;
+    
+
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;

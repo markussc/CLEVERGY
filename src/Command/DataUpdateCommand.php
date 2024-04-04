@@ -16,6 +16,8 @@ use App\Utils\LogicProcessor;
 #[AsCommand(name: 'oshans:data:update')]
 class DataUpdateCommand extends Command
 {
+    private $logic;
+
     public function __construct(LogicProcessor $logic)
     {
         $this->logic = $logic;

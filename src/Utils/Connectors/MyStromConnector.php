@@ -19,8 +19,11 @@ class MyStromConnector
 {
     protected $cm;
     protected $em;
+    protected $client;
     protected $ecar;
     protected $connectors;
+    protected $host;
+    protected $session_cookie_path;
 
     public function __construct(ConfigManager $cm, EntityManagerInterface $em, HttpClientInterface $client, EcarConnector $ecar, Array $connectors, $host, $session_cookie_path)
     {

@@ -17,6 +17,8 @@ class TaCmiConnector
     protected $client;
     protected $basePath;
     protected $connectors;
+    private $ip;
+    private $query;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {

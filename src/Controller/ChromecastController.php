@@ -18,7 +18,7 @@ class ChromecastController extends AbstractController
 {
     private $em;
     private $mystrom;
-    private $cc;
+    private $ccConnector;
 
     public function __construct(EntityManagerInterface $em, MyStromConnector $mystrom, ChromecastConnector $ccConnector)
     {

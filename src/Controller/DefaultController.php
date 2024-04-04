@@ -40,6 +40,22 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class DefaultController extends AbstractController
 {
+    private $ts;
+    private $em;
+    private $mystrom;
+    private $shelly;
+    private $smartfox;
+    private $pcoweb;
+    private $wem;
+    private $conexio;
+    private $gardena;
+    private $netatmo;
+    private $mobilealerts;
+    private $logocontrol;
+    private $tacmi;
+    private $openweather;
+    private $ecar;
+    
     public function __construct(
             TokenStorageInterface $ts,
             EntityManagerInterface $em,

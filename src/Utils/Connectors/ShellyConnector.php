@@ -19,13 +19,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class ShellyConnector
 {
+    protected $cc;
     protected $cm;
     protected $em;
     protected $ecar;
     private $client;
     private $baseUrl;
-    private $authkey;
     protected $connectors;
+    protected $host;
+    protected $session_cookie_path;
+    private $authkey;
 
     public function __construct(ChromecastController $cc, ConfigManager $cm, EntityManagerInterface $em, EcarConnector $ecar, HttpClientInterface $client, Array $connectors, $host, $session_cookie_path)
     {

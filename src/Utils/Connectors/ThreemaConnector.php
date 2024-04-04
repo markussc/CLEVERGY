@@ -14,6 +14,8 @@ class ThreemaConnector
     protected $em;
     protected $client;
     protected $connectors;
+    private $config;
+    private $apiSendSimple;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {

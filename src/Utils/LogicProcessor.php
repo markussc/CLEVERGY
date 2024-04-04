@@ -51,6 +51,7 @@ class LogicProcessor
     protected $netatmo;
     protected $gardena;
     protected $threema;
+    protected $ecar;
     protected $conditionchecker;
     protected $translator;
     protected $energyLowRate;
@@ -60,6 +61,9 @@ class LogicProcessor
     private $avgPvPower;
     private $shellyLatest;
     private $mystromLatest;
+    private $minInsideTemp;
+    private $nightTemp;
+    private $avg1Power;
 
     public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
     {

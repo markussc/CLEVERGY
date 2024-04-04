@@ -12,6 +12,7 @@ use App\Utils\LogicProcessor;
 #[AsCommand(name: 'oshans:devices:configure')]
 class ConfigureDeviceCommand extends Command
 {
+    private $logic;
 
     public function __construct(LogicProcessor $logic)
     {

@@ -23,6 +23,7 @@ class GardenaConnector
     private $baseUrl;
     private $token;
     protected $connectors;
+    private $authEndpoint;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {

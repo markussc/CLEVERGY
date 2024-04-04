@@ -12,6 +12,8 @@ use App\Utils\Connectors\GardenaConnector;
 #[AsCommand(name: 'oshans:gardena:update')]
 class UpdateGardenaCommand extends Command
 {
+    private $gardena;
+
     public function __construct(GardenaConnector $gardena)
     {
         $this->gardena = $gardena;

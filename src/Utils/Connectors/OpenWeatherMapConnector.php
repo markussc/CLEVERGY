@@ -15,6 +15,7 @@ class OpenWeatherMapConnector
     protected $em;
     protected $client;
     protected $connectors;
+    private $config;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {

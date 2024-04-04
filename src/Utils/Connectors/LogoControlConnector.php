@@ -17,6 +17,7 @@ class LogoControlConnector
     protected $client;
     protected $basePath;
     protected $connectors;
+    private $ip;
 
     public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
     {

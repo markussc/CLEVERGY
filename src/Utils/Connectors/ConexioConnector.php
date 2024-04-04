@@ -16,6 +16,7 @@ class ConexioConnector
     protected $em;
     protected $basePath;
     protected $connectors;
+    private $ip;
 
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
