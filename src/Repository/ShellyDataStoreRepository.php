@@ -9,6 +9,10 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
 {
     public function getLatest($connectorId, $status = -1, $roller = false)
     {
+        if ($status == -1) {
+            return parent::getLatest($connectorId);
+        }
+
         $qb = $this->createQueryBuilder('e')
             ->where('e.connectorId = :connectorId')
             ->orderBy('e.timestamp', 'desc')
