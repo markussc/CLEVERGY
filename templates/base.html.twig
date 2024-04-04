@@ -5,15 +5,9 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1" />
         {% block meta %}{% endblock %}
         <title>{% block title %}Clevergy.fi - {{ instancetitle }}{% endblock %}</title>
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
         <div class="loading" style="display:none;"></div>
         <div class="top-bar" id="top-bar">
             <div class="top-bar-left">
@@ -33,6 +27,7 @@
                 </div>
             {% endif %}
         </div>
+        {% block importmap %}{{ importmap() }}{% endblock %}
         {% block body %}{% endblock %}
         <div class="footer row">
             <div class="small-12 columns footer-body">
@@ -41,20 +36,10 @@
             </div>
         </div>
         <div class="modal"><!-- Place at bottom of page --></div>
-        <script>
-            $(function() {
-                $(document).foundation();
-            });
-            function showSpinner()
-            {
-                $("body").addClass("loading");
-            }
-
-            function hideSpinner()
-            {
-                $("body").removeClass("loading");
-            }
-        </script>
+        {% block javascripts %}{% endblock %}
         {% block javascriptsembedded %}{% endblock %}
+        <script type="module">
+            $(document).foundation();
+        </script>
     </body>
 </html>

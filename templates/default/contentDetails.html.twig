@@ -36,22 +36,6 @@
       </button>
     </div>
 {% endif %}
-<script>
-    function menuToggle(btn, elemId)
-    {
-        if (btn.hasClass('hollow')) {
-            // is inactive
-            $('.content').hide();
-            $('.menu-btn').addClass('hollow');
-            btn.removeClass('hollow');
-            $('#'+elemId+'_container').toggle();
-        } else {
-            // is active
-            $('.content').hide();
-            $('.menu-btn').addClass('hollow');
-        }
-    }
-</script>
 <div class="row" style="margin-top: 20px;">
     <div class="small-12 columns small-centered" style="text-align:center;">
         {% if currentStat['smartFox'] is defined and currentStat['smartFox'] != 0 %}
@@ -210,51 +194,55 @@
     </div>
 </div>
 {% endif %}
-<script>
+<script type="module">
+    import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+    Chart.register(LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend);
+    import 'chartjs-adapter-moment';
     function setHistoryInterval()
     {
         var from = $("#from").val();
         var to = $("#to").val();
         window.location = "?details=true&from=" + from + "&to=" + to;
     }
+    window.setHistoryInterval = setHistoryInterval;
 
     function updateChartCallback(chart, data, color)
     {
         if (data) {
-            dataArr = JSON.parse(data);
+            var dataArr = JSON.parse(data);
         } else {
-            dataArr = [];
+            var dataArr = [];
         }
         if (color) {
-            colorArr = JSON.parse(color);
+            var colorArr = JSON.parse(color);
         } else {
-            colorArr = [];
+            var colorArr = [];
         }
-
         updateChart(charts[chart], dataArr, colorArr);
     }
+    window.updateChartCallback = updateChartCallback;
 
-    function updateChart(chart, dataArr, colorArr)
+    function updateChart(myChart, dataArr, colorArr)
     {
         for (var i = 0; i < dataArr.length; i++) {
-            chart.data.datasets[i].data = [dataArr[i]];
+            myChart.data.datasets[i].data = [dataArr[i]];
             if (typeof(colorArr[i]) !== 'undefined') {
                 if (dataArr[i] < 0) {
                     colorIndex = 0;
                 } else {
                     colorIndex = 1;
                 }
-                chart.data.datasets[i].borderColor = [colorArr[i][colorIndex]];
-                chart.data.datasets[i].backgroundColor = [colorArr[i][colorIndex]];
+                myChart.data.datasets[i].borderColor = [colorArr[i][colorIndex]];
+                myChart.data.datasets[i].backgroundColor = [colorArr[i][colorIndex]];
             }
         }
-        chart.update();
+        myChart.update();
     }
 
     var charts = new Object();
     {% if currentStat['smartFoxChart']|default(false) %}
     // energyDay
-    charts.energyDay = new Chart(document.getElementById("energyDayCanvas").getContext('2d'), {
+    charts.energyDay = new Chart($("#energyDayCanvas").get(0).getContext('2d'), {
         type: 'bar',
         data: {
             labels: [''],
@@ -291,24 +279,25 @@
         },
         options: {
             scales: {
-                yAxes: [{
+                y: {
                     ticks: {
                         beginAtZero:true
                     },
-                    scaleLabel:{
+                    title:{
                         display: true,
-                        labelString: 'kWh',
+                        text: 'kWh',
                         fontColor: "#546372"
                     }
-                }]
+                }
             },
-            animation: false,
-            tooltips: {
-                enabled: true,
-                mode: 'single',
-                callbacks: {
-                    label: function(tooltipItems, data) {
-                        return data.datasets[tooltipItems.datasetIndex].label + ': ' + tooltipItems.yLabel + ' kWh';
+            animation: true,
+            plugins: {
+                tooltip: {
+                    enabled: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.formattedValue + ' kWh';
+                        }
                     }
                 }
             }
@@ -316,13 +305,13 @@
     });
 
     // 24hPower
-    charts.twentyFourPower = new Chart(document.getElementById("twentyFourPowerCanvas").getContext('2d'), {
+    charts.twentyFourPower = new Chart($("#twentyFourPowerCanvas").get(0).getContext('2d'), {
         type: 'line',
         data: { 
             datasets: [
             {
                 label: '{% trans %}label.smartfox.net_power{% endtrans %}',
-                backgroundColor: ['darkblue'],
+                backgroundColor: ['grey'],
                 data: [
                 {% for sfData in history['smartFox']|default([]) %}
                     {
@@ -398,44 +387,40 @@
                 } 
             },
             scales: {
-                yAxes: [
-                    {
+                'y-axis-%': {
                         position: "left",
-                        id: "y-axis-%",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: '%',
+                            text: '%',
                             fontColor: "#546372"
                         }
                     },
-                    {
+                'y-axis-W': {
                         position: "right",
-                        id: "y-axis-W",
                         ticks: {
                             beginAtZero:false
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: 'W',
+                            text: 'W',
                             fontColor: "#546372"
                         },
                         // grid line settings
                         gridLines: {
                             drawOnChartArea: false, // only want the grid lines for one axis to show up
                         },
-                    }
-                ],
-                xAxes: [{
+                    },
+                x: {
                     type: 'time',
                     time: {
                         displayFormats: {
                             minute: 'H:m'
                         }
                     }
-                }]
+                }
             },
             animation: false
         }
@@ -750,44 +735,40 @@
                 } 
             },
             scales: {
-                yAxes: [
-                    {
+                'y-axis-°C': {
                         position: "left",
-                        id: "y-axis-°C",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: '°C, %',
+                            text: '°C, %',
                             fontColor: "#546372"
                         }
                     },
-                    {
+                'y-axis-W': {
                         position: "right",
-                        id: "y-axis-W",
                         ticks: {
                             beginAtZero:true
                         },
-                        scaleLabel:{
+                        title:{
                             display: true,
-                            labelString: 'W',
+                            text: 'W',
                             fontColor: "#546372"
                         },
                         // grid line settings
                         gridLines: {
                             drawOnChartArea: false, // only want the grid lines for one axis to show up
                         },
-                    }
-                ],
-                xAxes: [{
+                    },
+                x: {
                     type: 'time',
                     time: {
                         displayFormats: {
                             minute: 'H:m'
                         }
                     }
-                }]
+                }
             },
             animation: false
         }
