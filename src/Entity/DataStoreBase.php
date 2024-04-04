@@ -132,6 +132,7 @@ abstract class DataStoreBase
             if (!$latest) {
                 $latest = new $item->latestClass;
             }
+
             foreach (get_object_vars($item) as $key => $value) {
                 $setter = 'set' . ucfirst($key);
                 if (is_callable([$latest, $setter])) {
@@ -140,6 +141,10 @@ abstract class DataStoreBase
             }
             // set data
             $latest->setData($item->getData());
+            // set extended data if possible
+            if (method_exists($latest, "setExtendedData") && method_exists($item, "getExtendedData")) {
+                $latest->setExtendedData($item->getExtendedData());
+            }
         }
 
       return $latest;
