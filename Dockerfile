@@ -2,14 +2,17 @@ FROM ubuntu:22.04
 LABEL maintainer="markus.schafroth@3084.ch"
 LABEL description="OSHANS"
 ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update && apt-get upgrade -y
+RUN apt -y install software-properties-common
+RUN add-apt-repository -y ppa:ondrej/php
 RUN apt-get -y update && apt-get install -y \
-        php \
-        php-zip \
-        php-xml \
-        php-mysql \
-        php-intl \
-        php-gmp \
-        php-curl \
+        php8.3 \
+        php8.3-zip \
+        php8.3-xml \
+        php8.3-mysql \
+        php8.3-intl \
+        php8.3-gmp \
+        php8.3-curl \
         apache2 \
         acl \
         wget \
@@ -38,14 +41,14 @@ RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
-    /etc/php/8.1/apache2/php.ini
+    /etc/php/8.3/apache2/php.ini
 
 # config changes in PHP config (CLI)
 RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 4G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
-    /etc/php/8.1/cli/php.ini
+    /etc/php/8.3/cli/php.ini
 
 # config changes in apache2 config
 RUN sed -i -e 's/^ServerTokens\s* .*/ServerTokens Prod/' \
