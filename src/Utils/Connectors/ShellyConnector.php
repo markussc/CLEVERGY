@@ -353,8 +353,8 @@ class ShellyConnector
             $oppositeStatus = ($currentStatus + 1)%2;
         }
         $oldStatus = $this->em->getRepository(ShellyDataStore::class)->getLatest($this->getId($this->connectors['shelly'][$deviceId]), $oppositeStatus, $roller);
-        if (count($oldStatus) == 1) {
-            $oldTimestamp = $oldStatus[0]->getTimestamp();
+        if ($oldStatus) {
+            $oldTimestamp = $oldStatus->getTimestamp();
 
             // calculate time diff
             $now = new \DateTime('now');
