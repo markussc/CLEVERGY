@@ -10,7 +10,7 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
     public function getLatest($connectorId, $status = -1, $roller = false)
     {
         if ($status == -1) {
-            return parent::getLatest($connectorId);
+            return parent::getLatestByType($connectorId, 0);
         }
 
         $qb = $this->createQueryBuilder('e')
@@ -29,14 +29,9 @@ class ShellyDataStoreRepository extends DataStoreBaseRepository
             $qb->andWhere('e.jsonValue '.$like.' :status ' . $orNor . ' e.jsonValue '.$like.' :status2')
                ->setParameter('status', '%"val":'.$status.'%')
                 ->setParameter('status2', '%"val": '.$status.'%');
-            return $qb->getQuery()->getResult();
+            return $qb->getQuery()->getOneOrNullResult();
         }
-        $latest = $qb->getQuery()->getResult();
-        if (!count($latest)) {
-            return 0;
-        } else {
-            return $latest[0];
-        }
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     public function getActiveDuration($connectorId, $start = null, $end = null)

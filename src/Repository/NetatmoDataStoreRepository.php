@@ -7,4 +7,8 @@ namespace App\Repository;
  */
 class NetatmoDataStoreRepository extends DataStoreBaseRepository
 {
+    public function getLatest($id)
+    {
+        return parent::getLatestByType($id, 0);
+    }
 }

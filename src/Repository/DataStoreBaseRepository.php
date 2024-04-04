@@ -11,10 +11,16 @@ class DataStoreBaseRepository extends EntityRepository
 {
     public function getLatest($ip)
     {
-        return $this->getLatestWithOptions($ip, false);
+        return $this->getLatestByType($ip, 2);
     }
 
-    public function getLatestWithOptions($ip, $extended = false)
+    /*
+     * types:
+     * 0 : full entity returned
+     * 1  : basic value returned
+     * 2  : extended value returned; if not available, basic value returned (default)
+     */
+    public function getLatestByType($ip, $type = 0)
     {
         $class = static::class;
         $entityClass = str_replace("DataStoreRepository", "DataLatest", str_replace("App\Repository", "App\Entity", $class));
@@ -34,11 +40,15 @@ class DataStoreBaseRepository extends EntityRepository
         if ($latest == null) {
             return 0;
         } else {
-            if ($extended && method_exists($latest, 'getExtendedData') && $latest->getExtendedData()) {
-                return $latest->getExtendedData();
+            if ($type >= 1) {
+                $retVal = $latest->getData();
+                if ($type == 2 && method_exists($latest, 'getExtendedData') && $latest->getExtendedData()) {
+                    $retVal = $latest->getExtendedData();
+                }
             } else {
-                return $latest->getData();
+                $retVal = $latest;
             }
+            return $retVal;
         }
     }
 

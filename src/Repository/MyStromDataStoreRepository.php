@@ -10,7 +10,12 @@ class MyStromDataStoreRepository extends DataStoreBaseRepository
     public function getLatest($ip, $status = -1, $extended = false)
     {
         if ($status == -1) {
-            return parent::getLatestWithOptions($ip, $extended);
+            if ($extended) {
+                $type = 2;
+            } else {
+                $type = 1;
+            }
+            return parent::getLatestByType($ip, $type);
         }
         $qb = $this->createQueryBuilder('e')
             ->where('e.connectorId = :ip')
