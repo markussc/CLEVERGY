@@ -128,12 +128,12 @@ class SmartFoxConnector
                     if (
                             $smartFoxLatest['StorageSocMean'] > 55 &&
                             $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (15 + $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc') - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
+                            $smartFoxLatest['StorageSoc'] >= (10 + $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc') - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
                         ) {
                         // if we have
                         // - high over last 48 hours
                         // - current SOC at least 60%
-                        // - current SOC is higher than what we ever required over the last 48h plus 15% reserve
+                        // - current SOC is higher than what we ever required over the last 48h plus 10% reserve
                         $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                         if ($power < 0) {
                             $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
