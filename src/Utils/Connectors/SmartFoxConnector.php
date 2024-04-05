@@ -122,13 +122,13 @@ class SmartFoxConnector
                         // - some energy left
                         // - SOC over the last 24h never below SOC 10%
                         // --> increase reported power slightly to minimize unnecessary net power consumption
-                        $currentPower = $currentPower + 25;
+                        $currentPower = $currentPower + 30;
                         $power = $currentPower;
                     }
                     if (
-                            $smartFoxLatest['StorageSocMean'] > 60 &&
+                            $smartFoxLatest['StorageSocMean'] > 55 &&
                             $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (115 - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
+                            $smartFoxLatest['StorageSoc'] >= (15 + $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc') - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
                         ) {
                         // if we have
                         // - high over last 48 hours
