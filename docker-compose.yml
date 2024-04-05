@@ -14,7 +14,7 @@ services:
     env_file:
       - ./.env.local
     environment:
-      - TZ=Europe/Zurich
+      - TZ=${TZ}
       - servername=${HOSTNAME}
     build:
       context: ./
