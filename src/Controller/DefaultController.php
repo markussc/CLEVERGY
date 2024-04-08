@@ -752,8 +752,9 @@ class DefaultController extends AbstractController
     /**
      * interface for spoofing Shelly Pro 3 EM
      */
-    #[Route(path: '/rpc/EM.GetStatus', name: 'EMStatus')]
-    public function emStatus(OpenWeatherMapConnector $weather)
+    #[Route(path: '/rpc/EMData.GetStatus', name: 'EMDataStatus')]
+    #[Route(path: '/rpc/EMdata.GetStatus', name: 'EMdataStatus')]
+    public function emDataStatus(OpenWeatherMapConnector $weather)
     {
         $value = $this->smartfox->getShellyPro3EMResponse($weather->getRelevantCloudsNextDaylightPeriod());
 
