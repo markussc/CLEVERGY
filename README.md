@@ -30,18 +30,23 @@ $ a2enmod proxy_http
 ```
 * Create config file for avahi as /etc/avahi/services/clevergy.service
 ```
-<?xml version="1.0" standalone='no'?>
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
-  <name>ShellyPro3EM</name>
+  <name replace-wildcards="yes">shellypro3em</name>
   <service>
     <type>_shelly._tcp</type>
+    <host-name>ShellyPro3EM.local</host-name>
     <port>80</port>
+    <txt-record>ver=1.2.2</txt-record>
     <txt-record>app=Pro3EM</txt-record>
     <txt-record>gen=2</txt-record>
   </service>
   <service>
     <type>_http._tcp</type>
+    <host-name>ShellyPro3EM.local</host-name>
     <port>80</port>
+    <txt-record>ver=1.2.2</txt-record>
     <txt-record>app=Pro3EM</txt-record>
     <txt-record>gen=2</txt-record>
   </service>
@@ -51,7 +56,7 @@ $ a2enmod proxy_http
 ```
 <VirtualHost *:80>
   ServerAdmin webmaster@netti.ch
-  ServerName clevergy-meter.local
+  ServerName shellypro3em.local
   ProxyPass / http://myinstance.myhost.com/
   ProxyPassReverse / http://myinstance.myhost.com/
 </VirtualHost>
@@ -61,5 +66,10 @@ $ a2enmod proxy_http
 $ a2dissite 000-default.conf
 $ a2ensite 018-clevergy
 $ systemctl reload apache2
-$ systemctl reload avahi-daemon
+$ systemctl restart avahi-daemon
 ```
+* set the correct hostname "shellypro3em.local" (in the Network Options --> Hostname menu); note, that the .local will be appended by the tool itself!
+```sh
+$ sudo raspi-config
+$ shellypro3em
+``
