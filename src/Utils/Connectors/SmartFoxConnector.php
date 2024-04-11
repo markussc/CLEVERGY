@@ -126,11 +126,13 @@ class SmartFoxConnector
                         $power = $currentPower;
                     }
                     if (
+                            $smartFoxLatest['PvPower'][0] > 0 &&
                             $smartFoxLatest['StorageSocMean'] > 55 &&
                             $smartFoxLatest['StorageSoc'] > 60 &&
                             $smartFoxLatest['StorageSoc'] >= (10 + $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc') - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
                         ) {
                         // if we have
+                        // - PV production
                         // - high over last 48 hours
                         // - current SOC at least 60%
                         // - current SOC is higher than what we ever required over the last 48h plus 10% reserve
