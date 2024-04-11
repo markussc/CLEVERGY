@@ -114,14 +114,16 @@ class SmartFoxConnector
                 $adjusted = false;
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
+                            $smartFoxLatest['PvPower'][0] == 0 &&
                             $smartFoxLatest['StorageSocMean'] > 50 &&
                             $smartFoxLatest['StorageSoc'] > 15 &&
-                            $currentPower > 25
+                            $currentPower > 30
                     ) {
                         $currentPower = max($currentPower, 101);
                         $power = $currentPower;
                         $adjusted = true;
                     } elseif (
+                            $smartFoxLatest['PvPower'][0] == 0 &&
                             $currentPower < -50
                     ) {
                         $currentPower = min($currentPower, -101);
