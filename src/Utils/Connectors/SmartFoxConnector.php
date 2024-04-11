@@ -111,27 +111,8 @@ class SmartFoxConnector
                 $power = $currentPower;
                 $msg = null;
                 $now = new \DateTime();
-                $adjusted = false;
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
-                            $smartFoxLatest['PvPower'][0] == 0 &&
-                            $smartFoxLatest['StorageSocMean'] > 50 &&
-                            $smartFoxLatest['StorageSoc'] > 15 &&
-                            $currentPower > 30
-                    ) {
-                        $currentPower = max($currentPower, 101);
-                        $power = $currentPower;
-                        $adjusted = true;
-                    } elseif (
-                            $smartFoxLatest['PvPower'][0] == 0 &&
-                            $currentPower < -50
-                    ) {
-                        $currentPower = min($currentPower, -101);
-                        $power = $currentPower;
-                        $adjusted = true;
-                    }
-                    if (
-                            !$adjusted &&
                             $smartFoxLatest['StorageSocMean'] > 50 &&
                             $smartFoxLatest['StorageSoc'] > 15 &&
                             $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc') > 10
