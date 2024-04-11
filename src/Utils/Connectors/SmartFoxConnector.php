@@ -195,7 +195,7 @@ class SmartFoxConnector
                 }
 
                 if ($msg === null) {
-                    $value = ['total_act_power' => $power, 'total_aprt_power' => $power];
+                    $value = ['total_act_power' => $power];
                 } else {
                     $value = ['message' => $msg];
                 }
