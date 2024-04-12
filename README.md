@@ -33,22 +33,16 @@ $ a2enmod proxy_http
 <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
-  <name replace-wildcards="yes">shellypro3em</name>
+  <name replace-wildcards="yes">%h</name>
   <service>
     <type>_shelly._tcp</type>
-    <host-name>ShellyPro3EM.local</host-name>
+    <host-name>ShellyPro3EM-clevergy.local</host-name>
     <port>80</port>
-    <txt-record>ver=1.2.2</txt-record>
-    <txt-record>app=Pro3EM</txt-record>
-    <txt-record>gen=2</txt-record>
   </service>
   <service>
     <type>_http._tcp</type>
-    <host-name>ShellyPro3EM.local</host-name>
+    <host-name>ShellyPro3EM-clevergy.local</host-name>
     <port>80</port>
-    <txt-record>ver=1.2.2</txt-record>
-    <txt-record>app=Pro3EM</txt-record>
-    <txt-record>gen=2</txt-record>
   </service>
 </service-group>
 ```
@@ -68,7 +62,7 @@ $ a2ensite 018-clevergy
 $ systemctl reload apache2
 $ systemctl restart avahi-daemon
 ```
-* set the correct hostname "shellypro3em.local" (in the Network Options --> Hostname menu); note, that the .local will be appended by the tool itself!
+* set the correct hostname "ShellyPro3EM-clevergy.local" (in the Network Options --> Hostname menu); note, that the .local will be appended by the tool itself!
 ```sh
 $ sudo raspi-config
 $ shellypro3em
