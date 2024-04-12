@@ -36,12 +36,10 @@ $ a2enmod proxy_http
   <name replace-wildcards="yes">%h</name>
   <service>
     <type>_shelly._tcp</type>
-    <host-name>ShellyPro3EM-clevergy.local</host-name>
     <port>80</port>
   </service>
   <service>
     <type>_http._tcp</type>
-    <host-name>ShellyPro3EM-clevergy.local</host-name>
     <port>80</port>
   </service>
 </service-group>
