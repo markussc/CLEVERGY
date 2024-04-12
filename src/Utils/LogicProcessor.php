@@ -457,6 +457,10 @@ class LogicProcessor
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $avgPower = $this->getAvgPower();
         $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data
+        if ($avgPvPower < $this->pcoweb->getPower()) {
+            // provide highPowerFlag being set while battery is discharging
+            $smartFoxHighPower = 0;
+        }
         $nowDateTime = new \DateTime();
         if (isset($this->energyLowRate['end'])) {
             $diffToEndOfLowEnergyRate = $this->energyLowRate['end'] - $nowDateTime->format('H');
