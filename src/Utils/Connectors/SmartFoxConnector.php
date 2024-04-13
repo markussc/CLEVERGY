@@ -121,8 +121,12 @@ class SmartFoxConnector
                         // - relatively larce mean SOC
                         // - some energy left
                         // - SOC over the last 24h never below SOC 10%
-                        // --> increase reported power slightly to minimize unnecessary net power consumption
-                        $currentPower = $currentPower + 30;
+                        // --> increase reported power to minimize unnecessary net power consumption
+                        if ($smartFoxLatest['PvPower'][0] > 500) {
+                            $currentPower = $currentPower + ($smartFoxLatest['StorageSocMean'] + $smartFoxLatest['StorageSoc'] + $smartFoxLatest['StorageSocMin24h'])/2;
+                        } else {
+                            $currentPower = $currentPower + ($smartFoxLatest['StorageSocMean'] + $smartFoxLatest['StorageSocMin24h'])/2;
+                        }
                         $power = $currentPower;
                     }
                     if (
