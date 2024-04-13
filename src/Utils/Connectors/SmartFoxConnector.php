@@ -115,7 +115,7 @@ class SmartFoxConnector
                     if (
                             $smartFoxLatest['StorageSocMean'] > 50 &&
                             $smartFoxLatest['StorageSoc'] > 15 &&
-                            $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc') > 10
+                            $smartFoxLatest['StorageSocMin24h'] > 10
                         ) {
                         // if we have
                         // - relatively larce mean SOC
@@ -129,7 +129,7 @@ class SmartFoxConnector
                             $smartFoxLatest['PvPower'][0] > 0 &&
                             $smartFoxLatest['StorageSocMean'] > 55 &&
                             $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (10 + $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc') - $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc'))
+                            $smartFoxLatest['StorageSoc'] >= (10 + $smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])
                         ) {
                         // if we have
                         // - PV production
@@ -374,6 +374,10 @@ class SmartFoxConnector
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
                 $arr['StorageTemp'] = $maxStorageTemp;
+                $arr['StorageSocMin24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc');
+                $arr['StorageSocMin48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc');
+                $arr['StorageSocMax24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 24*60, 'StorageSoc');
+                $arr['StorageSocMax48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc');
             } else {
                 // add existing data
                 $arr['StorageDetails'] = $latestEntry['StorageDetails'];
@@ -383,6 +387,10 @@ class SmartFoxConnector
                 $arr['StorageSoc'] = $latestEntry['StorageSoc'];
                 $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
                 $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+                $arr['StorageSocMin24h'] = $latestEntry['StorageSocMin24h'];
+                $arr['StorageSocMin48h'] = $latestEntry['StorageSocMin48h'];
+                $arr['StorageSocMax24h'] = $latestEntry['StorageSocMax24h'];
+                $arr['StorageSocMax48h'] = $latestEntry['StorageSocMax48h'];
             }
         }
 
