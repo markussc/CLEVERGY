@@ -125,7 +125,7 @@ class SmartFoxConnector
                         if ($smartFoxLatest['PvPower'][0] > 500) {
                             $currentPower = $currentPower + ($smartFoxLatest['StorageSocMean'] + $smartFoxLatest['StorageSoc'] + $smartFoxLatest['StorageSocMin24h'])/2;
                         } else {
-                            $currentPower = $currentPower + ($smartFoxLatest['StorageSocMean'] + $smartFoxLatest['StorageSocMin24h'])/2;
+                            $currentPower = $currentPower + ($smartFoxLatest['StorageSocMean'] + $smartFoxLatest['StorageSocMin24h'])/1.5;
                         }
                         $power = $currentPower;
                     }
