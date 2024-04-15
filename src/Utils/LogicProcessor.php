@@ -149,6 +149,7 @@ class LogicProcessor
         $this->em->flush();
 
         // openweathermap
+        $this->openweathermap->saveOneCallApi30ToDb();
         $this->openweathermap->save5DayForecastToDb();
         $this->openweathermap->saveCurrentWeatherToDb();
 

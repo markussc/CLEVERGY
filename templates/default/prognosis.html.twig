@@ -17,7 +17,7 @@
                 {
                     label: '{% trans %}label.pv.prognosis{% endtrans %}',
                     data: [
-                    {% for spData in srt.getSolarPotentials %}
+                    {% for spData in srt.getSolarPotentials() %}
                         {
                             x: new Date("{{ spData.datetime|date("c") }}"),
                             y: {{ spData['pPotTot']|default(0)*1000 }}
@@ -62,7 +62,7 @@
                     }
                 }
             },
-            tension: 0.2,
+            tension: 0.01,
             animation: true
         }
     });
