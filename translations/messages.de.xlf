@@ -509,6 +509,14 @@
         <source>label.lastQuarter</source>
         <target>Vorquartal</target>
       </trans-unit>
+      <trans-unit id="ABDCER" resname="label.pv.prognosis">
+        <source>label.pv.prognosis</source>
+        <target>PV Produktionsprognose</target>
+      </trans-unit>
+      <trans-unit id="EZODR" resname="label.prognosis.header">
+        <source>label.prognosis.header</source>
+        <target>Prognose</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

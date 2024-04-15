@@ -6,6 +6,7 @@
         "php": "^8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "abbadon1334/sun-position-spa-php": "^2.0",
         "aldas/modbus-tcp-client": "^2.1",
         "doctrine/annotations": "^1.13",
         "doctrine/dbal": "^3.2",

@@ -19,9 +19,10 @@
             {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
                 <div class="top-bar-right align-center" style="padding-top:15px;">
                     <ul class="menu menu-hover-lines">
-                        <li {% if activePage|default() == 'overview' %}class="active"{% endif %}><a href="{{ path('overview') }}">{% trans %}label.dashboard.header{% endtrans %}</a></li>
-                        <li {% if activePage|default() == 'details' %}class="active"{% endif %}><a href="{{ path('overview') }}?details=true">{% trans %}label.details.header{% endtrans %}</a></li>
-                        <li class="align-right{% if activePage|default() == 'history' %} active{% endif %}"><a href="{{ path('history') }}">{% trans %}label.history.header{% endtrans %}</a></li>
+                        <li {% if activePage|default() == 'overview' %}class="active"{% endif %}><a href="{{ path('overview') }}"><i class="fa fa-home fa-lg"></i></a></li>
+                        <li {% if activePage|default() == 'details' %}class="active"{% endif %}><a href="{{ path('overview') }}?details=true"><i class="fa fa-laptop-house fa-lg"></i></a></li>
+                        <li {% if activePage|default() == 'prognosis' %}class="active"{% endif %}><a href="{{ path('prognosis') }}"><i class="fa fa-chart-line fa-lg"></i></a></li>
+                        <li class="align-right{% if activePage|default() == 'history' %} active{% endif %}"><a href="{{ path('history') }}"><i class="fa fa-calculator fa-lg"></i></a></li>
                         <li class="align-right"><a href="{{ path('app_logout') }}"><i class="fa fa-sign-out-alt fa-lg"></i></a></li>
                     </ul>
                 </div>

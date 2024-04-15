@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+   
+{% block body %}
+    <div class="small-12 medium-12 large-8 columns small-centered">
+        <canvas id="solarPotentialCanvas"></canvas>
+    </div>
+    <script type="module">
+    // 48h Solar Potential
+    import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+    Chart.register(LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend);
+    import 'chartjs-adapter-moment';
+    var charts = new Object();
+    charts.twentyFourPower = new Chart($("#solarPotentialCanvas").get(0).getContext('2d'), {
+        type: 'line',
+        data: { 
+            datasets: [
+                {
+                    label: '{% trans %}label.pv.prognosis{% endtrans %}',
+                    data: [
+                    {% for spData in srt.getSolarPotentials %}
+                        {
+                            x: new Date("{{ spData.datetime|date("c") }}"),
+                            y: {{ spData['pPotTot']|default(0)*1000 }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'yellow',
+                    yAxisID: "y-axis-W"
+                }
+            ]
+        },
+        options: {
+            elements: {
+                point: {
+                    radius: 0 
+                } 
+            },
+            scales: {
+                'y-axis-W': {
+                        position: "right",
+                        ticks: {
+                            beginAtZero:false
+                        },
+                        title:{
+                            display: true,
+                            text: 'W',
+                            fontColor: "#546372"
+                        },
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    },
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'HH:mm'
+                        }
+                    }
+                }
+            },
+            tension: 0.2,
+            animation: true
+        }
+    });
+</script>
+{% endblock %}

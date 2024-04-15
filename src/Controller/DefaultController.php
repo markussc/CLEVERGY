@@ -27,6 +27,7 @@ use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\WemConnector;
+use App\Service\SolarRadiationToolbox;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -222,6 +223,15 @@ class DefaultController extends AbstractController
             'history' => $history,
             'from' => $from,
             'to' => $to,
+        ]);
+    }
+
+    #[Route(path: '/prognosis', name: 'prognosis')]
+    public function prognosis(Request $request, SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
+    {
+        // render the template
+        return $this->render('default/prognosis.html.twig', [
+            'srt' => $srt,
         ]);
     }
 
