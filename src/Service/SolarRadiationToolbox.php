@@ -38,13 +38,16 @@ class SolarRadiationToolbox
                     'datetime' => $timestamp,
                     'sunPosition' => $sunPosition,
                     'cloudiness' => $entry['clouds']['all'],
-                    'temperature' => $entry['main']['temp']+273.15,
+                    'temperature' => $entry['main']['temp']-273.15,
                     'humidity' => $entry['main']['humidity'],
                 ];
                 $potentials = [];
                 $pPotTot = 0;
                 foreach ($this->connectors['smartfox']['pv']['panels'] as $pv) {
                     $pPot = $pv['pmax'] * sin(deg2rad($sunPosition[0])) * cos(deg2rad($sunPosition[0] - $pv['angle'])) * (1+cos(deg2rad($sunPosition[1] - $pv['orientation'])))/2 * (300-$sunClimate['cloudiness']-$sunClimate['humidity'])/300;
+                    if ($sunClimate['temperature'] > 25) {
+                        $pPot = $pPot - 1/3*($sunClimate['temperature'] - 25) * $pPot/100; // decrease by 1% per 3° above 25°C
+                    }
                     $potentials[] = [
                         'panel' => $pv,
                         'pPot' => $pPot,
