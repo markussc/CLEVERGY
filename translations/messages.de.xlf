@@ -519,19 +519,19 @@
       </trans-unit>
       <trans-unit id="NG_VMOc" resname="label.prognosis.pv_next_hour">
         <source>label.prognosis.pv_next_hour</source>
-        <target>PV Energie nächste Stunde</target>
+        <target>nächste Stunde</target>
       </trans-unit>
       <trans-unit id="jWgUhaN" resname="label.prognosis.pv_current_daylight">
         <source>label.prognosis.pv_current_daylight</source>
-        <target>PV Energie heute verbleibend</target>
+        <target>heute verbleibend</target>
       </trans-unit>
       <trans-unit id="CqMVc_P" resname="label.prognosis.pv_next_day">
         <source>label.prognosis.pv_next_day</source>
-        <target>PV Energie morgen</target>
+        <target>morgen</target>
       </trans-unit>
       <trans-unit id="g..MKGK" resname="label.prognosis.pv_next_48h">
         <source>label.prognosis.pv_next_48h</source>
-        <target>PV Energie nächste 48h</target>
+        <target>nächste 48h</target>
       </trans-unit>
     </body>
   </file>
