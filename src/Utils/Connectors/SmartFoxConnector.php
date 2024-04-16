@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\SmartFoxDataStore;
+use App\Service\SolarRadiationToolbox;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,15 +16,17 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class SmartFoxConnector
 {
     protected $em;
+    protected $solRad;
     protected $client;
     protected $basePath;
     protected $ip;
     protected $version;
     private $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
+        $this->solRad = $solRad;
         $this->client = $client;
         $this->ip = null;
         $this->version = null;
@@ -133,13 +136,15 @@ class SmartFoxConnector
                             $smartFoxLatest['PvPower'][0] > 0 &&
                             $smartFoxLatest['StorageSocMean'] > 55 &&
                             $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (10 + $smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])
+                            $smartFoxLatest['StorageSoc'] >= (10 + $smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h']) &&
+                            $smartFoxLatest['pvEnergyLast24h']*0.8 < $this->solRad->getEnergyTotals()['tomorrow']
                         ) {
                         // if we have
                         // - PV production
                         // - high over last 48 hours
                         // - current SOC at least 60%
                         // - current SOC is higher than what we ever required over the last 48h plus 10% reserve
+                        // - prognosis for tomorrows PV production is better than 80% over the last 24 hours
                         $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                         if ($power < 0) {
                             $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
@@ -236,6 +241,7 @@ class SmartFoxConnector
             $arr['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
             $arr['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
             $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
+            $arr['pvEnergyLast24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now'));
             if ($this->hasAltPv()) {
                 $arr['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
             }
@@ -287,6 +293,7 @@ class SmartFoxConnector
                 "day_energy_in" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in'),
                 "day_energy_out" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out'),
                 "energyToday" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip),
+                "pvEnergyLast24h" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now')),
                 "consumptionControl1Percent" => $data["consumptionControl1Percent"]
             ]);
             if ($this->hasAltPv()) {

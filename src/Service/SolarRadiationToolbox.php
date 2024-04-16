@@ -42,6 +42,45 @@ class SolarRadiationToolbox
         return $this->energyTotals;
     }
 
+    /*
+     * max power (in Watts) which will be reached during today
+     */
+    public function getTodayMaxPower()
+    {
+        if ($this->solarPotentials === null) {
+            $this->calculateSolarPotentials();
+        }
+        $tomorrow = new \DateTime('tomorrow');
+        $maxPower = 0;
+        foreach ($this->solarPotentials as $potential) {
+            if ($potential['datetime']->getTimestamp() < $tomorrow->getTimestamp()) {
+                $maxPower = max($maxPower, $potential['pPotTot']);
+            }
+        }
+
+        return $maxPower * 1000;
+    }
+
+    /*
+     * seconds until the power level (in Watts) will be reached
+     */
+    public function getWaitingTimeUntilPower(int $power)
+    {
+        if ($this->solarPotentials === null) {
+            $this->calculateSolarPotentials();
+        }
+        $now = new \DateTime();
+        $waitingTime = null;
+        foreach ($this->solarPotentials as $potential) {
+            if ($potential['pPotTot']*1000 >= $power) {
+                $waitingTime = max(0, $potential['datetime']->getTimestamp() - $now->getTimestamp());
+                break;
+            }
+        }
+
+        return $waitingTime;
+    }
+
     private function calculateSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
     {
         $weather = $this->em->getRepository(OpenWeatherMapDataLatest::class)->getLatest('onecallapi30')->getData();

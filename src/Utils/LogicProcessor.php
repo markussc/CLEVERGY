@@ -28,6 +28,7 @@ use App\Utils\Connectors\NetatmoConnector;
 use App\Utils\Connectors\GardenaConnector;
 use App\Utils\Connectors\EcarConnector;
 use App\Utils\ConditionChecker;
+use App\Service\SolarRadiationToolbox;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -40,6 +41,7 @@ class LogicProcessor
     protected $em;
     protected $mobilealerts;
     protected $openweathermap;
+    protected $solRad;
     protected $mystrom;
     protected $shelly;
     protected $smartfox;
@@ -65,11 +67,12 @@ class LogicProcessor
     private $nightTemp;
     private $avg1Power;
 
-    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, SolarRadiationToolbox $solRad, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;
         $this->openweathermap = $openweathermap;
+        $this->solRad = $solRad;
         $this->mystrom = $mystrom;
         $this->shelly = $shelly;
         $this->smartfox = $smartfox;
@@ -458,8 +461,9 @@ class LogicProcessor
         $smartFoxHighPower = $smartfox['digital'][0]['state'];
         $avgPower = $this->getAvgPower();
         $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data
-        if ($avgPvPower < $this->pcoweb->getPower()) {
-            // provide highPowerFlag being set while battery is discharging
+        $power = $this->pcoweb->getPower();
+        if ($avgPvPower < $power) {
+            // prevent highPowerFlag being set while battery is discharging
             $smartFoxHighPower = 0;
         }
         $nowDateTime = new \DateTime();
@@ -613,37 +617,41 @@ class LogicProcessor
             }
 
             // heat storage is low or net power is negative or at least not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
-            if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 52 || $waterTemp < 53 )) || $avgPower < 0) {
-                $power = $this->pcoweb->getPower();
-                if (!$isSummer) {
-                    $power = $power *0.75; // we accept a lower self consumption degree in winter
-                }
-                if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2 && $avgPower < $power) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
-                    // detected high PV power (independently of current use), but SmartFox is not forcing heating
-                    // and either
-                    // - winter, cloudy or later than 10h or later than 13h together with avgPvPower > power/2 and avgPower < power
-                    // - summer and avgPvPower > power*1.2
-                    // - power + avgPower < 0
-                    $activateHeating = true;
-                    // we make sure the hwHysteresis is set to the default value
-                    $this->pcoweb->executeCommand('hwHysteresis', 10);
-                    $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
-                    $this->pcoweb->executeCommand('hc1', 40);
-                    $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10), increase hc1 (set hc1=35).";
-                    if (!$ppModeChanged && $ppMode !== PcoWebConnector::MODE_AUTO && $ppMode !== PcoWebConnector::MODE_HOLIDAY && ($ppMode != PcoWebConnector::MODE_SUMMER || !$ppStatus)) {
-                        $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
-                        $log[] = "set MODE_HOLIDAY due to high PV without flag set";
-                        $ppModeChanged = true;
+            $waitingTimeForSufficientPower = $this->solRad->getWaitingTimeUntilPower(min($power, $this->solRad->getTodayMaxPower()));
+            // avgPvPower is high enough already or it is not reasonable to wait for a better moment (there will never be enough power today or the max power production is more than 6 hours away)
+            if ($avgPvPower > $power || !$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) {
+                if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 52 || $waterTemp < 53 )) || $avgPower < 0) {
+                    if (!$isSummer) {
+                        $power = $power *0.75; // we accept a lower self consumption degree in winter
                     }
-                    // set high power flag manually for the rest of the logic decisions
-                    $smartFoxHighPower = true;
+                    if (!$smartFoxHighPower && (((((!$isSummer || $avgClouds > 25) && \date('G') > 9) || \date('G') > 12) && $avgPvPower > $power/2 && $avgPower < $power) || ($isSummer && $avgPvPower > $power*1.2) || -1*$avgPower > $power)) {
+                        // detected high PV power (independently of current use), but SmartFox is not forcing heating
+                        // and either
+                        // - winter, cloudy or later than 10h or later than 13h together with avgPvPower > power/2 and avgPower < power
+                        // - summer and avgPvPower > power*1.2
+                        // - power + avgPower < 0
+                        $activateHeating = true;
+                        // we make sure the hwHysteresis is set to the default value
+                        $this->pcoweb->executeCommand('hwHysteresis', 10);
+                        $this->pcoweb->executeCommand('waterTemp', $targetWaterTemp);
+                        $this->pcoweb->executeCommand('hc1', 40);
+                        $log[] = "low heatStorageMidTemp and/or relatively high PV but flag not set with not fully charged heat storage. Set hwHysteresis to default (10), increase hc1 (set hc1=35).";
+                        if (!$ppModeChanged && $ppMode !== PcoWebConnector::MODE_AUTO && $ppMode !== PcoWebConnector::MODE_HOLIDAY && ($ppMode != PcoWebConnector::MODE_SUMMER || !$ppStatus)) {
+                            $this->pcoweb->executeCommand('mode', PcoWebConnector::MODE_HOLIDAY);
+                            $log[] = "set MODE_HOLIDAY due to high PV without flag set";
+                            $ppModeChanged = true;
+                        }
+                        // set high power flag manually for the rest of the logic decisions
+                        $smartFoxHighPower = true;
+                    }
                 }
             }
 
             // apply emergency actions
             $emergency = false;
             $insideEmergency = false;
-            if ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2)) {
+            // we ignore emergencies if there is a better power situation within the next 1.5 hours
+            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 1.5*3600) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
@@ -865,6 +873,11 @@ class LogicProcessor
         $netPower = $smartfox['power_io'];
         $avgPower = $this->getAvgPower();
         $avgPvPower = max(-1*$avgPower, $this->getAvgPvPower()); // fix for missing PV data
+        $power = $this->pcoweb->getPower();
+        if ($avgPvPower < $power) {
+            // prevent highPowerFlag being set while battery is discharging
+            $smartFoxHighPower = 0;
+        }
         $nowDateTime = new \DateTime();
         // readout weather forecast (currently the cloudiness for the next mid-day hours period)
         $avgClouds = $this->openweathermap->getRelevantCloudsNextDaylightPeriod();
@@ -968,6 +981,7 @@ class LogicProcessor
         }
         $hc1 = 75;
         $ppPower = 100;
+        $waitingTimeForSufficientPower = $this->solRad->getWaitingTimeUntilPower(min($power, $this->solRad->getTodayMaxPower()));
         if ($smartFoxHighPower) {
             $hc1 = min($hc1Limit, 150);
             $ppPower = 100;
@@ -975,7 +989,7 @@ class LogicProcessor
         } elseif (!$energyLowRate) {
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
-            if ($minTempNight < $outsideTemp - 5) {
+            if ($minTempNight < $outsideTemp - 5 && (!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 4*3600)) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 70);
                 $ppPower = 50;
@@ -995,9 +1009,7 @@ class LogicProcessor
                 $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
         } else {
-            // readout temperature forecast for the coming day
-            $maxTempDay = $this->openweathermap->getMaxTempNextDaylightPeriod();
-            if ($insideTemp > $minInsideTemp && ($maxTempDay > $outsideTemp + 8 || $avgClouds < 30)) {
+            if (($waitingTimeForSufficientPower && $waitingTimeForSufficientPower < 4) || ($insideTemp > $minInsideTemp && ($maxTempDay > $outsideTemp + 8 || $avgClouds < 30 || $this->solRad->getTodayMaxPower() > $power))) {
                 // day will be extremely warm compared to current temp or it will be sunny
                 $hc1 = min($hc1Limit, 40);
                 $ppPower = 20;
@@ -1020,7 +1032,7 @@ class LogicProcessor
         }
         if (!$energyLowRate) {
             // adjust hc1 and ppPower for high energy rate
-            if ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus")) {
+            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus"))) {
                 $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
@@ -1038,7 +1050,7 @@ class LogicProcessor
             }
         } else {
             // adjust hc1 and ppPower for low energy rate
-            if ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus")) {
+            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus"))) {
                 $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {

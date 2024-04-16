@@ -49,6 +49,7 @@ parameters:
         wem: # connector for Weishaupt WP with WEM Portal (using ModbusTCP)
             ip: 192.168.22.31
             port: 502
+            power: 2000 # relevant electrical power requirement in watts
         conexio:
             ip: 192.168.1.100
             username: admin
