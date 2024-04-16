@@ -505,17 +505,33 @@
         <source>label.device.status.no_inside_temp</source>
         <target>Innentemperatur nicht aktuell!</target>
       </trans-unit>
-      <trans-unit id="AKJHRE" resname="label.lastQuarter">
+      <trans-unit id="e6Vx7qk" resname="label.lastQuarter">
         <source>label.lastQuarter</source>
         <target>Vorquartal</target>
       </trans-unit>
-      <trans-unit id="ABDCER" resname="label.pv.prognosis">
+      <trans-unit id="5.oypp_" resname="label.pv.prognosis">
         <source>label.pv.prognosis</source>
         <target>PV Produktionsprognose</target>
       </trans-unit>
-      <trans-unit id="EZODR" resname="label.prognosis.header">
+      <trans-unit id="6mc1qR3" resname="label.prognosis.header">
         <source>label.prognosis.header</source>
         <target>Prognose</target>
+      </trans-unit>
+      <trans-unit id="NG_VMOc" resname="label.prognosis.pv_next_hour">
+        <source>label.prognosis.pv_next_hour</source>
+        <target>PV Energie nächste Stunde</target>
+      </trans-unit>
+      <trans-unit id="jWgUhaN" resname="label.prognosis.pv_current_daylight">
+        <source>label.prognosis.pv_current_daylight</source>
+        <target>PV Energie heute verbleibend</target>
+      </trans-unit>
+      <trans-unit id="CqMVc_P" resname="label.prognosis.pv_next_day">
+        <source>label.prognosis.pv_next_day</source>
+        <target>PV Energie morgen</target>
+      </trans-unit>
+      <trans-unit id="g..MKGK" resname="label.prognosis.pv_next_48h">
+        <source>label.prognosis.pv_next_48h</source>
+        <target>PV Energie nächste 48h</target>
       </trans-unit>
     </body>
   </file>

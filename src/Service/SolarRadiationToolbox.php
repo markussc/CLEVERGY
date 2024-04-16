@@ -11,6 +11,8 @@ class SolarRadiationToolbox
     private $connectors;
     private $em;
     private $sd;
+    private $solarPotentials;
+    private $energyTotals;
 
     public function __construct(array $connectors, EntityManagerInterface $em)
     {
@@ -18,17 +20,40 @@ class SolarRadiationToolbox
         $this->em = $em;
         $this->sd = new SolarData();
         $this->sd->setObserverPosition($connectors['openweathermap']['lat'], $connectors['openweathermap']['lon'], $connectors['openweathermap']['alt']);
+        $this->solarPotentials = null;
+        $this->energyTotals = null;
     }
 
-    public function getSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
+    public function getSolarPotentials()
+    {
+        if ($this->solarPotentials === null) {
+            $this->calculateSolarPotentials();
+        }
+
+        return $this->solarPotentials;
+    }
+
+    public function getEnergyTotals()
+    {
+        if ($this->energyTotals === null) {
+            $this->calculateEnergyTotals();
+        }
+
+        return $this->energyTotals;
+    }
+
+    private function calculateSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
     {
         $weather = $this->em->getRepository(OpenWeatherMapDataLatest::class)->getLatest('onecallapi30')->getData();
-        $solarPotentials = [];
+        $this->solarPotentials = [];
         $entries = array_merge([$weather['current']], $weather['hourly']);
+        $ePotTotCumulated = 0;
+        $prevTimestamp = null;
+        $prevPower = 0;
         foreach ($entries as $entry) {
             $timestamp = new \DateTime();
             $timestamp->setTimestamp($entry['dt']);
-            if ($timestamp <= $from || $timestamp >= $until) {
+            if ($timestamp < $prevTimestamp || $timestamp <= $from || $timestamp >= $until) {
                 continue;
             }
             $sunPosition = $this->getSunPosition($timestamp, $entry['temp']+273.15, $entry['pressure']);
@@ -56,10 +81,50 @@ class SolarRadiationToolbox
                 $pPotTot = $pPotTot + $pPot;
             }
             $pPotTot = min($pPotTot, $this->connectors['smartfox']['pv']['inverter']['pmax']);
-            $solarPotentials[$entry['dt']] = array_merge($sunClimate, ['pvPotentials' => $potentials], ['pPotTot' => $pPotTot]);
+            if ($prevTimestamp !== null) {
+                $timeInterval = ($timestamp->getTimestamp() - $prevTimestamp->getTimestamp())/3600; // interval in hours
+            } else {
+                $timeInterval = 0;
+            }
+            $ePotTot = ($prevPower + $pPotTot) / 2 * $timeInterval;
+            $ePotTotCumulated = $ePotTotCumulated + $ePotTot;
+            $prevTimestamp = $timestamp;
+            $prevPower = $pPotTot;
+            $this->solarPotentials[$entry['dt']] = array_merge($sunClimate, ['pvPotentials' => $potentials], ['pPotTot' => $pPotTot], ['ePotTot' => $ePotTot], ['ePotTotCumulated' => $ePotTotCumulated]);
         }
 
-        return $solarPotentials;
+        return $this->solarPotentials;
+    }
+
+    private function calculateEnergyTotals()
+    {
+        if ($this->solarPotentials === null) {
+            $this->calculateSolarPotentials();
+        }
+        $idx = 0;
+        foreach ($this->solarPotentials as $pot) {
+            if ($pot['datetime'] <= new \DateTime('+2 hour')) {
+                $end1Hour = $idx;
+            }
+            if ($pot['datetime'] <= new \DateTime('tomorrow')) {
+                $startNextDayIndex = $idx;
+            }
+            if ($pot['datetime'] <= new \DateTime('tomorrow +1 day')) {
+                $endNextDayIndex = $idx;
+            }
+            $idx++;
+        }
+
+        $nextHourEnergyValues = array_slice($this->solarPotentials, 0, $end1Hour, false);
+        $tomorrowEnergyValues = array_slice($this->solarPotentials, $startNextDayIndex, $endNextDayIndex-$startNextDayIndex, false);
+        $this->energyTotals = [
+            '1h'  => (reset($nextHourEnergyValues)['pPotTot'] + end($nextHourEnergyValues)['pPotTot'])/($end1Hour),
+            'today' => array_slice($this->solarPotentials, $startNextDayIndex, 1, false)[0]['ePotTotCumulated'],
+            'tomorrow'=> end($tomorrowEnergyValues)['ePotTotCumulated'] - reset($tomorrowEnergyValues)['ePotTotCumulated'],
+            '48h' => end($this->solarPotentials)['ePotTotCumulated'],
+        ];
+
+        return $this->energyTotals;
     }
 
     /*
@@ -67,7 +132,7 @@ class SolarRadiationToolbox
      * e° : topocentric elevation angle (in degrees)
      * Φ° : topocentric azimuth angle, M for navigators and solar radiation users (in degrees)
      */
-    public function getSunPosition(\DateTime $datetime = new \DateTime(), $temp = 20, $pressure = 1000)
+    private function getSunPosition(\DateTime $datetime = new \DateTime(), $temp = 20, $pressure = 1000)
     {
         $this->sd->setObserverDate($datetime->format('Y'), $datetime->format('m'), $datetime->format('d'));
         $this->sd->setObserverTime($datetime->format('H'), $datetime->format('i'), $datetime->format('s'));

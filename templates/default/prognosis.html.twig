@@ -4,6 +4,15 @@
     <div class="small-12 medium-12 large-8 columns small-centered">
         <canvas id="solarPotentialCanvas"></canvas>
     </div>
+    <div class="content">
+        <div class="small-12 columns">
+        <ul>
+            <li>{% trans %}label.prognosis.pv_next_hour{% endtrans %}: {{ srt.getEnergyTotals()['1h']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_current_daylight{% endtrans %}: {{ srt.getEnergyTotals()['today']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_day{% endtrans %}: {{ srt.getEnergyTotals()['tomorrow']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_48h{% endtrans %}: {{ srt.getEnergyTotals()['48h']|round(0, 'floor') }} kWh</li>
+        </ul>
+    </div>
     <script type="module">
     // 48h Solar Potential
     import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
