@@ -26,6 +26,9 @@ parameters:
                     name: Nelinor 7kWh
                     type: nelinor
                     ip: 192.168.1.143
+                    capacity: 7 # capacity in kWh
+                    charging: 2.1 # max charging power in kW
+                    discharging: 1.8 # max discharging power in kW
             pv:
                 inverter:
                     pmax: 10            # max inverter power (if multiple inverters are available, insert total power here)

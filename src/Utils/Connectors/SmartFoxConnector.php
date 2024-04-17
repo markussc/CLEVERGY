@@ -134,22 +134,35 @@ class SmartFoxConnector
                     }
                     if (
                             $smartFoxLatest['PvPower'][0] > 0 &&
-                            $smartFoxLatest['StorageSocMean'] > 55 &&
-                            $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (10 + $smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h']) &&
-                            $smartFoxLatest['pvEnergyLast24h']*0.8 < $this->solRad->getEnergyTotals()['tomorrow']
+                            $smartFoxLatest['StorageSocMean'] > 50 &&
+                            $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2
                         ) {
-                        // if we have
-                        // - PV production
-                        // - high over last 48 hours
-                        // - current SOC at least 60%
-                        // - current SOC is higher than what we ever required over the last 48h plus 10% reserve
-                        // - prognosis for tomorrows PV production is better than 80% over the last 24 hours
-                        $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
-                        if ($power < 0) {
-                            $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
+                            $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
+                            $chargingPower = 0;
+                            $dischargingPower = 0;
+                            $storCapacity = 0;
+                            foreach ($this->connectors['smartfox']['storage'] as $stor) {
+                                $chargingPower = $chargingPower + $stor['charging'];
+                                $dischargingPower = $dischargingPower + $stor['discharging'];
+                                $storCapacity = $storCapacity + $stor['capacity'];
+                            }
+                            // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
+                            $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
+                            if (
+                                $storEnergyPotential > 1.5 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
+                            ) {
+                            // if we have
+                            // - PV production
+                            // - high over last 48 hours
+                            // - current SOC higher than half of mean of last 48h's max/min values
+                            // - prognosis says chances are good to still reach more than 1.5 times residuum to full battery
+                            $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
+                            if ($power < 0) {
+                                $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
+                            }
                         }
-                    } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
+                    }
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
                         // battery SOC low over last 48 hours, don't discharge lower than 15%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {

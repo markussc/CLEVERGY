@@ -24,6 +24,11 @@ class SolarRadiationToolbox
         $this->energyTotals = null;
     }
 
+    public function setSolarPotentials(array $solarPotentials)
+    {
+        $this->solarPotentials = $solarPotentials;
+    }
+
     public function getSolarPotentials()
     {
         if ($this->solarPotentials === null) {
@@ -79,6 +84,35 @@ class SolarRadiationToolbox
         }
 
         return $waitingTime;
+    }
+
+    /*
+     * check if a energy request for the current day can be supplied with given maxPower and an assumed baseLoad for other equipment (base load can lead to negative energy consumption from requestor, if maxDeliveryPower is != 0)
+     * $maxConsumptionPower: kW (how much power the requestor will consume at max)
+     * $maxDeliveryPower: kW (how much power the requester will deliver at max to support baseLoad)
+     * $baseLoad: kW
+     */
+    public function checkEnergyRequest($maxConsumptionPower, $maxDeliveryPower, $baseLoad)
+    {
+        if ($this->solarPotentials === null) {
+            $this->calculateSolarPotentials();
+        }
+        $now = new \DateTime();
+        $now = $now->getTimestamp();
+        $tomorrow = new \DateTime('tomorrow');
+        $tomorrow = $tomorrow->getTimestamp();
+        $energyBalance = 0;
+        foreach ($this->solarPotentials as $timestamp => $potential) {
+            if ($timestamp < $now || $timestamp > $tomorrow) {
+                continue;
+            }
+            $tDiff = ($timestamp - $now)/3600; // time delta in hours
+            $pDiff = max(-1*$maxDeliveryPower, min($maxConsumptionPower, $potential['pPotTot'] - $baseLoad)); // respect limits of requestor
+            $energyBalance = $energyBalance + $tDiff * $pDiff;
+            $now = $timestamp;
+        }
+
+        return $energyBalance;
     }
 
     private function calculateSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
