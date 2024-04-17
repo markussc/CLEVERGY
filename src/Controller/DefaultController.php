@@ -13,6 +13,7 @@ use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
 use App\Entity\TaCmiDataStore;
 use App\Entity\EcarDataStore;
+use App\Entity\OpenWeatherMapDataStore;
 use App\Utils\LogicProcessor;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\EcarConnector;
@@ -227,11 +228,18 @@ class DefaultController extends AbstractController
     }
 
     #[Route(path: '/prognosis', name: 'prognosis')]
-    public function prognosis(Request $request, SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
+    public function prognosis(SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
     {
+        $history = [];
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $history['smartFox'] = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-24 hours'), new \DateTime());
+            $history['prognosis'] = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
+        }
+
         // render the template
         return $this->render('default/prognosis.html.twig', [
             'srt' => $srt,
+            'history' => $history,
         ]);
     }
 

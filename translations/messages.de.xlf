@@ -533,6 +533,26 @@
         <source>label.prognosis.pv_next_48h</source>
         <target>nächste 48h</target>
       </trans-unit>
+      <trans-unit id=".CIrVO9" resname="label.pv.prognosis_realtime">
+        <source>label.pv.prognosis_realtime</source>
+        <target>Echtzeitprognose</target>
+      </trans-unit>
+      <trans-unit id="81mhBb3" resname="label.pv.prognosis_24h">
+        <source>label.pv.prognosis_24h</source>
+        <target>24h-Prognose</target>
+      </trans-unit>
+      <trans-unit id="L5B0Qcg" resname="label.pv.prognosis_measurement">
+        <source>label.pv.prognosis_measurement</source>
+        <target>Effektivleistung</target>
+      </trans-unit>
+      <trans-unit id="S1c6SpM" resname="label.pv.prognosis.preview_header">
+        <source>label.pv.prognosis.preview_header</source>
+        <target>Vorschau</target>
+      </trans-unit>
+      <trans-unit id="WIkWEyf" resname="label.pv.prognosis.review_header">
+        <source>label.pv.prognosis.review_header</source>
+        <target>Rückblick</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
