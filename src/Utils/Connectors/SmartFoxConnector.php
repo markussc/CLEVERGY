@@ -242,6 +242,7 @@ class SmartFoxConnector
             $arr['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
             $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
             $arr['pvEnergyLast24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now'));
+            $arr["pvEnergyPrognosis"] = $this->solRad->getSolarPotentials();
             if ($this->hasAltPv()) {
                 $arr['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
             }
@@ -294,6 +295,7 @@ class SmartFoxConnector
                 "day_energy_out" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out'),
                 "energyToday" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip),
                 "pvEnergyLast24h" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now')),
+                "pvEnergyPrognosis" => $this->solRad->getSolarPotentials(),
                 "consumptionControl1Percent" => $data["consumptionControl1Percent"]
             ]);
             if ($this->hasAltPv()) {
