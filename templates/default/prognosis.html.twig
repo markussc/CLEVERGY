@@ -97,7 +97,7 @@
                     {% for spData in history['smartFox'] %}
                         {
                             x: new Date("{{ spData.timestamp|date("c") }}"),
-                            y: {{ spData.getData()['PvPower'][0]|default(0) + sfData.getData()['PvPower'][1]|default(0) }}
+                            y: {{ spData.getData()['PvPower'][0]|default(0) + spData.getData()['PvPower'][1]|default(0) }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
                     ],
