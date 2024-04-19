@@ -13,7 +13,6 @@ use App\Entity\ConexioDataStore;
 use App\Entity\LogoControlDataStore;
 use App\Entity\TaCmiDataStore;
 use App\Entity\EcarDataStore;
-use App\Entity\OpenWeatherMapDataStore;
 use App\Utils\LogicProcessor;
 use App\Utils\Connectors\ConexioConnector;
 use App\Utils\Connectors\EcarConnector;
