@@ -37,7 +37,7 @@ RUN apt install symfony-cli
 RUN pip3 install weconnect-cli
 
 # config changes in PHP config
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
