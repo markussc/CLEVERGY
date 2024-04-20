@@ -27,6 +27,8 @@ class SolarRadiationToolbox
     public function setSolarPotentials(array $solarPotentials)
     {
         $this->solarPotentials = $solarPotentials;
+
+        return $this;
     }
 
     public function getSolarPotentials()
@@ -175,7 +177,13 @@ class SolarRadiationToolbox
             $this->calculateSolarPotentials();
         }
         $idx = 0;
+        $end1Hour = 0;
+        $startNextDayIndex = 0;
+        $endNextDayIndex = 0;
         foreach ($this->solarPotentials as $pot) {
+            if (is_array($pot['datetime'])) {
+                $pot['datetime'] = new \DateTime($pot['datetime']['date'] . " " . $pot['datetime']['timezone']);
+            }
             if ($pot['datetime'] <= new \DateTime('+2 hour')) {
                 $end1Hour = $idx;
             }

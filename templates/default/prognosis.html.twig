@@ -7,10 +7,10 @@
     <p>
     <div class="small-12 medium-12 large-8 columns small-centered">
         <ul>
-            <li>{% trans %}label.prognosis.pv_next_hour{% endtrans %}: {{ srt.getEnergyTotals()['1h']|round(0, 'floor') }} kWh</li>
-            <li>{% trans %}label.prognosis.pv_current_daylight{% endtrans %}: {{ srt.getEnergyTotals()['today']|round(0, 'floor') }} kWh</li>
-            <li>{% trans %}label.prognosis.pv_next_day{% endtrans %}: {{ srt.getEnergyTotals()['tomorrow']|round(0, 'floor') }} kWh</li>
-            <li>{% trans %}label.prognosis.pv_next_48h{% endtrans %}: {{ srt.getEnergyTotals()['48h']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_hour{% endtrans %}: {{ energyTotals['1h']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_current_daylight{% endtrans %}: {{ energyTotals['today']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_day{% endtrans %}: {{ energyTotals['tomorrow']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_48h{% endtrans %}: {{ energyTotals['48h']|round(0, 'floor') }} kWh</li>
         </ul>
     </div>
     <div class="small-12 medium-12 large-8 columns small-centered">
@@ -30,9 +30,9 @@
                 {
                     label: '{% trans %}label.pv.prognosis{% endtrans %}',
                     data: [
-                    {% for spData in srt.getSolarPotentials() %}
+                    {% for spData in data|last.getData()['pvEnergyPrognosis'] %}
                         {
-                            x: new Date("{{ spData.datetime|date("c") }}"),
+                            x: new Date("{{ spData.datetime.date }}"),
                             y: {{ spData['pPotTot']|default(0)*1000 }}
                         }{% if not loop.last %},{% endif %}
                     {% endfor %}
@@ -94,11 +94,13 @@
                 {
                     label: '{% trans %}label.pv.prognosis_measurement{% endtrans %}',
                     data: [
-                    {% for spData in history['smartFox'] %}
+                    {% for spData in data %}
+                    {% if spData.timestamp > date("-24 hours") %}
                         {
                             x: new Date("{{ spData.timestamp|date("c") }}"),
                             y: {{ spData.getData()['PvPower'][0]|default(0) + spData.getData()['PvPower'][1]|default(0) }}
                         }{% if not loop.last %},{% endif %}
+                    {% endif %}
                     {% endfor %}
                     ],
                     fill: false,
@@ -108,16 +110,13 @@
                 {
                     label: '{% trans %}label.pv.prognosis_realtime{% endtrans %}',
                     data: [
-                    {% for spData in history['prognosis'] %}
+                    {% for spData in data %}
                         {% if spData.timestamp > date("-24 hours") %}
-                        {% for prog in spData.getData()['pvEnergyPrognosis']|default([]) %}
-                        {% if loop.first %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|first %}
                         {
                             x: new Date("{{ spData.timestamp|date("c") }}"),
                             y: {{ prog['pPotTot'] * 1000 }}
-                        }{% if not loop.parent.loop.last %},{% endif %}
-                        {% endif %}
-                        {% endfor %}
+                        }{% if not loop.last %},{% endif %}
                         {% endif %}
                     {% endfor %}
                     ],
@@ -128,16 +127,13 @@
                 {
                     label: '{% trans %}label.pv.prognosis_24h{% endtrans %}',
                     data: [
-                    {% for spData in history['prognosis'] %}
+                    {% for spData in data %}
                         {% if spData.timestamp < date("-24 hours") %}
-                        {% for prog in spData.getData()['pvEnergyPrognosis']|default([])|slice(24, 1) %}
-                        {% if loop.first %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|slice(24, 1)|first %}
                         {
                             x: new Date("{{ spData.timestamp|date_modify("24 hours")|date("c") }}"),
                             y: {{ prog['pPotTot'] * 1000 }}
-                        }{% if not loop.parent.loop.last %},{% endif %}
-                        {% endif %}
-                        {% endfor %}
+                        }{% if not loop.last %},{% endif %}
                         {% endif %}
                     {% endfor %}
                     ],

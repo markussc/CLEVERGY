@@ -229,16 +229,14 @@ class DefaultController extends AbstractController
     #[Route(path: '/prognosis', name: 'prognosis')]
     public function prognosis(SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
     {
-        $history = [];
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $history['smartFox'] = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-24 hours'), new \DateTime());
-            $history['prognosis'] = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
+            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
         }
 
         // render the template
         return $this->render('default/prognosis.html.twig', [
-            'srt' => $srt,
-            'history' => $history,
+            'energyTotals' => $srt->setSolarPotentials(end($data)->getData()['pvEnergyPrognosis'])->getEnergyTotals(),
+            'data' => $data,
         ]);
     }
 
