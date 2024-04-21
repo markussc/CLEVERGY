@@ -478,8 +478,11 @@ class DefaultController extends AbstractController
             'tacmi' => true,
             'netatmo' => true,
         ]);
-
-        $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
+        try {
+            $fileContent = file_get_contents($this->getParameter('kernel.project_dir') . '/config/' . $this->getParameter('visualDashboard'));
+        } catch (\Exception $e) {
+            $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
+        }
 
         $climateValues = [];
         if (isset($currentStat['mobileAlerts'])) {
@@ -519,17 +522,23 @@ class DefaultController extends AbstractController
 
         // get values
         if (isset($currentStat['smartFox'])) {
-            $pvpower = array_sum($currentStat['smartFox']['PvPower'])." W";
+            $pvpower = array_sum($currentStat['smartFox']['PvPower']) . " W";
+            $pvpower1 = $currentStat['smartFox']['PvPower'][0] . " W";
+            $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
             $netpower = $currentStat['smartFox']['power_io']." W";
             $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
             if (array_key_exists('StoragePower', $currentStat['smartFox'])) {
                 $intpowerVal = $intpowerVal - $currentStat['smartFox']['StoragePower'];
+                $batSoc = $currentStat['smartFox']['StorageSoc'] . " %";
             }
             $intpower = $intpowerVal ." W";
         } else {
             $pvpower = "";
+            $pvpower1 = "";
+            $pvpower2 = "";
             $netpower = "";
             $intpower = "";
+            $batSoc = "";
         }
 
         if (isset($currentStat['conexio']) && is_array($currentStat['conexio'])) {
@@ -619,9 +628,12 @@ class DefaultController extends AbstractController
 
         // write current values into the svg
         $labels = [
+            "pvpower1",
+            "pvpower2",
             "pvpower",
             "netpower",
             "intpower",
+            "batSoc",
             "solpower",
             "soltemp",
             "outsidetemp",
@@ -641,9 +653,12 @@ class DefaultController extends AbstractController
             "sourceouttemp"
         ];
         $values = [
+            $pvpower1,
+            $pvpower2,
             $pvpower,
             $netpower,
             $intpower,
+            $batSoc,
             $solpower,
             $soltemp,
             $outsideTemp,
