@@ -553,6 +553,10 @@
         <source>label.pv.prognosis.review_header</source>
         <target>Rückblick</target>
       </trans-unit>
+      <trans-unit id="fi.Ed9v" resname="label.pv.prognosis_4h">
+        <source>label.pv.prognosis_4h</source>
+        <target>4h-Prognose</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

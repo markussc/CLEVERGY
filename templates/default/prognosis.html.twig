@@ -125,6 +125,23 @@
                     yAxisID: "y-axis-W"
                 },
                 {
+                    label: '{% trans %}label.pv.prognosis_4h{% endtrans %}',
+                    data: [
+                    {% for spData in data %}
+                        {% if spData.timestamp > date("-28 hours") and spData.timestamp < date("-4 hours") %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|slice(4, 1)|first %}
+                        {
+                            x: new Date("{{ spData.timestamp|date_modify("4 hours")|date("c") }}"),
+                            y: {{ prog['pPotTot'] * 1000 }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'red',
+                    yAxisID: "y-axis-W"
+                },
+                {
                     label: '{% trans %}label.pv.prognosis_24h{% endtrans %}',
                     data: [
                     {% for spData in data %}
@@ -138,7 +155,7 @@
                     {% endfor %}
                     ],
                     fill: false,
-                    borderColor: 'red',
+                    borderColor: 'darkred',
                     yAxisID: "y-axis-W"
                 }
             ]
