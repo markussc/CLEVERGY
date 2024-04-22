@@ -189,8 +189,35 @@ class OpenWeatherMapConnector
                 $dateTime = new \DateTime();
                 $dateTime->setTimestamp($elem['dt']);
                 $tomorrow = new \DateTime('tomorrow');
-                // we are interested in the hours between 20 and 8 only from today to tomorrow
+                // we are interested in the hours between 8 and 20 only from today to tomorrow
                 if ($dateTime->format('d') == $tomorrow->format('d') && $dateTime->format('H') > 8 && $dateTime->format('H') < 20) {
+                    if ($maxTemp === null) {
+                        $maxTemp = $elem['main']['temp']-273.15;
+                    } else {
+                        $maxTemp = max($maxTemp, $elem['main']['temp']-273.15);
+                    }
+                }
+            }
+        }
+
+        return $maxTemp;
+    }
+
+    public function getMaxTempNext24h()
+    {
+        $forecast = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('5dayforecast');
+        if ($forecast) {
+            $forecastData = $forecast->getData();
+        } else {
+            return null;
+        }
+        $maxTemp = null;
+        if (isset($forecastData['list'])) {
+            foreach ($forecastData['list'] as $elem) {
+                $now = new \DateTime();
+                $dateTime->setTimestamp($elem['dt']);
+                $hours24 = new \DateTime('+ 24 hours');
+                if ($dateTime < $hours24) {
                     if ($maxTemp === null) {
                         $maxTemp = $elem['main']['temp']-273.15;
                     } else {

@@ -618,6 +618,14 @@ class LogicProcessor
 
             // heat storage is low or net power is negative or at least not growing too much into positive. Warm up on high PV power or low energy rate (if it makes any sense)
             $waitingTimeForSufficientPower = $this->solRad->getWaitingTimeUntilPower(min($power, $this->solRad->getTodayMaxPower()));
+            if ($waitingTimeForSufficientPower) {
+                $log[] = "WaitingTimePower: " . round($waitingTimeForSufficientPower/3600, 2) . "h";
+            } elseif ($waitingTimeForSufficientPower === 0) {
+                $log[] = "WaitingTimePower: 0";
+            } else {
+                $waitingTimeForSufficientPower = 0; // set to 0 to be able to perform number comparisons later
+                $log[] = "WaitingTimePower: null";
+            }
             // avgPvPower is high enough already or it is not reasonable to wait for a better moment (there will never be enough power today or the max power production is more than 6 hours away)
             if ($avgPvPower > $power || !$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) {
                 if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 52 || $waterTemp < 53 )) || $avgPower < 0) {
@@ -651,7 +659,7 @@ class LogicProcessor
             $emergency = false;
             $insideEmergency = false;
             // we ignore emergencies if there is a better power situation within the next 1.5 hours
-            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 1.5*3600) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
+            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 1.5*3600 || $avgPvPower > 0.8*$power || $waterTemp < $minWaterTemp - 2) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
@@ -982,6 +990,14 @@ class LogicProcessor
         $hc1 = 75;
         $ppPower = 100;
         $waitingTimeForSufficientPower = $this->solRad->getWaitingTimeUntilPower(min($power, $this->solRad->getTodayMaxPower()));
+        if ($waitingTimeForSufficientPower) {
+            $log[] = "WaitingTimePower: " . round($waitingTimeForSufficientPower/3600, 2) . "h";
+        } elseif ($waitingTimeForSufficientPower === 0) {
+            $log[] = "WaitingTimePower: 0";
+        } else {
+            $waitingTimeForSufficientPower = 0; // set to 0 to be able to perform number comparisons later
+            $log[] = "WaitingTimePower: null";
+        }
         if ($smartFoxHighPower) {
             $hc1 = min($hc1Limit, 150);
             $ppPower = 100;
@@ -989,6 +1005,7 @@ class LogicProcessor
         } elseif (!$energyLowRate) {
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
+            $maxTemp24h = $this->openweathermap->getMaxTempNext24h;
             if ($minTempNight < $outsideTemp - 5 && (!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 4*3600)) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 70);
@@ -1009,12 +1026,12 @@ class LogicProcessor
                 $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
         } else {
-            if (($waitingTimeForSufficientPower && $waitingTimeForSufficientPower < 4) || ($insideTemp > $minInsideTemp && ($maxTempDay > $outsideTemp + 8 || $avgClouds < 30 || $this->solRad->getTodayMaxPower() > $power))) {
+            if (($waitingTimeForSufficientPower && $waitingTimeForSufficientPower < 4) || ($insideTemp > $minInsideTemp && ($maxTemp24h > $outsideTemp + 8 || $avgClouds < 30 || $this->solRad->getTodayMaxPower() > $power))) {
                 // day will be extremely warm compared to current temp or it will be sunny
-                $hc1 = min($hc1Limit, 40);
+                $hc1 = min($hc1Limit, 30);
                 $ppPower = 20;
                 $log[] = "set hc1 to 40 as day will be extremely warm compared to current temp or it will be sunny; set ppPower to 20%";
-            } elseif ($maxTempDay > $outsideTemp + 5) {
+            } elseif ($maxTemp24h > $outsideTemp + 5) {
                 // day will be warm compared to current temp
                 $hc1 = min($hc1Limit, 50);
                 $ppPower = 30;
