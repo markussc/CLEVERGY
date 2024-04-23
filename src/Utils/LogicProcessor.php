@@ -658,8 +658,8 @@ class LogicProcessor
             // apply emergency actions
             $emergency = false;
             $insideEmergency = false;
-            // we ignore emergencies if there is a better power situation within the next 1.5 hours
-            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 1.5*3600 || $avgPvPower > 0.8*$power || $waterTemp < $minWaterTemp - 2) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
+            // we ignore emergencies if there is a better power situation within the next 4 hours
+            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 4*3600 || $avgPvPower > 0.8*$power || $waterTemp < $minWaterTemp - 2) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
