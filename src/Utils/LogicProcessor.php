@@ -627,7 +627,7 @@ class LogicProcessor
                 $log[] = "WaitingTimePower: null";
             }
             // avgPvPower is high enough already or it is not reasonable to wait for a better moment (there will never be enough power today or the max power production is more than 6 hours away)
-            if ($avgPvPower > $power || !$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) {
+            if ($avgPvPower > $power || $waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 6*3600) {
                 if ($heatStorageMidTemp < 33 || ($avgPower > 0 && $avgPower < 2*$avgPvPower && ($heatStorageMidTemp < 52 || $waterTemp < 53 )) || $avgPower < 0) {
                     if (!$isSummer) {
                         $power = $power *0.75; // we accept a lower self consumption degree in winter
@@ -659,7 +659,7 @@ class LogicProcessor
             $emergency = false;
             $insideEmergency = false;
             // we ignore emergencies if there is a better power situation within the next 4 hours
-            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 4*3600 || $avgPvPower > 0.8*$power || $waterTemp < $minWaterTemp - 2) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
+            if (($waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 4*3600 || $avgPvPower > 0.8*$power || $waterTemp < $minWaterTemp - 2) && ($insideTemp < $minInsideTemp || $waterTemp < $minWaterTemp || ($outsideTemp < 5 && $insideTemp < $minInsideTemp + 0.5 && $heatStorageMidTemp < 26 && $pcoweb['setDistrTemp'] > $heatStorageMidTemp + 4 && $pcoweb['effDistrTemp'] < $pcoweb['setDistrTemp'] - 2))) {
                 // we are below expected values (at least for one of the criteria), switch HP on
                 $activateHeating = true;
                 $emergency = true;
@@ -1006,7 +1006,7 @@ class LogicProcessor
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
             $maxTemp24h = $this->openweathermap->getMaxTempNext24h;
-            if ($minTempNight < $outsideTemp - 5 && (!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 4*3600)) {
+            if ($minTempNight < $outsideTemp - 5 && ($waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 4*3600)) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 70);
                 $ppPower = 50;
@@ -1049,7 +1049,7 @@ class LogicProcessor
         }
         if (!$energyLowRate) {
             // adjust hc1 and ppPower for high energy rate
-            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus"))) {
+            if (($waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -800 || ($avgPvPower > 800 && $avgPower < 2000 && $wem['ppStatus'] != "Aus"))) {
                 $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
@@ -1067,7 +1067,7 @@ class LogicProcessor
             }
         } else {
             // adjust hc1 and ppPower for low energy rate
-            if ((!$waitingTimeForSufficientPower || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus"))) {
+            if (($waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 6*3600) && ($avgPower < -400 || ($avgPvPower > 400 && $avgPower < 3000 && $wem['ppStatus'] != "Aus"))) {
                 $hc1 = 150;
                 $ppPower = $ppLevel;
                 if ($avgPower < 0 && $netPower < -200) {
