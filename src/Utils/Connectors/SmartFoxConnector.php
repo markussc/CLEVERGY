@@ -503,15 +503,15 @@ class SmartFoxConnector
         if ($retArr['status'] == 0 && $counter < 1) {
             // maybe offline, try again once
             sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
             sleep($counter + 1);
             // very unlikely temperature, try again twice
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
             // rather unlikely to uncharge will full power while soc is zero, try again twice
             sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         }
         return $retArr;
     }
