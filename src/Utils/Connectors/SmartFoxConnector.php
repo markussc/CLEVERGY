@@ -231,19 +231,18 @@ class SmartFoxConnector
                     if (!array_key_exists('timestamp', $config) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
                         // no or outdated power limitation
                         $power = $power/2;
-                        $config['timestamp'] = new \DateTime();
                         $config['powerLimitFactor'] = 2;
-                        $this->saveConfig($config);
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
                     } elseif ($config['powerLimitFactor'] < 30) {
                         // current power limitation available. reduce further
                         $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
                         $power = $power / $config['powerLimitFactor'];
-                        $this->saveConfig($config);
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
                     } else {
                         $value = ['message' => $msg];
                     }
+                    $config['timestamp'] = new \DateTime();
+                    $this->saveConfig($config);
                 }
             }
         } catch (\Exception $e) {
