@@ -3,6 +3,7 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\SmartFoxDataStore;
+use App\Entity\Settings;
 use App\Service\SolarRadiationToolbox;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -63,6 +64,32 @@ class SmartFoxConnector
         }
 
         return $responseArr;
+    }
+
+    private function getConfig(): array
+    {
+        $config = null;
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->ip);
+        if ($settings) {
+            $config = $settings->getConfig();
+        }
+        if (!is_array($config)) {
+            $config = [];
+        }
+
+        return $config;
+    }
+
+    private function saveConfig(array $config)
+    {
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->ip);
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setConnectorId($this->ip);
+            $this->em->persist($settings);
+        }
+        $settings->setConfig($config);
+        $this->em->flush();
     }
 
     private function getPowerIo()
@@ -200,7 +227,23 @@ class SmartFoxConnector
                 if ($msg === null) {
                     $value = ['total_act_power' => $power];
                 } else {
-                    $value = ['message' => $msg];
+                    $config = $this->getConfig();
+                    if (!array_key_exists('timestamp', $config) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
+                        // no or outdated power limitation
+                        $power = $power/2;
+                        $config['timestamp'] = new \DateTime();
+                        $config['powerLimitFactor'] = 2;
+                        $this->saveConfig($config);
+                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
+                    } elseif ($config['powerLimitFactor'] < 30) {
+                        // current power limitation available. reduce further
+                        $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
+                        $power = $power / $config['powerLimitFactor'];
+                        $this->saveConfig($config);
+                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
+                    } else {
+                        $value = ['message' => $msg];
+                    }
                 }
             }
         } catch (\Exception $e) {
