@@ -74,8 +74,9 @@ class SmartFoxConnector
             $config = $settings->getConfig();
         }
         if (!is_array($config)) {
+            $ts = new \DateTime('-30 minutes');
             $config = [
-                'timestamp' => json_decode(json_encode(new \DateTime('-10 minutes'))),
+                'timestamp' =>['date' => $ts->format('c')],
                 'powerLimitFactor' => 0,
             ];
         }
@@ -232,34 +233,19 @@ class SmartFoxConnector
                     $config['powerLimitFactor'] = 0;
                 } else {
                     if (!$msg) {
-                        $msg = 'waiting fo restart of charging and discharching';
+                        $msg = 'waiting for restart of charging and discharching';
                     }
-                    if ($config['powerLimitFactor'] = 0) {
+                    if ($config['powerLimitFactor'] == 0) {
                         // no or outdated power limitation
                         $power = $power;
                         $config['powerLimitFactor'] = 1;
                         $config['timestamp'] = new \DateTime();
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < 30 && abs($smartFoxLatest['StoragePower']) > 100) {
-                        // current power limitation available. reduce further
-                        if ($power <= 0 && $smartFoxLatest['StoragePower'] >= 0) {
-                            // negative net && charge
-                            // negate
-                            $power = -0.5 * $power;
-                        } elseif ($power >= 0 && $smartFoxLatest['StoragePower'] >= 0) {
-                            // positive net, charge
-                            // leave value
-                            $power = $power;
-                        } elseif ($power <= 0 && $smartFoxLatest['StoragePower'] <= 0) {
-                            // negative net, discharge
-                            // leave value
-                            $power = $power;
-                        } elseif ($power >= 0 && $smartFoxLatest['StoragePower'] <= 0) {
-                            // positive net, discharge
-                            // negate
-                            $power = -0.5 * $power * 0.5;
+                    } elseif ($config['powerLimitFactor'] < abs($smartFoxLatest['StoragePower']/30) - 1) {
+                        if ($smartFoxLatest['StoragePower'] > 0) {
+                            $power = max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100);
                         } else {
-                            $power = 0;
+                            $power = min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100);
                         }
                         $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
