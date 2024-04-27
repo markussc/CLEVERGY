@@ -224,10 +224,11 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
 
+                $config = $this->getConfig();
                 if ($msg === null) {
                     $value = ['total_act_power' => $power];
+                    $config['powerLimitFactor'] = 0;
                 } else {
-                    $config = $this->getConfig();
                     if (!array_key_exists('timestamp', $config) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
                         // no or outdated power limitation
                         $power = $power;
@@ -241,14 +242,13 @@ class SmartFoxConnector
                             $power = max(30, $power + ($config['powerLimitFactor']*30));
                         }
                         $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
-                        $power = $power / $config['powerLimitFactor'];
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
                     } else {
                         $value = ['message' => $msg];
                     }
-                    $config['timestamp'] = new \DateTime();
-                    $this->saveConfig($config);
                 }
+                $config['timestamp'] = new \DateTime();
+                $this->saveConfig($config);
             }
         } catch (\Exception $e) {
             $value = ['message' => 'Exception during SmartFox value retrieval'];
