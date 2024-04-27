@@ -74,7 +74,10 @@ class SmartFoxConnector
             $config = $settings->getConfig();
         }
         if (!is_array($config)) {
-            $config = [];
+            $config = [
+                'timestamp' => json_decode(json_encode(new \DateTime('-10 minutes'))),
+                'powerLimitFactor' => 0,
+            ];
         }
 
         return $config;
@@ -225,18 +228,22 @@ class SmartFoxConnector
                 }
 
                 $config = $this->getConfig();
-                if ($msg === null) {
-                    if (array_key_exists('powerLimitFactor', $config) && $config['powerLimitFactor'] > 0) {
-                        // make sure we don't restart at a too high level
+                if ($msg === null && new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
+                    if ($config['powerLimitFactor'] > 0) {
+                        // make sure we don't restart at a too high level after an idle phase
                         $power = 20;
                     }
                     $value = ['total_act_power' => $power];
                     $config['powerLimitFactor'] = 0;
                 } else {
-                    if (!array_key_exists('timestamp', $config) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
+                    if (!$msg) {
+                        $msg = 'waiting fo restart of charging and discharching';
+                    }
+                    if (new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) {
                         // no or outdated power limitation
                         $power = $power;
                         $config['powerLimitFactor'] = 1;
+                        $config['timestamp'] = new \DateTime();
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
                     } elseif ($config['powerLimitFactor'] < 60) {
                         // current power limitation available. reduce further
@@ -251,7 +258,6 @@ class SmartFoxConnector
                         $value = ['message' => $msg];
                     }
                 }
-                $config['timestamp'] = new \DateTime();
                 $this->saveConfig($config);
             }
         } catch (\Exception $e) {
