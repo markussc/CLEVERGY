@@ -226,6 +226,10 @@ class SmartFoxConnector
 
                 $config = $this->getConfig();
                 if ($msg === null) {
+                    if (array_key_exists('powerLimitFactor', $config) && $config['powerLimitFactor'] > 0) {
+                        // make sure we don't restart at a too high level
+                        $power = 20;
+                    }
                     $value = ['total_act_power' => $power];
                     $config['powerLimitFactor'] = 0;
                 } else {
