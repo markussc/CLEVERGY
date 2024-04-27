@@ -238,12 +238,12 @@ class SmartFoxConnector
                         $power = $power;
                         $config['powerLimitFactor'] = 1;
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < 30) {
+                    } elseif ($config['powerLimitFactor'] < 60) {
                         // current power limitation available. reduce further
                         if ($power > 0) {
-                            $power = min(-30, $power - ($config['powerLimitFactor']*30));
+                            $power = min(-100, $power - ($config['powerLimitFactor']*15));
                         } else {
-                            $power = max(30, $power + ($config['powerLimitFactor']*30));
+                            $power = max(100, $power + ($config['powerLimitFactor']*15));
                         }
                         $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
