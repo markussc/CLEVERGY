@@ -235,7 +235,7 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
                 $config = $this->getConfig();
-                if ($msg === null && ($idleType != $config['idleType'] || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
+                if ($msg === null && ($power > 50 && $idleType == 'charge' || $power < -50 && $idleType == 'discharge' || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
                     $value = ['total_act_power' => $power];
                     $config['powerLimitFactor'] = 0;
                     $config['idleType'] = null;
