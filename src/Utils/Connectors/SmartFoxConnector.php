@@ -78,6 +78,7 @@ class SmartFoxConnector
             $config = [
                 'timestamp' =>['date' => $ts->format('c')],
                 'powerLimitFactor' => 0,
+                'idleType' => null,
             ];
         }
 
@@ -144,6 +145,7 @@ class SmartFoxConnector
                 $currentPower = $smartFox['power_io'];
                 $power = $currentPower;
                 $msg = null;
+                $idleType = null;
                 $now = new \DateTime();
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
@@ -188,6 +190,7 @@ class SmartFoxConnector
                             $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                             if ($power < 0) {
                                 $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
+                                $idleType = 'charge';
                             }
                         }
                     }
@@ -196,6 +199,7 @@ class SmartFoxConnector
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
                             $msg = 'Mean SOC low, do not discharge below 15%';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -203,6 +207,7 @@ class SmartFoxConnector
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
                             $msg = 'Mean SOC low, cloudy sky expected, do not discharge below 10%';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -210,12 +215,14 @@ class SmartFoxConnector
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 10% after 4pm';
+                            $idleType = 'discharge';
                         }
                     } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
                         // do not discharge below 5% before 5am
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 5% before 5am';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -228,7 +235,7 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
                 $config = $this->getConfig();
-                if ($msg === null && new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes')) {
+                if ($msg === null && ($idleType != $config['idleType'] || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
                     $value = ['total_act_power' => $power];
                     $config['powerLimitFactor'] = 0;
                 } else {
@@ -239,6 +246,7 @@ class SmartFoxConnector
                         // no or outdated power limitation
                         $power = $power;
                         $config['powerLimitFactor'] = 1;
+                        $config['idleType'] = $idleType;
                         $config['timestamp'] = new \DateTime();
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
                     } elseif ($config['powerLimitFactor'] < min(5, abs($smartFoxLatest['StoragePower']/30) - 1)) {
