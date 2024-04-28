@@ -167,7 +167,8 @@ class SmartFoxConnector
                     }
                     if (
                             $smartFoxLatest['PvPower'][0] > 0 &&
-                            $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2
+                            $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2 &&
+                            $smartFoxLatest['StorageSoc'] < 95
                         ) {
                             $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
                             $chargingPower = 0;
@@ -185,7 +186,7 @@ class SmartFoxConnector
                             ) {
                             // if we have
                             // - PV production
-                            // - current SOC higher than half of mean of last 48h's max/min values
+                            // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 95 - 100% shall be managed by the BMS itself)
                             // - prognosis says chances are good to still reach more than 1.5 times residuum to full battery
                             $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                             if ($power < 0) {
