@@ -238,6 +238,7 @@ class SmartFoxConnector
                 if ($msg === null && ($idleType != $config['idleType'] || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
                     $value = ['total_act_power' => $power];
                     $config['powerLimitFactor'] = 0;
+                    $config['idleType'] = null;
                 } else {
                     if (!$msg) {
                         $msg = 'waiting for restart of charging and discharching';
