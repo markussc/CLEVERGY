@@ -241,7 +241,7 @@ class SmartFoxConnector
                         $config['powerLimitFactor'] = 1;
                         $config['timestamp'] = new \DateTime();
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < abs($smartFoxLatest['StoragePower']/30) - 1) {
+                    } elseif ($config['powerLimitFactor'] < min(5, abs($smartFoxLatest['StoragePower']/30) - 1)) {
                         if ($smartFoxLatest['StoragePower'] > 0) {
                             $power = max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100);
                         } else {
