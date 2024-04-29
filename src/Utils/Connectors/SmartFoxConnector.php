@@ -251,11 +251,11 @@ class SmartFoxConnector
                         $config['idleType'] = $idleType;
                         $config['timestamp'] = new \DateTime();
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < min(5, abs($smartFoxLatest['StoragePower']/30) - 1)) {
+                    } elseif ($config['powerLimitFactor'] < min(4, abs($smartFoxLatest['StoragePower']/30) - 1)) {
                         if ($smartFoxLatest['StoragePower'] > 0) {
-                            $power = max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100);
+                            $power = min(500, max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100));
                         } else {
-                            $power = min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100);
+                            $power = max(-500, min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100));
                         }
                         $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
                         $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
