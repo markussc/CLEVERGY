@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   www:
     image: oshans/www_${INSTANCENAME}:0.0.1
