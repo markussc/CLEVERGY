@@ -22,6 +22,18 @@ $ ./start.sh
 $ docker-compose ps
 ```
 
+### DB in Docker-Compose
+* place a dump file in the current directory (e.g. dump.sql)
+* in the config file (.env.local), use the following string for database access: 
+```
+DATABASE_URL=mysql://clevergy:clevergy@clevergy_db:3306/clevergy?serverVersion=8.0.36
+```
+* the system will automatically create new dump files every day with the name dump_bak.sql
+```sh
+$ docker exec -i dict_db mysql -uroot -pdocker clevergy < dump.sql
+$ ./start.sh
+```
+
 ### Clevergy Meter (use existing SmartFox to simulate Shelly Pro 3EM energy meter)
 * Install (e.g. using a Raspberry Pi) avahi (installed in many Linux distributions by default) and apache2
 ```sh
