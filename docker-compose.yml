@@ -22,6 +22,8 @@ services:
       - default
     ports:
       - "${PORT}:443"
+    depends_on:
+      - db
     restart: always
 
   db:
