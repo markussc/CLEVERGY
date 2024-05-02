@@ -22,7 +22,7 @@ $ ./start.sh
 $ docker-compose ps
 ```
 
-### DB in Docker-Compose
+### Restore DB in Docker-Compose
 * place a dump file in the current directory (e.g. dump.sql)
 * in the config file (.env.local), use the following string for database access: 
 ```
@@ -30,7 +30,10 @@ DATABASE_URL=mysql://clevergy:clevergy@db:3306/clevergy?serverVersion=8.0.36
 ```
 * the system will automatically create a new dump file (gzipped) every day with the name dump_clevergy.sql.gz in the backup folder
 ```sh
-$ docker exec -i clevergy_db_<myinstancename> mysql -uroot -pdocker clevergy < dump.sql
+$ docker stop clevergy_www_<myinstancename> # it might be a good idea to stop the running instance and restart it after the import
+$ docker exec -i clevergy_db_<myinstancename> mysql -uroot -pdocker clevergy < dump.sql # use this command, if loading a sql file (not zipped)
+$ docker exec -i clevergy_db_<myinstancename> gunzip < dump.sql.gz | mysql -uroot -pdocker clevergy # use this command, if loading a sql.gz file (zipped)
+$ docker start clevergy_www_<myinstancename> # restart again
 ```
 
 ### Clevergy Meter (use existing SmartFox to simulate Shelly Pro 3EM energy meter)

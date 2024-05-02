@@ -27,7 +27,6 @@ RUN apt-get -y update && apt-get install -y \
         composer \
         htop \
         nano \
-        gzip \
     && true
 
 # install Symfony CLI
@@ -64,7 +63,7 @@ RUN echo "* 0 * * * root cd /www && symfony console oshans:devices:configure" >>
 # delete will run once a year: on january first at 2am
 RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 # backup of database will run daily at 2am
-RUN echo "0 2 * * * root mysqldump -u admin -p clevergy | gzip /backup/dump_clevergy.sql.gz" << /etc/cron.d/oshans
+RUN echo "0 2 * * * root mysqldump -u admin -p clevergy | gzip > /backup/dump_clevergy.sql.gz" << /etc/cron.d/oshans
 
 # configure apache2
 COPY ./oshans.conf /etc/apache2/sites-available/oshans.conf

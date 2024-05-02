@@ -6,12 +6,12 @@ services:
     tty: true        # docker run -t
     volumes:
       - type: bind
-        source: ./config/parameters.yaml
+        source: ./www/config/parameters.yaml
         target: /www/config/parameters.yaml
       - ./var/sessions:/www/var/sessions
       - ./backup:/backup
     env_file:
-      - ./.env.local
+      - ./www/.env.local
     environment:
       - TZ=${TZ}
       - servername=${HOSTNAME}
