@@ -29,7 +29,6 @@ services:
   db:
     image: mysql/mysql-server:8.0
     container_name: clevergy_db_${INSTANCENAME}
-    hostname: clevergy_db
     command:
       - --default-authentication-plugin=mysql_native_password
       - --sort_buffer_size=1073741824

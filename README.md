@@ -26,7 +26,7 @@ $ docker-compose ps
 * place a dump file in the current directory (e.g. dump.sql)
 * in the config file (.env.local), use the following string for database access: 
 ```
-DATABASE_URL=mysql://clevergy:clevergy@clevergy_db:3306/clevergy?serverVersion=8.0.36
+DATABASE_URL=mysql://clevergy:clevergy@db:3306/clevergy?serverVersion=8.0.36
 ```
 * the system will automatically create a new dump file (gzipped) every day with the name dump_clevergy.sql.gz in the backup folder
 ```sh
