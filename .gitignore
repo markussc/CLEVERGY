@@ -8,6 +8,7 @@
 /www/var/
 /www/vendor/
 /data/
+/backup/
 ###< symfony/framework-bundle ###
 ###> OSHANS configuration ###
 /www/.env.local.dist
