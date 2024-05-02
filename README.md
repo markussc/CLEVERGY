@@ -31,8 +31,8 @@ DATABASE_URL=mysql://clevergy:clevergy@db:3306/clevergy?serverVersion=8.0.36
 * the system will automatically create a new dump file (gzipped) every day with the name dump_clevergy.sql.gz in the backup folder
 ```sh
 $ docker stop clevergy_www_<myinstancename> # it might be a good idea to stop the running instance and restart it after the import
-$ docker exec -i clevergy_db_<myinstancename> mysql -uroot -pdocker clevergy < dump.sql # use this command, if loading a sql file (not zipped)
-$ docker exec -i clevergy_db_<myinstancename> gunzip < dump.sql.gz | mysql -uroot -pdocker clevergy # use this command, if loading a sql.gz file (zipped)
+$ gunzip dump.sql.gz # use this command to unzip first, if you have a sql.gz file
+$ docker exec -i clevergy_db_<myinstancename> mysql -uclevergy -pclevergy clevergy < dump.sql # use this command for loading the sql file
 $ docker start clevergy_www_<myinstancename> # restart again
 ```
 

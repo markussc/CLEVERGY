@@ -25,6 +25,7 @@ RUN apt-get -y update && apt-get install -y \
         python3 \
         python3-pip \
         composer \
+        mysql-client \
         htop \
         nano \
     && true
@@ -63,7 +64,7 @@ RUN echo "* 0 * * * root cd /www && symfony console oshans:devices:configure" >>
 # delete will run once a year: on january first at 2am
 RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 # backup of database will run daily at 2am
-RUN echo "0 2 * * * root mysqldump -u admin -p clevergy | gzip > /backup/dump_clevergy.sql.gz" << /etc/cron.d/oshans
+RUN echo "0 2 * * * root mysqldump -h db -u clevergy -pclevergy --no-tablespaces clevergy | gzip > /backup/dump_clevergy.sql.gz" << /etc/cron.d/oshans
 
 # configure apache2
 COPY ./oshans.conf /etc/apache2/sites-available/oshans.conf
