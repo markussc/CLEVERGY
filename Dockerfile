@@ -76,7 +76,7 @@ RUN a2enmod headers
 
 # prepare symfony app
 WORKDIR "/www"
-COPY ./ /www
+COPY ./www/ /www
 RUN /usr/bin/composer install --no-interaction --no-scripts
 RUN rm -rf public/assets/*
 

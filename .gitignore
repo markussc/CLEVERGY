@@ -1,36 +1,31 @@
 ###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/config/*.svg
-/public/bundles/
-/var/
-/vendor/
+/www/.env.local
+/www/.env.local.php
+/www/.env.*.local
+/www/config/secrets/prod/prod.decrypt.private.php
+/www/config/*.svg
+/www/public/bundles/
+/www/var/
+/www/vendor/
 /data/
 ###< symfony/framework-bundle ###
 ###> OSHANS configuration ###
-/.env.local.dist
-/config/parameters.yaml
-/config/parameters_*.yaml
+/www/.env.local.dist
+/www/config/parameters.yaml
+/www/config/parameters_*.yaml
 ###< OSHANS configuration ###
 /nbproject/
 
-###> YARN ###
-/.yarn
-/.yarnrc
-###< YARN ###
-
 ###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
+/www/.phpunit.result.cache
+/www/phpunit.xml
 ###< symfony/phpunit-bridge ###
 
 ###> phpstan/phpstan ###
-phpstan.neon
+/www/phpstan.neon
 ###< phpstan/phpstan ###
 
 ###> symfony/asset-mapper ###
-/public/assets/
-/assets/vendor/
+/www/public/assets/
+/www/assets/vendor/
 ###< symfony/asset-mapper ###
