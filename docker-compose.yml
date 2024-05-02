@@ -9,6 +9,7 @@ services:
         source: ./config/parameters.yaml
         target: /www/config/parameters.yaml
       - ./var/sessions:/www/var/sessions
+      - ./backup:/backup
     env_file:
       - ./.env.local
     environment:
