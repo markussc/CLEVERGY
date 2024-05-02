@@ -30,8 +30,7 @@ DATABASE_URL=mysql://clevergy:clevergy@clevergy_db:3306/clevergy?serverVersion=8
 ```
 * the system will automatically create a new dump file (gzipped) every day with the name dump_clevergy.sql.gz in the backup folder
 ```sh
-$ docker exec -i dict_db mysql -uroot -pdocker clevergy < dump.sql
-$ ./start.sh
+$ docker exec -i clevergy_db_<myinstancename> mysql -uroot -pdocker clevergy < dump.sql
 ```
 
 ### Clevergy Meter (use existing SmartFox to simulate Shelly Pro 3EM energy meter)
