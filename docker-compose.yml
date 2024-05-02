@@ -1,7 +1,7 @@
 services:
   www:
     image: oshans/www_${INSTANCENAME}:0.0.1
-    container_name: www_${INSTANCENAME}
+    container_name: clevergy_www_${INSTANCENAME}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     volumes:
@@ -22,3 +22,40 @@ services:
     ports:
       - "${PORT}:443"
     restart: always
+
+  db:
+    image: mysql/mysql-server:8.0
+    container_name: clevergy_db_${INSTANCENAME}
+    hostname: clevergy_db
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --sort_buffer_size=1073741824
+      - --disable-log-bin
+    volumes:
+      - ./data/db:/var/lib/mysql
+    environment:
+      - TZ=Europe/Zurich
+    env_file:
+      - ./db.env
+    networks:
+      - default
+    restart: always
+#    ports:
+#      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: clevergy_phpmyadmin_${INSTANCENAME}
+    environment:
+      - TZ=Europe/Zurich
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+      - PMA_ABSOLUTE_URI=http://localhost
+    networks:
+      - default
+    links:
+      - db
+    restart: always
+#    ports:
+#      - "8080:80"
