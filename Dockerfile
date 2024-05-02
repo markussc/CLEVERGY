@@ -77,10 +77,8 @@ RUN a2enmod headers
 # prepare symfony app
 WORKDIR "/www"
 COPY ./ /www
-RUN /usr/bin/composer install --no-interaction
+RUN /usr/bin/composer install --no-interaction --no-scripts
 RUN rm -rf public/assets/*
-RUN symfony console asset-map:compile
-RUN symfony console importmap:install
 
 # set permissions
 RUN HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
@@ -88,5 +86,5 @@ RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run apache2 web server
-CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; symfony console asset-map:compile ; symfony console importmap:install ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443
