@@ -19,7 +19,6 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
-          TZ: ${TZ}
           INSTANCENAME: ${INSTANCENAME}
           BACKUP_HOUR: ${BACKUP_HOUR}
     networks:
