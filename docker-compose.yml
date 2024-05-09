@@ -38,6 +38,7 @@ services:
       - --disable-log-bin
     volumes:
       - ./data/db:/var/lib/mysql
+      - ${BACKUP_DIR}:/backup
     environment:
       - TZ=Europe/Zurich
     env_file:
