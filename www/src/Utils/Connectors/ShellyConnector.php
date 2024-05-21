@@ -292,9 +292,9 @@ class ShellyConnector
         foreach ($actions as $action => $attr) {
             switch($action) {
                 case 'Chromecast_Power':
-                    return $this->cc->powerAction($attr['ccId'], -1);
+                    return $this->cc->power($attr['ccId'], -1);
                 case 'Chromecast_Play':
-                    return $this->cc->playAction($attr['ccId'], $attr['streamId']);
+                    return $this->cc->play($attr['ccId'], $attr['streamId']);
             }
         }
 

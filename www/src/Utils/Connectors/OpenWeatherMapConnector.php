@@ -35,6 +35,31 @@ class OpenWeatherMapConnector
         ];
     }
 
+    public function saveOneCallApi30ToDb($force = false): void
+    {
+        $id = 'onecallapi30';
+        $latest = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest($id);
+        // calculate time diff
+        $now = new \DateTime('now');
+        if ($latest) {
+            $diff = ($now->getTimestamp() - $latest->getTimestamp()->getTimestamp())/60; // diff in minutes
+        } else {
+            $diff = 20;
+        }
+        // we want to store a new forecast not more frequently than every 10 minutes
+        if ($force || $diff >= 10) {
+            $dataJson = $this->client->request('GET', 'http://api.openweathermap.org/data/3.0/onecall?lat=' . $this->config['lat'] . '&lon=' . $this->config['lon'] . '&appid=' . $this->config['api_key'])->getContent();
+            $dataArr = json_decode($dataJson, true);
+            $forecast = new OpenWeatherMapDataStore();
+            $forecast->setTimestamp(new \DateTime());
+            $forecast->setConnectorId($id);
+            $forecast->setData($dataArr);
+            $this->em->persist($forecast);
+            $this->em->flush();
+        }
+        return;
+    }
+
     public function saveCurrentWeatherToDb($force = false): void
     {
         $id = 'current';
@@ -164,8 +189,35 @@ class OpenWeatherMapConnector
                 $dateTime = new \DateTime();
                 $dateTime->setTimestamp($elem['dt']);
                 $tomorrow = new \DateTime('tomorrow');
-                // we are interested in the hours between 20 and 8 only from today to tomorrow
+                // we are interested in the hours between 8 and 20 only from today to tomorrow
                 if ($dateTime->format('d') == $tomorrow->format('d') && $dateTime->format('H') > 8 && $dateTime->format('H') < 20) {
+                    if ($maxTemp === null) {
+                        $maxTemp = $elem['main']['temp']-273.15;
+                    } else {
+                        $maxTemp = max($maxTemp, $elem['main']['temp']-273.15);
+                    }
+                }
+            }
+        }
+
+        return $maxTemp;
+    }
+
+    public function getMaxTempNext24h()
+    {
+        $forecast = $this->em->getRepository(OpenWeatherMapDataStore::class)->getLatest('5dayforecast');
+        if ($forecast) {
+            $forecastData = $forecast->getData();
+        } else {
+            return null;
+        }
+        $maxTemp = null;
+        if (isset($forecastData['list'])) {
+            foreach ($forecastData['list'] as $elem) {
+                $now = new \DateTime();
+                $dateTime->setTimestamp($elem['dt']);
+                $hours24 = new \DateTime('+ 24 hours');
+                if ($dateTime < $hours24) {
                     if ($maxTemp === null) {
                         $maxTemp = $elem['main']['temp']-273.15;
                     } else {

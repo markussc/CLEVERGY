@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+   
+{% block body %}
+    <div class="small-12 medium-12 large-8 columns small-centered">
+        <canvas id="solarPotentialCanvas"></canvas>
+    </div>
+    <p>
+    <div class="small-12 medium-12 large-8 columns small-centered">
+        <ul>
+            <li>{% trans %}label.prognosis.pv_next_hour{% endtrans %}: {{ energyTotals['1h']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_current_daylight{% endtrans %}: {{ energyTotals['today']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_day{% endtrans %}: {{ energyTotals['tomorrow']|round(0, 'floor') }} kWh</li>
+            <li>{% trans %}label.prognosis.pv_next_48h{% endtrans %}: {{ energyTotals['48h']|round(0, 'floor') }} kWh</li>
+        </ul>
+    </div>
+    <div class="small-12 medium-12 large-8 columns small-centered">
+        <canvas id="solarPotentialReviewCanvas"></canvas>
+    </div>
+    <script type="module">
+    import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
+    Chart.register(LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend);
+    import 'chartjs-adapter-moment';
+    var charts = new Object();
+
+    // 48h Solar Potential
+    charts.twentyFourPower = new Chart($("#solarPotentialCanvas").get(0).getContext('2d'), {
+        type: 'line',
+        data: { 
+            datasets: [
+                {
+                    label: '{% trans %}label.pv.prognosis{% endtrans %}',
+                    data: [
+                    {% for spData in data|last.getData()['pvEnergyPrognosis'] %}
+                        {
+                            x: new Date("{{ spData.datetime.date }}"),
+                            y: {{ spData['pPotTot']|default(0)*1000 }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'yellow',
+                    yAxisID: "y-axis-W"
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: '{% trans %}label.pv.prognosis.preview_header{% endtrans %}'
+                }
+            },
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            scales: {
+                'y-axis-W': {
+                        position: "right",
+                        ticks: {
+                            beginAtZero:false
+                        },
+                        title:{
+                            display: true,
+                            text: 'W',
+                            fontColor: "#546372"
+                        },
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    },
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'HH:mm'
+                        }
+                    }
+                }
+            },
+            tension: 0.01,
+            animation: true
+        }
+    });
+
+    // Solar Potential Review
+    charts.prognosisReview = new Chart($("#solarPotentialReviewCanvas").get(0).getContext('2d'), {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: '{% trans %}label.pv.prognosis_measurement{% endtrans %}',
+                    data: [
+                    {% for spData in data %}
+                    {% if spData.timestamp > date("-24 hours") %}
+                        {
+                            x: new Date("{{ spData.timestamp|date("c") }}"),
+                            y: {{ spData.getData()['PvPower'][0]|default(0) + spData.getData()['PvPower'][1]|default(0) }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'yellow',
+                    yAxisID: "y-axis-W"
+                },
+                {
+                    label: '{% trans %}label.pv.prognosis_realtime{% endtrans %}',
+                    data: [
+                    {% for spData in data %}
+                        {% if spData.timestamp > date("-24 hours") %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|first %}
+                        {
+                            x: new Date("{{ spData.timestamp|date("c") }}"),
+                            y: {{ prog['pPotTot'] * 1000 }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'orange',
+                    yAxisID: "y-axis-W"
+                },
+                {
+                    label: '{% trans %}label.pv.prognosis_4h{% endtrans %}',
+                    data: [
+                    {% for spData in data %}
+                        {% if spData.timestamp > date("-28 hours") and spData.timestamp < date("-4 hours") %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|slice(4, 1)|first %}
+                        {
+                            x: new Date("{{ spData.timestamp|date_modify("4 hours")|date("c") }}"),
+                            y: {{ prog['pPotTot'] * 1000 }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'red',
+                    yAxisID: "y-axis-W"
+                },
+                {
+                    label: '{% trans %}label.pv.prognosis_24h{% endtrans %}',
+                    data: [
+                    {% for spData in data %}
+                        {% if spData.timestamp < date("-24 hours") %}
+                        {% set prog = spData.getData()['pvEnergyPrognosis']|default([])|slice(24, 1)|first %}
+                        {
+                            x: new Date("{{ spData.timestamp|date_modify("24 hours")|date("c") }}"),
+                            y: {{ prog['pPotTot'] * 1000 }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    ],
+                    fill: false,
+                    borderColor: 'darkred',
+                    yAxisID: "y-axis-W"
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: '{% trans %}label.pv.prognosis.review_header{% endtrans %}'
+                }
+            },
+            elements: {
+                point: {
+                    radius: 0 
+                } 
+            },
+            scales: {
+                'y-axis-W': {
+                        position: "right",
+                        ticks: {
+                            beginAtZero:false
+                        },
+                        title:{
+                            display: true,
+                            text: 'W',
+                            fontColor: "#546372"
+                        },
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    },
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'HH:mm'
+                        }
+                    }
+                }
+            },
+            tension: 0.01,
+            animation: true
+        }
+    });
+</script>
+{% endblock %}

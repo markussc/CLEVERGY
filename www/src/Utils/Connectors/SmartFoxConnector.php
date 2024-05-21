@@ -3,6 +3,8 @@
 namespace App\Utils\Connectors;
 
 use App\Entity\SmartFoxDataStore;
+use App\Entity\Settings;
+use App\Service\SolarRadiationToolbox;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,15 +17,17 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class SmartFoxConnector
 {
     protected $em;
+    protected $solRad;
     protected $client;
     protected $basePath;
     protected $ip;
     protected $version;
     private $connectors;
 
-    public function __construct(EntityManagerInterface $em, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors)
     {
         $this->em = $em;
+        $this->solRad = $solRad;
         $this->client = $client;
         $this->ip = null;
         $this->version = null;
@@ -60,6 +64,37 @@ class SmartFoxConnector
         }
 
         return $responseArr;
+    }
+
+    private function getConfig(): array
+    {
+        $config = null;
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->ip);
+        if ($settings) {
+            $config = $settings->getConfig();
+        }
+        if (!is_array($config)) {
+            $ts = new \DateTime('-30 minutes');
+            $config = [
+                'timestamp' =>['date' => $ts->format('c')],
+                'powerLimitFactor' => 0,
+                'idleType' => null,
+            ];
+        }
+
+        return $config;
+    }
+
+    private function saveConfig(array $config)
+    {
+        $settings = $this->em->getRepository(Settings::class)->findOneByConnectorId($this->ip);
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setConnectorId($this->ip);
+            $this->em->persist($settings);
+        }
+        $settings->setConfig($config);
+        $this->em->flush();
     }
 
     private function getPowerIo()
@@ -110,6 +145,7 @@ class SmartFoxConnector
                 $currentPower = $smartFox['power_io'];
                 $power = $currentPower;
                 $msg = null;
+                $idleType = null;
                 $now = new \DateTime();
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
@@ -131,24 +167,40 @@ class SmartFoxConnector
                     }
                     if (
                             $smartFoxLatest['PvPower'][0] > 0 &&
-                            $smartFoxLatest['StorageSocMean'] > 55 &&
-                            $smartFoxLatest['StorageSoc'] > 60 &&
-                            $smartFoxLatest['StorageSoc'] >= (10 + $smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])
+                            $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2 &&
+                            $smartFoxLatest['StorageSoc'] < 90
                         ) {
-                        // if we have
-                        // - PV production
-                        // - high over last 48 hours
-                        // - current SOC at least 60%
-                        // - current SOC is higher than what we ever required over the last 48h plus 10% reserve
-                        $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
-                        if ($power < 0) {
-                            $msg = 'Mean SOC high, do not charge to more than required according to previous days (plus some reserve)';
+                            $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
+                            $chargingPower = 0;
+                            $dischargingPower = 0;
+                            $storCapacity = 0;
+                            foreach ($this->connectors['smartfox']['storage'] as $stor) {
+                                $chargingPower = $chargingPower + $stor['charging'];
+                                $dischargingPower = $dischargingPower + $stor['discharging'];
+                                $storCapacity = $storCapacity + $stor['capacity'];
+                            }
+                            // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
+                            $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
+                            if (
+                                $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
+                            ) {
+                            // if we have
+                            // - PV production
+                            // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 90 - 100% shall be managed by the BMS itself)
+                            // - prognosis says chances are good to still reach more than 1.5 times residuum to full battery
+                            $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
+                            if ($power < 0) {
+                                $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
+                                $idleType = 'charge';
+                            }
                         }
-                    } elseif ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
+                    }
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
                         // battery SOC low over last 48 hours, don't discharge lower than 15%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
                             $msg = 'Mean SOC low, do not discharge below 15%';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -156,6 +208,7 @@ class SmartFoxConnector
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
                             $msg = 'Mean SOC low, cloudy sky expected, do not discharge below 10%';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -163,12 +216,14 @@ class SmartFoxConnector
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 10% after 4pm';
+                            $idleType = 'discharge';
                         }
                     } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
                         // do not discharge below 5% before 5am
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 5% before 5am';
+                            $idleType = 'discharge';
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
@@ -180,12 +235,35 @@ class SmartFoxConnector
                     // if battery gets really warm or is very cold, do not charge/discharge
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
-
-                if ($msg === null) {
+                $config = $this->getConfig();
+                if ($msg === null && ((($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null) && new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 60 minutes'))) {
                     $value = ['total_act_power' => $power];
+                    $config['powerLimitFactor'] = 0;
+                    $config['idleType'] = null;
                 } else {
-                    $value = ['message' => $msg];
+                    if (!$msg) {
+                        $msg = 'waiting for restart of charging and discharching';
+                    }
+                    if ($config['powerLimitFactor'] == 0) {
+                        // no or outdated power limitation
+                        $power = $power;
+                        $config['powerLimitFactor'] = 1;
+                        $config['idleType'] = $idleType;
+                        $config['timestamp'] = new \DateTime();
+                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
+                    } elseif ($config['powerLimitFactor'] < min(4, abs($smartFoxLatest['StoragePower']/30) - 1)) {
+                        if ($smartFoxLatest['StoragePower'] > 0) {
+                            $power = min(1000, max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100));
+                        } else {
+                            $power = max(-1000, min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100));
+                        }
+                        $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
+                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
+                    } else {
+                        $value = ['message' => $msg];
+                    }
                 }
+                $this->saveConfig($config);
             }
         } catch (\Exception $e) {
             $value = ['message' => 'Exception during SmartFox value retrieval'];
@@ -236,6 +314,8 @@ class SmartFoxConnector
             $arr['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
             $arr['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
             $arr['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
+            $arr['pvEnergyLast24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now'));
+            $arr["pvEnergyPrognosis"] = $this->solRad->getSolarPotentials();
             if ($this->hasAltPv()) {
                 $arr['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
             }
@@ -287,6 +367,8 @@ class SmartFoxConnector
                 "day_energy_in" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in'),
                 "day_energy_out" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out'),
                 "energyToday" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip),
+                "pvEnergyLast24h" => $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now')),
+                "pvEnergyPrognosis" => $this->solRad->getSolarPotentials(),
                 "consumptionControl1Percent" => $data["consumptionControl1Percent"]
             ]);
             if ($this->hasAltPv()) {
@@ -481,15 +563,15 @@ class SmartFoxConnector
         if ($retArr['status'] == 0 && $counter < 1) {
             // maybe offline, try again once
             sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
             sleep($counter + 1);
             // very unlikely temperature, try again twice
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
             // rather unlikely to uncharge will full power while soc is zero, try again twice
             sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter++);
+            $retArr = $this->queryNelinor($ip, $counter+1);
         }
         return $retArr;
     }

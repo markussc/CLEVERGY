@@ -2,6 +2,7 @@
 # Set parameters here that may be different on each deployment target of the app, e.g. development, staging, production.
 # https://symfony.com/doc/current/best_practices/configuration.html#infrastructure-related-configuration
 parameters:
+    visualDashboard: myVisualization.svg # optional parameter if a custom home visualization should be used. the file must be placed within the config directory
     authenticated_ips:
         192.168.1.3: this.isme@mymailserver.org # the user's expected IP and it's email to be authenticated with. BE CAREFUL WITH THIS!
     connectors:
@@ -26,6 +27,18 @@ parameters:
                     name: Nelinor 7kWh
                     type: nelinor
                     ip: 192.168.1.143
+                    capacity: 7 # capacity in kWh
+                    charging: 2.1 # max charging power in kW
+                    discharging: 1.8 # max discharging power in kW
+            pv:
+                inverter:
+                    pmax: 10            # max inverter power (if multiple inverters are available, insert total power here)
+                panels:
+                    -
+                        name: main roof  # name to be used in diagrams
+                        orientation: 180 # in degrees from north
+                        angle: 25        # in degrees from horizontal
+                        pmax: 8          # in kWp
         pcoweb:
             ip: 192.168.178.20
             power: 2900 # relevant electrical power requirement in watts
@@ -40,6 +53,7 @@ parameters:
         wem: # connector for Weishaupt WP with WEM Portal (using ModbusTCP)
             ip: 192.168.22.31
             port: 502
+            power: 2000 # relevant electrical power requirement in watts
         conexio:
             ip: 192.168.1.100
             username: admin
@@ -222,6 +236,7 @@ parameters:
             api_key: this_is_the_api_key_retrieved_from_openweathermap.org
             lat: 46.9
             lon: 6.7
+            alt: 500 # altitude above sea level in meters (required for solar radiation toolbox)
         chromecast:
             -
                 name: Wohnzimmer

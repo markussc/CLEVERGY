@@ -27,6 +27,7 @@ use App\Utils\Connectors\PcoWebConnector;
 use App\Utils\Connectors\ShellyConnector;
 use App\Utils\Connectors\SmartFoxConnector;
 use App\Utils\Connectors\WemConnector;
+use App\Service\SolarRadiationToolbox;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -222,6 +223,20 @@ class DefaultController extends AbstractController
             'history' => $history,
             'from' => $from,
             'to' => $to,
+        ]);
+    }
+
+    #[Route(path: '/prognosis', name: 'prognosis')]
+    public function prognosis(SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
+    {
+        if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
+            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
+        }
+
+        // render the template
+        return $this->render('default/prognosis.html.twig', [
+            'energyTotals' => $srt->setSolarPotentials(end($data)->getData()['pvEnergyPrognosis'])->getEnergyTotals(),
+            'data' => $data,
         ]);
     }
 
@@ -463,8 +478,11 @@ class DefaultController extends AbstractController
             'tacmi' => true,
             'netatmo' => true,
         ]);
-
-        $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
+        try {
+            $fileContent = file_get_contents($this->getParameter('kernel.project_dir') . '/config/' . $this->getParameter('visualDashboard'));
+        } catch (\Exception $e) {
+            $fileContent = file_get_contents($this->getParameter('kernel.project_dir').'/public/visual_dashboard.svg');
+        }
 
         $climateValues = [];
         if (isset($currentStat['mobileAlerts'])) {
@@ -504,17 +522,23 @@ class DefaultController extends AbstractController
 
         // get values
         if (isset($currentStat['smartFox'])) {
-            $pvpower = array_sum($currentStat['smartFox']['PvPower'])." W";
+            $pvpower = array_sum($currentStat['smartFox']['PvPower']) . " W";
+            $pvpower1 = $currentStat['smartFox']['PvPower'][0] . " W";
+            $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
             $netpower = $currentStat['smartFox']['power_io']." W";
             $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
             if (array_key_exists('StoragePower', $currentStat['smartFox'])) {
                 $intpowerVal = $intpowerVal - $currentStat['smartFox']['StoragePower'];
+                $batSoc = $currentStat['smartFox']['StorageSoc'] . " %";
             }
             $intpower = $intpowerVal ." W";
         } else {
             $pvpower = "";
+            $pvpower1 = "";
+            $pvpower2 = "";
             $netpower = "";
             $intpower = "";
+            $batSoc = "";
         }
 
         if (isset($currentStat['conexio']) && is_array($currentStat['conexio'])) {
@@ -604,9 +628,12 @@ class DefaultController extends AbstractController
 
         // write current values into the svg
         $labels = [
+            "pvpower1",
+            "pvpower2",
             "pvpower",
             "netpower",
             "intpower",
+            "batSoc",
             "solpower",
             "soltemp",
             "outsidetemp",
@@ -626,9 +653,12 @@ class DefaultController extends AbstractController
             "sourceouttemp"
         ];
         $values = [
+            $pvpower1,
+            $pvpower2,
             $pvpower,
             $netpower,
             $intpower,
+            $batSoc,
             $solpower,
             $soltemp,
             $outsideTemp,

@@ -505,9 +505,57 @@
         <source>label.device.status.no_inside_temp</source>
         <target>Innentemperatur nicht aktuell!</target>
       </trans-unit>
-      <trans-unit id="AKJHRE" resname="label.lastQuarter">
+      <trans-unit id="e6Vx7qk" resname="label.lastQuarter">
         <source>label.lastQuarter</source>
         <target>Vorquartal</target>
+      </trans-unit>
+      <trans-unit id="5.oypp_" resname="label.pv.prognosis">
+        <source>label.pv.prognosis</source>
+        <target>PV Produktionsprognose</target>
+      </trans-unit>
+      <trans-unit id="6mc1qR3" resname="label.prognosis.header">
+        <source>label.prognosis.header</source>
+        <target>Prognose</target>
+      </trans-unit>
+      <trans-unit id="NG_VMOc" resname="label.prognosis.pv_next_hour">
+        <source>label.prognosis.pv_next_hour</source>
+        <target>nächste Stunde</target>
+      </trans-unit>
+      <trans-unit id="jWgUhaN" resname="label.prognosis.pv_current_daylight">
+        <source>label.prognosis.pv_current_daylight</source>
+        <target>heute verbleibend</target>
+      </trans-unit>
+      <trans-unit id="CqMVc_P" resname="label.prognosis.pv_next_day">
+        <source>label.prognosis.pv_next_day</source>
+        <target>morgen</target>
+      </trans-unit>
+      <trans-unit id="g..MKGK" resname="label.prognosis.pv_next_48h">
+        <source>label.prognosis.pv_next_48h</source>
+        <target>nächste 48h</target>
+      </trans-unit>
+      <trans-unit id=".CIrVO9" resname="label.pv.prognosis_realtime">
+        <source>label.pv.prognosis_realtime</source>
+        <target>Echtzeitprognose</target>
+      </trans-unit>
+      <trans-unit id="81mhBb3" resname="label.pv.prognosis_24h">
+        <source>label.pv.prognosis_24h</source>
+        <target>24h-Prognose</target>
+      </trans-unit>
+      <trans-unit id="L5B0Qcg" resname="label.pv.prognosis_measurement">
+        <source>label.pv.prognosis_measurement</source>
+        <target>Effektivleistung</target>
+      </trans-unit>
+      <trans-unit id="S1c6SpM" resname="label.pv.prognosis.preview_header">
+        <source>label.pv.prognosis.preview_header</source>
+        <target>Vorschau</target>
+      </trans-unit>
+      <trans-unit id="WIkWEyf" resname="label.pv.prognosis.review_header">
+        <source>label.pv.prognosis.review_header</source>
+        <target>Rückblick</target>
+      </trans-unit>
+      <trans-unit id="fi.Ed9v" resname="label.pv.prognosis_4h">
+        <source>label.pv.prognosis_4h</source>
+        <target>4h-Prognose</target>
       </trans-unit>
     </body>
   </file>

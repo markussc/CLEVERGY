@@ -2,6 +2,8 @@ FROM ubuntu:22.04
 LABEL maintainer="markus.schafroth@3084.ch"
 LABEL description="OSHANS"
 ARG DEBIAN_FRONTEND=noninteractive
+ARG BACKUP_HOUR
+ARG INSTANCENAME
 RUN apt-get -y update && apt-get upgrade -y
 RUN apt -y install software-properties-common
 RUN add-apt-repository -y ppa:ondrej/php
@@ -25,6 +27,7 @@ RUN apt-get -y update && apt-get install -y \
         python3 \
         python3-pip \
         composer \
+        mysql-client \
         htop \
         nano \
     && true
@@ -37,7 +40,7 @@ RUN apt install symfony-cli
 RUN pip3 install weconnect-cli
 
 # config changes in PHP config
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
@@ -62,6 +65,8 @@ RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/
 RUN echo "* 0 * * * root cd /www && symfony console oshans:devices:configure" >> /etc/cron.d/oshans
 # delete will run once a year: on january first at 2am
 RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
+# backup of database will run daily at the specified hour
+#RUN echo "15 $BACKUP_HOUR * * * root mysqldump -h db -uclevergy -pclevergy --no-tablespaces --quick clevergy | gzip > /backup/dump_clevergy_$INSTANCENAME.sql.gz" >> /etc/cron.d/oshans # worth trying (using root / docker user): --flush-logs --single-transaction
 
 # configure apache2
 COPY ./oshans.conf /etc/apache2/sites-available/oshans.conf
@@ -73,9 +78,11 @@ RUN a2enmod headers
 
 # prepare symfony app
 WORKDIR "/www"
-COPY ./ /www
-RUN /usr/bin/composer install --no-interaction
+COPY ./www/ /www
+RUN /usr/bin/composer install --no-interaction --no-scripts
 RUN rm -rf public/assets/*
+RUN rm -rf var/cache/*
+RUN symfony console importmap:install
 RUN symfony console asset-map:compile
 RUN symfony console importmap:install
 
@@ -85,5 +92,5 @@ RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run apache2 web server
-CMD wait-for-it db:3306 -- env >> /etc/environment ; symfony console cache:clear ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443

@@ -88,6 +88,15 @@ class WemConnector extends ModbusTcpConnector
         return $this->ip;
     }
 
+    public function getPower()
+    {
+        if (array_key_exists('wem', $this->connectors) && array_key_exists('power', $this->connectors['wem'])) {
+            return $this->connectors['wem']['power'];
+        } else {
+            return 3000;
+        }
+    }
+
     public function executeCommand($type, $command)
     {
         try {
