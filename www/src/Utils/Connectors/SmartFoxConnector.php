@@ -182,12 +182,12 @@ class SmartFoxConnector
                             // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
                             $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
                             if (
-                                $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
+                                $storEnergyPotential > (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
                             ) {
                             // if we have
                             // - PV production
                             // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 90 - 100% shall be managed by the BMS itself)
-                            // - prognosis says chances are good to still reach more than 1.5 times residuum to full battery
+                            // - prognosis says chances are good to still reach full battery before end of the day
                             $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
                             if ($power < 0) {
                                 $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
