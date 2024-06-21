@@ -27,6 +27,7 @@ services:
       - "${PORT}:443"
     depends_on:
       - db
+      - python
     restart: always
 
   python:
