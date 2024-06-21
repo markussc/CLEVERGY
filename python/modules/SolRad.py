@@ -16,6 +16,7 @@ class SolRad:
 
         self.regr = linear_model.LinearRegression()
         self.regr.fit(X, y)
+        return
 
     """
     Predict power based on input and available predictor model
@@ -26,5 +27,4 @@ class SolRad:
             predictedPower = self.regr.predict(input)
         else:
             predictedPower = None
-        print(predictedPower)
         return predictedPower
