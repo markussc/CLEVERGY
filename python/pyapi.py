@@ -38,12 +38,11 @@ Model training: PV power
 def ptraining():
     global solrad
     data = request.get_json('data')
-    #try:
-    if True:
+    try:
         solrad.train(data)
         response = {'success': True, 'text': "training succeeded"}
-    #except:
-    #    response = {'success': False, 'text': "training failed"}
+    except:
+        response = {'success': False, 'text': "training failed"}
     return response
 
 """
@@ -53,15 +52,14 @@ Get predicted Power values based on input data
 def pprediction():
     global solrad
     input = request.get_json()
-    #try:
-    if True:
+    try:
         prediction = solrad.predict(input)
         if prediction is not None:
             response = json.dumps(prediction.tolist())
         else:
             response = {'success': False, 'text': "prediction failed: no training data available"}
-    #except:
-        #response = {'success': False, 'text': "prediction failed: general exception"}
+    except:
+        response = {'success': False, 'text': "prediction failed: general exception"}
 
     return response
 
