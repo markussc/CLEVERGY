@@ -816,4 +816,14 @@ class DefaultController extends AbstractController
 
         return $this->redirectToRoute('homepage');
     }
+
+    /**
+     * test method for sol rad predictor
+     */
+    #[Route(path: '/solrad/predict', name: 'solrad_predict')]
+    public function solradPredict(Request $request, SolarRadiationToolbox $solrad)
+    {
+        $solPot = $solrad->getSolarPotentials();
+        return new Response(json_encode($solPot));
+    }
 }
