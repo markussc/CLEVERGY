@@ -39,11 +39,11 @@ services:
     build:
       context: ./
       dockerfile: ./python/Dockerfile
-      networks:
-        - default
-      ports:
-        - "8192:8192"
-      restart: always
+    networks:
+      - default
+    ports:
+      - "8192:8192"
+    restart: always
 
   db:
     image: mysql/mysql-server:8.0
