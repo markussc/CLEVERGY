@@ -9,6 +9,7 @@
 /www/vendor/
 /data/
 /backup/
+/python/modules/__pycache__/*
 ###< symfony/framework-bundle ###
 ###> OSHANS configuration ###
 /www/.env.local.dist
