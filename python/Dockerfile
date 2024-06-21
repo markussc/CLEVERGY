@@ -10,8 +10,8 @@ RUN apt-get -y update && apt-get upgrade -y && apt-get install -y \
     && true
 
 # install Clevergy.fi python API dependencies
-RUN pip3 install flask pandas scikit-learn --break-system-packages
+RUN pip3 install flask pandas scikit-learn --user
 
 # start flask web server
-CMD python python/pyapi.py
+CMD python3 python/pyapi.py
 EXPOSE 8192
