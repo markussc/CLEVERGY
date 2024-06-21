@@ -31,7 +31,7 @@ services:
 
   python:
     image: oshans/py_${INSTANCENAME}:0.0.1
-    container:name: clevergy_py_${INSTANCENAME}
+    container_name: clevergy_py_${INSTANCENAME}
     stdin_open: true
     tty: true
     volumes:
