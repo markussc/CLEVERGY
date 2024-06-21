@@ -4,7 +4,7 @@ LABEL description="Clevergy.fi Python API"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BACKUP_HOUR
 ARG INSTANCENAME
-RUN apt-get -y update && apt-get upgrade -y
+RUN apt-get -y update && apt-get upgrade -y && apt-get install -y \
         python3 \
         python3-pip \
     && true
