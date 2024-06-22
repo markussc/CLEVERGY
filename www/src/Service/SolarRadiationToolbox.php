@@ -140,6 +140,8 @@ class SolarRadiationToolbox
                     'cloudiness' => $prog['cloudiness'],
                     'temperature' => $prog['temperature'],
                     'humidity' => $prog['humidity'],
+                    'rain' => array_key_exists('rain', $prog) ? $entry['rain']['1h'] : 0,
+                    'snow' => array_key_exists('snow', $prog) ? $entry['snow']['1h'] : 0,
                     'power' => array_sum($e['PvPower'])/1000, // effective value in kW
                 ];
             }
@@ -174,6 +176,8 @@ class SolarRadiationToolbox
                     'cloudiness' => $entry['clouds'],
                     'temperature' => $entry['temp']-273.15,
                     'humidity' => $entry['humidity'],
+                    'rain' => array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
+                    'snow' => array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];
                 $potentials = [];
                 $pPotTot = 0;
@@ -231,6 +235,8 @@ class SolarRadiationToolbox
                     'cloudiness' => $entry['clouds'],
                     'temperature' => $entry['temp']-273.15,
                     'humidity' => $entry['humidity'],
+                    'rain' => array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
+                    'snow' => array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];
                 $predictInput[] = [
                     $sunPosition[0], // sunElevation
@@ -238,6 +244,8 @@ class SolarRadiationToolbox
                     $entry['clouds'], // cloudiness
                     $entry['temp']-273.15, // temperature
                     $entry['humidity'], // humidity
+                    array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
+                    array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];
             }
             // call the prediction API
