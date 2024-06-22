@@ -300,7 +300,7 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         $date = new \DateTime('-90 day'); // we take 3 months as input for our training
         $em = $this->getEntityManager();
         $connection = $em->getConnection();
-        $sql = "SELECT `json_value` FROM `data_store` WHERE `timestamp` >= '" . $date->format("Y-m-d") . "' AND `discr_type` LIKE 'smartfoxdatastore' AND HOUR(timestamp) BETWEEN 6 AND 21 AND MINUTE(timestamp) % 10 = 0";
+        $sql = "SELECT `json_value` FROM `data_store` WHERE `timestamp` >= '" . $date->format("Y-m-d") . "' AND `discr_type` LIKE 'smartfoxdatastore' AND MINUTE(timestamp) % 5 = 0";
         $stmt = $connection->prepare($sql);
         $resultSet = $stmt->executeQuery();
         $entities = $resultSet->fetchAll();
