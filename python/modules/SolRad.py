@@ -15,7 +15,7 @@ class SolRad:
         y = df['power']
 
         self.regr = linear_model.LinearRegression()
-        self.regr.fit(X, y)
+        self.regr.fit(X.values, y)
         return
 
     """
