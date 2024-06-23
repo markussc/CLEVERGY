@@ -168,7 +168,9 @@ class SolarRadiationToolbox
                 }
                 $sunPosition = $this->getSunPosition($timestamp, $entry['temp']+273.15, $entry['pressure']);
                 if ($sunPosition[0] < 10) {
-                    $sunPosition[0] = 0;
+                    $corrFact = 0;
+                } else {
+                    $corrFact = 1;
                 }
                 $sunClimate = [
                     'datetime' => $timestamp,
@@ -182,7 +184,7 @@ class SolarRadiationToolbox
                 $potentials = [];
                 $pPotTot = 0;
                 foreach ($this->connectors['smartfox']['pv']['panels'] as $pv) {
-                    $pPot = $pv['pmax'] * sin(deg2rad($sunPosition[0])) * (2+abs(sin(deg2rad($sunPosition[0] - $pv['angle'])) * cos(deg2rad($sunPosition[1] - $pv['orientation']))))/3 * (110-$sunClimate['cloudiness'])/110 * (100-min(100, 5*($sunClimate['rain'] + $sunClimate['snow'])))/100;
+                    $pPot = $pv['pmax'] * sin(deg2rad($sunPosition[0])) * $corrFact * (2+abs(sin(deg2rad($sunPosition[0] - $pv['angle'])) * cos(deg2rad($sunPosition[1] - $pv['orientation']))))/3 * (110-$sunClimate['cloudiness'])/110 * (100-min(100, 5*($sunClimate['rain'] + $sunClimate['snow'])))/100;
                     if ($sunClimate['temperature'] > 25) {
                         $pPot = $pPot - 1/3*($sunClimate['temperature'] - 25) * $pPot/100; // decrease by 1% per 3° above 25°C
                     }
@@ -226,9 +228,6 @@ class SolarRadiationToolbox
                     continue;
                 }
                 $sunPosition = $this->getSunPosition($timestamp, $entry['temp']+273.15, $entry['pressure']);
-                if ($sunPosition[0] < 10) {
-                    $sunPosition[0] = 0;
-                }
                 $sunClimate[] = [
                     'datetime' => $timestamp,
                     'sunPosition' => $sunPosition,
@@ -266,6 +265,10 @@ class SolarRadiationToolbox
                 }
                 $pPotTot = max(0, $predictions[$idx]); // negative values are discarded
                 $pPotTot = min($pPotTot, $this->connectors['smartfox']['pv']['inverter']['pmax']); // values larger than inverter capacity are limited
+                if ($sunClimate[$idx]['sunPosition'][0] < 10) {
+                    // sun is below horizon
+                    $pPotTot = 0;
+                }
                 if ($prevTimestamp !== null) {
                     $timeInterval = ($timestamp->getTimestamp() - $prevTimestamp->getTimestamp())/3600; // interval in hours
                 } else {
