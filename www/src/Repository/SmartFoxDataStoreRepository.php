@@ -297,7 +297,8 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
 
     public function getSolarPredictionTrainingData()
     {
-        $date = new \DateTime('-90 day'); // we take 3 months as input for our training
+        $date = max(new \DateTime('-90 day'), new \DateTime('2024-06-23')); // we take 3 months as input for our training
+
         $em = $this->getEntityManager();
         $connection = $em->getConnection();
         $sql = "SELECT `json_value` FROM `data_store` WHERE `timestamp` >= '" . $date->format("Y-m-d") . "' AND `discr_type` LIKE 'smartfoxdatastore' AND MINUTE(timestamp) % 5 = 0";

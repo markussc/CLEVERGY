@@ -139,7 +139,6 @@ class SolarRadiationToolbox
                     'sunAzimuth' => $prog['sunPosition'][1],
                     'cloudiness' => $prog['cloudiness'],
                     'temperature' => $prog['temperature'],
-                    'humidity' => $prog['humidity'],
                     'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
                     'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
                     'power' => array_sum($e['PvPower'])/1000, // effective value in kW
@@ -242,7 +241,6 @@ class SolarRadiationToolbox
                     $sunPosition[1], // sunAzimuth
                     $entry['clouds'], // cloudiness
                     $entry['temp']-273.15, // temperature
-                    $entry['humidity'], // humidity
                     array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
                     array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];

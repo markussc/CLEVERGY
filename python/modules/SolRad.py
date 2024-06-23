@@ -9,9 +9,9 @@ class SolRad:
     Train the predictor model using existing data
     """
     def train(self, data):
-        df = pandas.DataFrame(data) #read_json(StringIO(data))
+        df = pandas.DataFrame(data)
 
-        X = df[['sunElevation', 'sunAzimuth', 'cloudiness', 'temperature', 'humidity', 'rain', 'snow']]
+        X = df[['sunElevation', 'sunAzimuth', 'cloudiness', 'temperature', 'rain', 'snow']]
         y = df['power']
 
         self.regr = linear_model.LinearRegression()
