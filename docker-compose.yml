@@ -27,6 +27,23 @@ services:
       - "${PORT}:443"
     depends_on:
       - db
+      - python
+    restart: always
+
+  python:
+    image: oshans/py_${INSTANCENAME}:0.0.1
+    container_name: clevergy_py_${INSTANCENAME}
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./python:/python
+    build:
+      context: ./
+      dockerfile: ./python/Dockerfile
+    networks:
+      - default
+#    ports:
+#      - "8192:8192"
     restart: always
 
   db:
