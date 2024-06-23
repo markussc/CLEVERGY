@@ -140,8 +140,8 @@ class SolarRadiationToolbox
                     'cloudiness' => $prog['cloudiness'],
                     'temperature' => $prog['temperature'],
                     'humidity' => $prog['humidity'],
-                    'rain' => array_key_exists('rain', $prog) ? $entry['rain']['1h'] : 0,
-                    'snow' => array_key_exists('snow', $prog) ? $entry['snow']['1h'] : 0,
+                    'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
+                    'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
                     'power' => array_sum($e['PvPower'])/1000, // effective value in kW
                 ];
             }
