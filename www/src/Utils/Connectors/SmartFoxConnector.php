@@ -167,6 +167,7 @@ class SmartFoxConnector
                     }
                     if (
                             $smartFoxLatest['PvPower'][0] > 0 &&
+                            ($smartFoxLatest['StorageSocMin24h'] > 10 || $smartFoxLatest['StorageSoc'] > 50) &&
                             $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2 &&
                             $smartFoxLatest['StorageSoc'] < 90
                         ) {
