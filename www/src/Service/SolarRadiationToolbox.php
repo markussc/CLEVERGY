@@ -166,7 +166,7 @@ class SolarRadiationToolbox
                     continue;
                 }
                 $sunPosition = $this->getSunPosition($timestamp, $entry['temp']+273.15, $entry['pressure']);
-                if ($sunPosition[0] < 10) {
+                if ($sunPosition[0] < 0) {
                     $corrFact = 0;
                 } else {
                     $corrFact = 1;
@@ -263,7 +263,7 @@ class SolarRadiationToolbox
                 }
                 $pPotTot = max(0, $predictions[$idx]); // negative values are discarded
                 $pPotTot = min($pPotTot, $this->connectors['smartfox']['pv']['inverter']['pmax']); // values larger than inverter capacity are limited
-                if ($sunClimate[$idx]['sunPosition'][0] < 10) {
+                if ($sunClimate[$idx]['sunPosition'][0] < 0) {
                     // sun is below horizon
                     $pPotTot = 0;
                 }
