@@ -11,7 +11,7 @@ class SolRad:
     def train(self, data):
         df = pandas.DataFrame(data)
 
-        X = df[['sunElevation', 'sunAzimuth', 'cloudiness', 'temperature', 'rain', 'snow']]
+        X = df[['sunElevation', 'sunAzimuth', 'cloudiness', 'rain', 'snow']]
         y = df['power']
 
         self.regr = linear_model.LinearRegression()
