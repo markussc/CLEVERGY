@@ -231,6 +231,7 @@ class SolarRadiationToolbox
                     'sunPosition' => $sunPosition,
                     'cloudiness' => $entry['clouds'],
                     'humidity' => $entry['humidity'],
+                    'temperature' => $entry['temp']-273.15, // temperature
                     'rain' => array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
                     'snow' => array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];
@@ -238,7 +239,6 @@ class SolarRadiationToolbox
                     $sunPosition[0], // sunElevation
                     $sunPosition[1], // sunAzimuth
                     $entry['clouds'], // cloudiness
-                    $entry['temp']-273.15, // temperature
                     array_key_exists('rain', $entry) && array_key_exists('1h', $entry['rain']) ? $entry['rain']['1h'] : 0,
                     array_key_exists('snow', $entry) && array_key_exists('1h', $entry['snow']) ? $entry['snow']['1h'] : 0,
                 ];
