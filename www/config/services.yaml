@@ -92,3 +92,4 @@ services:
         arguments:
             $connectors: "%connectors%"
             $python_host: "%env(PYTHON_API_HOST)%"
+            $predict_active: "%env(SOLRAD_PREDICT_ACTIVE)%"

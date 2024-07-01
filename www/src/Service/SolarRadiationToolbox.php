@@ -14,16 +14,18 @@ class SolarRadiationToolbox
     private $em;
     private $client;
     private $pythonHost;
+    private bool $predictActive;
     private $sd;
     private $solarPotentials;
     private $energyTotals;
 
-    public function __construct(array $connectors, EntityManagerInterface $em, HttpClientInterface $client, string $python_host)
+    public function __construct(array $connectors, EntityManagerInterface $em, HttpClientInterface $client, string $python_host, bool $predict_active = false)
     {
         $this->connectors = $connectors;
         $this->em = $em;
         $this->client = $client;
         $this->pythonHost = $python_host;
+        $this->predictActive = $predict_active;
         $this->sd = new SolarData();
         $this->sd->setObserverPosition($connectors['openweathermap']['lat'], $connectors['openweathermap']['lon'], $connectors['openweathermap']['alt']);
         $this->solarPotentials = null;
@@ -40,7 +42,7 @@ class SolarRadiationToolbox
     public function getSolarPotentials()
     {
         if ($this->solarPotentials === null) {
-            if ($this->predictSolarPotentials() === null) {
+            if (!$this->predictActive || $this->predictSolarPotentials() === null) {
                 // if the prediction fails, fall back to calculation
                 $this->calculateSolarPotentials();
             }
