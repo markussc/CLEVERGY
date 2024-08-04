@@ -632,6 +632,9 @@ class DefaultController extends AbstractController
 
         // write current values into the svg
         $labels = [
+            "pvpower1",
+            "pvpower2",
+            "pvpower",
             "netpower",
             "intpower",
             "batSoc",
@@ -655,6 +658,9 @@ class DefaultController extends AbstractController
             "pooltemp"
         ];
         $values = [
+            $pvpower1,
+            $pvpower2,
+            $pvpower,
             $netpower,
             $intpower,
             $batSoc,
@@ -677,11 +683,7 @@ class DefaultController extends AbstractController
             $sourceouttemp,
             $pooltemp,
         ];
-
         $fileContent = str_replace($labels, $values, $fileContent);
-        $fileContent = str_replace("pvpower1", $pvpower1, $fileContent);
-        $fileContent = str_replace("pvpower2", $pvpower2, $fileContent);
-        $fileContent = str_replace("pvpower", $pvpower, $fileContent);
 
         // Return a response with a specific content
         $response = new Response($fileContent);
