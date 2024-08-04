@@ -508,7 +508,7 @@ class DefaultController extends AbstractController
             }
             if ($netatmoValues = $this->netatmo->getLatestByLocation('secondfloor')) {
                 $climateValues['secondfloortemp'] = $netatmoValues['temp'];
-                $climateValues['secondfloorhumidity'] = $netatmoInside['humidity'];
+                $climateValues['secondfloorhumidity'] = $netatmoValues['humidity'];
             }
             if ($netatmoValues = $this->netatmo->getLatestByLocation('basement')) {
                 $climateValues['basementtemp'] = $netatmoValues['temp'];
