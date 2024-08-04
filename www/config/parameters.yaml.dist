@@ -112,7 +112,7 @@ parameters:
                         - °C
                         - red # color used in charts
                         - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
-                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity,  contact
+                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity, pooltemp, contact
                         - <<extended settings>> # optional; valid choice for contact sensors: inverted (inverts the open / close logic)
                     -
                         - 'Relative humidity inside'

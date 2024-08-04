@@ -570,6 +570,7 @@ class DefaultController extends AbstractController
         $basementtemp = "";
         $basementhumidity = "";
         $outsideTemp = "";
+        $pooltemp = "";
         if (isset($climateValues['insidetemp'])) {
             $insidetemp = $climateValues['insidetemp'] . "°C";
         }
@@ -590,6 +591,9 @@ class DefaultController extends AbstractController
         }
         if (isset($climateValues['outsidetemp'])) {
             $outsideTemp = $climateValues['outsidetemp'] . "°C";
+        }
+        if (isset($climateValues['pooltemp'])) {
+            $pooltemp = $climateValues['pooltemp'] . "°C";
         }
 
         if(isset($currentStat['pcoWeb']) && is_array($currentStat['pcoWeb']) && $currentStat['pcoWeb']['cpStatus'] === 'label.device.status.on') {
@@ -650,7 +654,8 @@ class DefaultController extends AbstractController
             "midtemp",
             "lowtemp",
             "sourceintemp",
-            "sourceouttemp"
+            "sourceouttemp",
+            "pooltemp"
         ];
         $values = [
             $pvpower1,
@@ -676,6 +681,7 @@ class DefaultController extends AbstractController
             $lowtemp,
             $sourceintemp,
             $sourceouttemp,
+            $pooltemp,
         ];
 
         $fileContent = str_replace($labels, $values, $fileContent);
