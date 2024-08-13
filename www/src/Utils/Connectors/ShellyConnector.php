@@ -418,10 +418,16 @@ class ShellyConnector
                 return $this->createStatus(0);
             }
         } elseif (!empty($r) && $device['type'] == 'door') {
-            if (array_key_exists('sensor', $r) && $r['sensor']['state'] == "open") {
+            if (array_key_exists('sensor', $r) && $r['sensor']['state'] == "open" && array_key_exists('bat', $r)) {
                 return $this->createStatus(2, 100, 0, $r['bat']['value']);
-            } else {
+            } elseif (array_key_exists('bat', $r)) {
                 return $this->createStatus(3, 100, 0, $r['bat']['value']);
+            } elseif (array_key_exists('devicepower:0', $r) && array_key_exists('window:0', $r)) {
+                if ($r['window:0']['open']) {
+                    return $this->createStatus(2, 100, 0, $r['devicepower:0']['battery']['percent']);
+                } else {
+                    return $this->createStatus(3, 100, 0, $r['devicepower:0']['battery']['percent']);
+                }
             }
         } else {
             return $this->createStatus(-1); // undefined (e.g. no connection to device)
