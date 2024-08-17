@@ -183,7 +183,7 @@ class SmartFoxConnector
                             // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
                             $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
                             if (
-                                $storEnergyPotential > (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
+                                $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
                             ) {
                             // if we have
                             // - PV production
