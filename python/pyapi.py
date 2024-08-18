@@ -10,6 +10,7 @@ from flask import jsonify, request
 
 # import our own modules
 from modules.SolRad import SolRad
+from modules.NelinorClient import NelinorClient
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
@@ -66,4 +67,6 @@ def pprediction():
 # run the web service
 if __name__ == "__main__":
     solrad = SolRad()
+    nelinor = NelinorClient()
+    nelinor.receive('10.10.0.103')
     app.run(debug = False, host="0.0.0.0", port=8192)
