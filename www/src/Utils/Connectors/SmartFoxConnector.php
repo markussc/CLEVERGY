@@ -23,8 +23,9 @@ class SmartFoxConnector
     protected $ip;
     protected $version;
     private $connectors;
+    private $pythonHost;
 
-    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors, string $python_host)
     {
         $this->em = $em;
         $this->solRad = $solRad;
@@ -32,6 +33,7 @@ class SmartFoxConnector
         $this->ip = null;
         $this->version = null;
         $this->connectors = $connectors;
+        $this->pythonHost = $python_host;
         if (array_key_exists('smartfox', $connectors)) {
             $this->ip = $connectors['smartfox']['ip'];
             if (array_key_exists('version', $connectors['smartfox'])) {
@@ -64,6 +66,14 @@ class SmartFoxConnector
         }
 
         return $responseArr;
+    }
+
+    public function getStorageDetails()
+    {
+        $arr = [];
+        $storage = $this->addStorage($arr, false);
+
+        return $storage;
     }
 
     private function getConfig(): array
@@ -247,7 +257,6 @@ class SmartFoxConnector
                     }
                     if ($config['powerLimitFactor'] == 0) {
                         // no or outdated power limitation
-                        $power = $power;
                         $config['powerLimitFactor'] = 1;
                         $config['idleType'] = $idleType;
                         $config['timestamp'] = new \DateTime();
@@ -417,63 +426,60 @@ class SmartFoxConnector
     {
         if (array_key_exists('smartfox', $this->connectors) && array_key_exists('storage', $this->connectors['smartfox'])) {
             $latestEntry = $this->getAllLatest();
-            if ($update) {
-                $storageCounter = 0;
-                $totalStoragePowerIn = 0;
-                $totalStoragePowerOut = 0;
-                $totalStorageSoc = 0;
-                $maxStorageTemp = 0;
-                if (array_key_exists('StorageEnergyIn', $latestEntry)) {
-                    $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
-                } else {
-                    $latestStorageEnergyIn = 0;
-                }
-                if (array_key_exists('StorageEnergyOut', $latestEntry)) {
-                    $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
-                } else {
-                    $latestStorageEnergyOut = 0;
-                }
-                if (array_key_exists('StorageSocMean', $latestEntry)) {
-                    $latestStorageSocMean = $latestEntry['StorageSocMean'];
-                } else {
-                    $latestStorageSocMean = 0;
-                }
-                foreach ($this->connectors['smartfox']['storage'] as $storage) {
-                    if ($storage['type'] == 'nelinor') {
-                        $storageCounter++;
-                        $storageData = $this->queryNelinor($storage['ip']);
-                        $arr['StorageDetails'][$storage['name']] = $storageData;
-                        if ($storageData['power'] >= 0) {
-                            // charging battery
-                            $totalStoragePowerIn += $storageData['power'];
-                        } else {
-                            // uncharging battery
-                            $totalStoragePowerOut += $storageData['power'];
-                        }
-                        $totalStorageSoc += $storageData['soc'];
-                        $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
+            
+            $storageCounter = 0;
+            $totalStoragePowerIn = 0;
+            $totalStoragePowerOut = 0;
+            $totalStorageSoc = 0;
+            $maxStorageTemp = 0;
+            if (array_key_exists('StorageEnergyIn', $latestEntry)) {
+                $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
+            } else {
+                $latestStorageEnergyIn = 0;
+            }
+            if (array_key_exists('StorageEnergyOut', $latestEntry)) {
+                $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
+            } else {
+                $latestStorageEnergyOut = 0;
+            }
+            if (array_key_exists('StorageSocMean', $latestEntry)) {
+                $latestStorageSocMean = $latestEntry['StorageSocMean'];
+            } else {
+                $latestStorageSocMean = 0;
+            }
+            foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                if ($storage['type'] == 'nelinor') {
+                    $storageCounter++;
+                    $storageData = $this->queryNelinor($storage['ip']);
+                    $arr['StorageDetails'][$storage['name']] = $storageData;
+                    if ($storageData['power'] >= 0) {
+                        // charging battery
+                        $totalStoragePowerIn += $storageData['power'];
+                    } else {
+                        // uncharging battery
+                        $totalStoragePowerOut += $storageData['power'];
                     }
+                    $totalStorageSoc += $storageData['soc'];
+                    $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                 }
+            }
+            $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
+            $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+            $arr['StorageTemp'] = $maxStorageTemp;
+            if ($update) {
                 // calculate the energy produced at the given power level during one minute
                 $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
                 $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
-                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
-                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
-                $arr['StorageTemp'] = $maxStorageTemp;
                 $arr['StorageSocMin24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc');
                 $arr['StorageSocMin48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc');
                 $arr['StorageSocMax24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 24*60, 'StorageSoc');
                 $arr['StorageSocMax48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc');
             } else {
                 // add existing data
-                $arr['StorageDetails'] = $latestEntry['StorageDetails'];
                 $arr['StorageEnergyIn'] = $latestEntry['StorageEnergyIn'];
                 $arr['StorageEnergyOut'] = $latestEntry['StorageEnergyOut'];
-                $arr['StoragePower'] = $latestEntry['StoragePower'];
-                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
                 $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
-                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
                 $arr['StorageSocMin24h'] = $latestEntry['StorageSocMin24h'];
                 $arr['StorageSocMin48h'] = $latestEntry['StorageSocMin48h'];
                 $arr['StorageSocMax24h'] = $latestEntry['StorageSocMax24h'];
@@ -520,13 +526,38 @@ class SmartFoxConnector
 
     private function queryNelinor($ip, $counter = 0)
     {
+        $retArr = $this->queryNelinorPythonApi($ip);
+        if (!$retArr) {
+            $retArr = [
+                'status' => 0,
+                'power' => 0,
+                'temp' => 0,
+                'soc' => 0
+            ];
+        }
+
+        // retry if received values might be corrupted
+        if ($retArr['status'] == 0 && $counter < 1) {
+            // maybe offline, try again once
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
+            sleep($counter + 1);
+            // very unlikely temperature, try again twice
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
+            // rather unlikely to uncharge will full power while soc is zero, try again twice
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        }
+        return $retArr;
+    }
+
+    // note: this method is deprecated and shall not be used anymore!
+    private function queryNelinorSocket($ip)
+    {
         $port = 9865; // fixed port of nelinor
-        $retArr = [
-            'status' => 0,
-            'power' => 0,
-            'temp' => 0,
-            'soc' => 0
-        ];
+        $retArr = null;
         $socket = null;
         try {
             $buf = '';
@@ -560,20 +591,20 @@ class SmartFoxConnector
             }
         }
 
-        // retry if received values might be corrupted
-        if ($retArr['status'] == 0 && $counter < 1) {
-            // maybe offline, try again once
-            sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter+1);
-        } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
-            sleep($counter + 1);
-            // very unlikely temperature, try again twice
-            $retArr = $this->queryNelinor($ip, $counter+1);
-        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
-            // rather unlikely to uncharge will full power while soc is zero, try again twice
-            sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter+1);
+        return $retArr;
+    }
+
+    private function queryNelinorPythonApi($ip)
+    {
+        try {
+            $url = $this->pythonHost . '/nelinor?ip=' . $ip;
+            $response = $this->client->request('GET', $url,['timeout' => 5]);
+            $content = $response->getContent();
+            $retArr = json_decode($content, true);
+        } catch (\Exception $e) {
+            $retArr = null;
         }
+
         return $retArr;
     }
 }
