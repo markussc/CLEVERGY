@@ -6,7 +6,7 @@ class NelinorClient:
     def __init__(self):
         self.data = {
             "ip": None,
-            "timestamp": time.time(),
+            "timestamp": 0,
             "status": 0,
             "power": 0,
             "temp": 20,

@@ -72,7 +72,7 @@ Get status data from Nelinor battery storage
 def nelinor():
     global nelinor
     ip = request.args.get('ip')
-    if nelinor.data == None or nelinor.data["ip"] != ip or nelinor.data["timestamp"] - time.time() > 60:
+    if nelinor.data == None or nelinor.data["ip"] != ip or time.time() - nelinor.data["timestamp"] > 60:
         nelinor.receive(ip)
 
     return jsonify(nelinor.data)
