@@ -257,7 +257,7 @@ class SmartFoxConnector
                     }
                     $value = ['message' => $msg];
                     $currentStorage = $this->getStorageDetails();
-                    if (array_key_exists('power', $currentStorage) && $currentStorage['power'] == 0) {
+                    if (array_key_exists('power', $currentStorage) && ($currentStorage['power'] < 35 && $currentStorage['power'] > -35)) {
                         // battery idling, set the timestamp and idleType now
                         $config['timestamp'] = new \DateTime();
                         $config['idleType'] = $idleType;
