@@ -247,30 +247,20 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
                 $config = $this->getConfig();
-                if ($msg === null && ((($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null) && new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 60 minutes'))) {
+                if ($msg === null && (($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null)) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 30 minutes')) {
                     $value = ['total_act_power' => $power];
-                    $config['powerLimitFactor'] = 0;
                     $config['idleType'] = null;
+                    $config['timestamp'] = new \DateTime('- 60 minutes');
                 } else {
                     if (!$msg) {
                         $msg = 'waiting for restart of charging and discharching';
                     }
-                    if ($config['powerLimitFactor'] == 0) {
-                        // no or outdated power limitation
-                        $config['powerLimitFactor'] = 1;
-                        $config['idleType'] = $idleType;
+                    $value = ['message' => $msg];
+                    $currentStorage = $this->getStorageDetails();
+                    if (array_key_exists('power', $currentStorage) && $currentStorage['power'] == 0) {
+                        // battery idling, set the timestamp and idleType now
                         $config['timestamp'] = new \DateTime();
-                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < min(4, abs($smartFoxLatest['StoragePower']/30) - 1)) {
-                        if ($smartFoxLatest['StoragePower'] > 0) {
-                            $power = min(1000, max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100));
-                        } else {
-                            $power = max(-1000, min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100));
-                        }
-                        $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
-                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } else {
-                        $value = ['message' => $msg];
+                        $config['idleType'] = $idleType;
                     }
                 }
                 $this->saveConfig($config);
@@ -527,14 +517,6 @@ class SmartFoxConnector
     private function queryNelinor($ip, $counter = 0)
     {
         $retArr = $this->queryNelinorPythonApi($ip);
-        if (!$retArr) {
-            $retArr = [
-                'status' => 0,
-                'power' => 0,
-                'temp' => 0,
-                'soc' => 0
-            ];
-        }
 
         // retry if received values might be corrupted
         if ($retArr['status'] == 0 && $counter < 1) {
@@ -596,15 +578,24 @@ class SmartFoxConnector
 
     private function queryNelinorPythonApi($ip)
     {
+        $retArr = null;
         try {
             $url = $this->pythonHost . '/nelinor?ip=' . $ip;
-            $response = $this->client->request('GET', $url,['timeout' => 5]);
+            $response = $this->client->request('GET', $url,['timeout' => 2]);
             $content = $response->getContent();
             $retArr = json_decode($content, true);
         } catch (\Exception $e) {
-            $retArr = null;
+            // do nothing
         }
 
+        if (!is_array($retArr)) {
+            $retArr = [
+                'status' => 0,
+                'power' => 0,
+                'temp' => 0,
+                'soc' => 0
+            ];
+        }
         return $retArr;
     }
 }
