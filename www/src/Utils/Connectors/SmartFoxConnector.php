@@ -87,7 +87,6 @@ class SmartFoxConnector
             $ts = new \DateTime('-30 minutes');
             $config = [
                 'timestamp' =>['date' => $ts->format('c')],
-                'powerLimitFactor' => 0,
                 'idleType' => null,
             ];
         }
@@ -247,6 +246,7 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
                 $config = $this->getConfig();
+
                 if ($msg === null && (($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null)) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 30 minutes')) {
                     $value = ['total_act_power' => $power];
                     $config['idleType'] = null;
@@ -257,7 +257,7 @@ class SmartFoxConnector
                     }
                     $value = ['message' => $msg];
                     $currentStorage = $this->getStorageDetails();
-                    if (array_key_exists('power', $currentStorage) && ($currentStorage['power'] < 35 && $currentStorage['power'] > -35)) {
+                    if (array_key_exists('StoragePower', $currentStorage) && ($currentStorage['StoragePower'] < 35 && $currentStorage['StoragePower'] > -35)) {
                         // battery idling, set the timestamp and idleType now
                         $config['timestamp'] = new \DateTime();
                         $config['idleType'] = $idleType;
