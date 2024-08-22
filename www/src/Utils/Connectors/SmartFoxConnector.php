@@ -256,8 +256,7 @@ class SmartFoxConnector
                         $msg = 'waiting for restart of charging and discharching';
                     }
                     $value = ['message' => $msg];
-                    $currentStorage = $this->getStorageDetails();
-                    if (array_key_exists('StoragePower', $currentStorage) && ($currentStorage['StoragePower'] < 35 && $currentStorage['StoragePower'] > -35)) {
+                    if (array_key_exists('StoragePower', $smartFoxLatest) && ($smartFoxLatest['StoragePower'] < 35 && $smartFoxLatest['StoragePower'] > -35)) {
                         // battery idling, set the timestamp and idleType now
                         $config['timestamp'] = new \DateTime();
                         $config['idleType'] = $idleType;
