@@ -93,5 +93,5 @@ RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run apache2 web server
-CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; symfony console oshans:solrad:training ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443
