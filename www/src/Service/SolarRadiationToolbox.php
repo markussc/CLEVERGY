@@ -185,8 +185,8 @@ class SolarRadiationToolbox
                 $pPotTot = 0;
                 foreach ($this->connectors['smartfox']['pv']['panels'] as $pv) {
                     $pPot = $pv['pmax'] * sin(deg2rad($sunPosition[0])) * $corrFact * (2+abs(sin(deg2rad($sunPosition[0] - $pv['angle'])) * cos(deg2rad($sunPosition[1] - $pv['orientation']))))/3 * (110-$sunClimate['cloudiness'])/110 * (100-min(100, 5*($sunClimate['rain'] + $sunClimate['snow'])))/100;
-                    if ($sunClimate['temperature'] > 25) {
-                        $pPot = $pPot - 1/3*($sunClimate['temperature'] - 25) * $pPot/100; // decrease by 1% per 3° above 25°C
+                    if ($sunClimate['temperature'] > 20) {
+                        $pPot = $pPot - 5/2*($sunClimate['temperature'] - 20) * $pPot/100; // decrease by 5% per 2° above 20°C (approximation as we do not know the panel's temperature)
                     }
                     $potentials[] = [
                         'panel' => $pv,
