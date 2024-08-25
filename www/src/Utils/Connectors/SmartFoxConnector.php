@@ -247,7 +247,7 @@ class SmartFoxConnector
                 }
                 $config = $this->getConfig();
 
-                if ($msg === null && ($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null || new \DateTime($config['timestamp']['date']) < new \DateTime('- 30 minutes'))) {
+                if ($msg === null && ($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
                     $value = ['total_act_power' => $power];
                     $config['idleType'] = null;
                     $config['timestamp'] = new \DateTime('- 60 minutes');
