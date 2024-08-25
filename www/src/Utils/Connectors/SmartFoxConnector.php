@@ -190,7 +190,9 @@ class SmartFoxConnector
                                 $storCapacity = $storCapacity + $stor['capacity'];
                             }
                             // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
-                            $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
+                            // as the relevantChargingPower we set the battery capabilities or current PV power, whatever is smaller (idea is to compensate a too optimistic prognosis)
+                            $relevantChargingPower = min($chargingPower, array_sum($smartFoxLatest['PvPower']));
+                            $storEnergyPotential = $this->solRad->checkEnergyRequest($relevantChargingPower, $dischargingPower, $storCapacity/12);
                             if (
                                 $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
                             ) {
