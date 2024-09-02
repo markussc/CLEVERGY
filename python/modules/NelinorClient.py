@@ -48,7 +48,7 @@ class NelinorClient:
                     "temp": temp,
                     "soc": soc
                 }
-                if self.data["soc"] > 100 or self.data["soc"] < 0:
+                if self.data["soc"] > 100 or self.data["soc"] < 0 or (self.data["temp"] == 0 and self.data["power"] == 0):
                     return
             except:
                 return
