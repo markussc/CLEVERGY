@@ -189,7 +189,7 @@ class SmartFoxConnector
                                 $dischargingPower = $dischargingPower + $stor['discharging'];
                                 $storCapacity = $storCapacity + $stor['capacity'];
                             }
-                            if ($smartFoxLatest['StorageTemp'] > 30) {
+                            if ($smartFoxLatest['StorageTemp'] > 29) {
                                 // if current battery temperature is quite high, we calculate with limited charging power
                                 $chargingPower *= 0.5;
                             }
