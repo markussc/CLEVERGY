@@ -189,6 +189,10 @@ class SmartFoxConnector
                                 $dischargingPower = $dischargingPower + $stor['discharging'];
                                 $storCapacity = $storCapacity + $stor['capacity'];
                             }
+                            if ($smartFoxLatest['StorageTemp'] > 30) {
+                                // if current battery temperature is quite high, we calculate with limited charging power
+                                $chargingPower *= 0.5;
+                            }
                             // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
                             // as the relevantChargingPower we set the battery capabilities or current PV power, whatever is smaller (idea is to compensate a too optimistic prognosis)
                             $relevantChargingPower = min($chargingPower, array_sum($smartFoxLatest['PvPower']));
