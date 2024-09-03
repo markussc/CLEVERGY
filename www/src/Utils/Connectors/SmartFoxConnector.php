@@ -243,8 +243,26 @@ class SmartFoxConnector
                         $power = -100;
                     }
                 }
-                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
-                    // if battery gets really warm or is very cold, do not charge/discharge
+
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
+                    // battery warm, limit power to 1/2 of max available power in both directions
+                    $batP = $this->getStorageDetails();
+                    $chargingPower = 0;
+                    $dischargingPower = 0;
+                    foreach ($this->connectors['smartfox']['storage'] as $stor) {
+                        $chargingPower = $chargingPower + $stor['charging'] * 1000;
+                        $dischargingPower = $dischargingPower + $stor['discharging'] * 1000;
+                    }
+                    if ($currentPower > 0) {
+                        // currentPower > 0 --> limit discharging
+                        $power = -1 * min($currentPower, $dischargingPower/2 - ($dischargingPower + $batP['StoragePower']));
+                    } else {
+                        // currentPower < 0 --> limit charging
+                        $power = max($currentPower, $chargingPower/2 - ($chargingPower - $batP['StoragePower']));
+                    }
+                }
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
+                    // if battery gets really warm or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 }
                 $config = $this->getConfig();
@@ -582,7 +600,7 @@ class SmartFoxConnector
         $retArr = null;
         try {
             $url = $this->pythonHost . '/nelinor?ip=' . $ip;
-            $response = $this->client->request('GET', $url,['timeout' => 2]);
+            $response = $this->client->request('GET', $url,['timeout' => 1]);
             $content = $response->getContent();
             $retArr = json_decode($content, true);
         } catch (\Exception $e) {
