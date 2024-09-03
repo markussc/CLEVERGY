@@ -244,7 +244,10 @@ class SmartFoxConnector
                     }
                 }
 
-                if (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
+                    // if battery gets really warm or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
+                    $msg = 'Excess cell temperature, do not use battery until normalized';
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
                     $batP = $this->getStorageDetails();
                     $chargingPower = 0;
@@ -261,10 +264,7 @@ class SmartFoxConnector
                         $power = max($currentPower, $chargingPower/2 - ($chargingPower - $batP['StoragePower']));
                     }
                 }
-                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
-                    // if battery gets really warm or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
-                    $msg = 'Excess cell temperature, do not use battery until normalized';
-                }
+
                 $config = $this->getConfig();
 
                 if ($msg === null && ($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
