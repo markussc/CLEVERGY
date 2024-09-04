@@ -260,10 +260,10 @@ class SmartFoxConnector
                         $chargingPower = $chargingPower + $stor['charging'] * 1000;
                         $dischargingPower = $dischargingPower + $stor['discharging'] * 1000;
                     }
-                    if ($currentPower > 0) {
+                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
                         // currentPower > 0 --> limit discharging
                         $power = -1 * min($currentPower, $dischargingPower/2 - ($dischargingPower + $batP['StoragePower']));
-                    } else {
+                    } elseif ($currentPower < 0) {
                         // currentPower < 0 --> limit charging
                         $power = max($currentPower, $chargingPower/2 - ($chargingPower - $batP['StoragePower']));
                     }
