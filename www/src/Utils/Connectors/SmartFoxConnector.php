@@ -156,6 +156,17 @@ class SmartFoxConnector
                 $msg = null;
                 $idleType = null;
                 $now = new \DateTime();
+                $chargingPower = 0;
+                $dischargingPower = 0;
+                $storCapacity = 0;
+                $batP = null;
+                if (array_key_exists('storage', $this->connectors['smartfox'])) {
+                    foreach ($this->connectors['smartfox']['storage'] as $stor) {
+                        $chargingPower = $chargingPower + $stor['charging'];
+                        $dischargingPower = $dischargingPower + $stor['discharging'];
+                        $storCapacity = $storCapacity + $stor['capacity'];
+                    }
+                }
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
                             $smartFoxLatest['StorageSocMean'] > 50 &&
@@ -181,14 +192,6 @@ class SmartFoxConnector
                             $smartFoxLatest['StorageSoc'] < 90
                         ) {
                             $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
-                            $chargingPower = 0;
-                            $dischargingPower = 0;
-                            $storCapacity = 0;
-                            foreach ($this->connectors['smartfox']['storage'] as $stor) {
-                                $chargingPower = $chargingPower + $stor['charging'];
-                                $dischargingPower = $dischargingPower + $stor['discharging'];
-                                $storCapacity = $storCapacity + $stor['capacity'];
-                            }
                             if ($smartFoxLatest['StorageTemp'] > 29) {
                                 // if current battery temperature is quite high, we calculate with limited charging power
                                 $chargingPower *= 0.5;
@@ -208,6 +211,23 @@ class SmartFoxConnector
                             if ($power < 0) {
                                 $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
                                 $idleType = 'charge';
+                            }
+                        }
+                    }
+                    if ($smartFoxLatest['StorageSoc'] <= 50 || $smartFoxLatest['PvPower'] < $chargingPower*1000/5) {
+                        if ($batP === null) {
+                            $batP = $this->getStorageDetails();
+                        }
+                        if ($batP['StoragePower'] < 0) {
+                            // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/10h of charging power)
+                            $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($chargingPower*1000/10) / 3600;
+                            $availableCapacity = $storCapacity*1000*$smartFoxLatest['StorageSoc']/100; // available capacity in Wh
+                            $maxP = $availableCapacity / $hoursUntilRecharging;
+                            $maxPFactor = 2 * ($smartFoxLatest['StorageSoc'] / 50); // @SOC 50: factor=2; @SOC 25: factor=1; @SOC 20: factor=0.8; @SOC 10: factor=0.4; @SOC 5: factor=0.2
+                            if ($currentPower >= 0) {
+                                $power = min($currentPower, $maxP * $maxPFactor + $batP['StoragePower']);
+                            } else {
+                                $power = max($currentPower, $chargingPower*1000 - ($chargingPower*1000 - $batP['StoragePower']));
                             }
                         }
                     }
@@ -253,19 +273,15 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
-                    $batP = $this->getStorageDetails();
-                    $chargingPower = 0;
-                    $dischargingPower = 0;
-                    foreach ($this->connectors['smartfox']['storage'] as $stor) {
-                        $chargingPower = $chargingPower + $stor['charging'] * 1000;
-                        $dischargingPower = $dischargingPower + $stor['discharging'] * 1000;
+                    if ($batP === null) {
+                        $batP = $this->getStorageDetails();
                     }
                     if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
                         // currentPower > 0 --> limit discharging
-                        $power = -1 * min($currentPower, $dischargingPower/2 - ($dischargingPower + $batP['StoragePower']));
+                        $power = -1 * min($currentPower, $dischargingPower*1000/2 - ($dischargingPower*1000 + $batP['StoragePower']));
                     } elseif ($currentPower < 0) {
                         // currentPower < 0 --> limit charging
-                        $power = max($currentPower, $chargingPower/2 - ($chargingPower - $batP['StoragePower']));
+                        $power = max($currentPower, $chargingPower*1000/2 - ($chargingPower*1000 - $batP['StoragePower']));
                     }
                 }
 
