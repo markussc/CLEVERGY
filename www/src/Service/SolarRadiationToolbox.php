@@ -71,6 +71,9 @@ class SolarRadiationToolbox
         $tomorrow = new \DateTime('tomorrow');
         $maxPower = 0;
         foreach ($this->solarPotentials as $potential) {
+            if (is_array($potential['datetime']) && array_key_exists('date', $potential['datetime'])) {
+                $potential['datetime'] = new \DateTime($potential['datetime']['date'], new \DateTimeZone($potential['datetime']['timezone']));
+            }
             if ($potential['datetime']->getTimestamp() < $tomorrow->getTimestamp()) {
                 $maxPower = max($maxPower, $potential['pPotTot']);
             }
@@ -91,6 +94,9 @@ class SolarRadiationToolbox
         $waitingTime = null;
         foreach ($this->solarPotentials as $potential) {
             if ($potential['pPotTot']*1000 >= $power) {
+                if (is_array($potential['datetime']) && array_key_exists('date', $potential['datetime'])) {
+                    $potential['datetime'] = new \DateTime($potential['datetime']['date'], new \DateTimeZone($potential['datetime']['timezone']));
+                }
                 $waitingTime = max(0, $potential['datetime']->getTimestamp() - $now->getTimestamp());
                 break;
             }
