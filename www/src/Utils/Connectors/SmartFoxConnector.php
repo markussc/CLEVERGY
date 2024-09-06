@@ -282,10 +282,10 @@ class SmartFoxConnector
                     }
                     if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
                         // currentPower > 0 --> limit discharging by factor 4
-                        $power = -1 * min($currentPower, $dischargingPower*1000/4 - ($dischargingPower*1000 + $batP['StoragePower']));
+                        $power = -1 * min($currentPower, $dischargingPower*1000*3/4 - ($dischargingPower*1000 + $batP['StoragePower']));
                     } elseif ($currentPower < 0) {
                         // currentPower < 0 --> limit charging by factor 4
-                        $power = max($currentPower, $chargingPower*1000/4 - ($chargingPower*1000 - $batP['StoragePower']));
+                        $power = max($currentPower, $chargingPower*1000*3/4 - ($chargingPower*1000 - $batP['StoragePower']));
                     }
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
