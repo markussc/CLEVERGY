@@ -272,19 +272,31 @@ class SmartFoxConnector
                     }
                 }
 
-                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
-                    // if battery gets really warm or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 40 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
+                    // if battery gets really hot or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
                     $msg = 'Excess cell temperature, do not use battery until normalized';
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
+                    // battery really warm, limit power to 1/4 of max available power in both directions
+                    if ($batP === null) {
+                        $batP = $this->getStorageDetails();
+                    }
+                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
+                        // currentPower > 0 --> limit discharging by factor 4
+                        $power = -1 * min($currentPower, $dischargingPower*1000/4 - ($dischargingPower*1000 + $batP['StoragePower']));
+                    } elseif ($currentPower < 0) {
+                        // currentPower < 0 --> limit charging by factor 4
+                        $power = max($currentPower, $chargingPower*1000/4 - ($chargingPower*1000 - $batP['StoragePower']));
+                    }
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
                     if ($batP === null) {
                         $batP = $this->getStorageDetails();
                     }
-                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
-                        // currentPower > 0 --> limit discharging
+                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 32) {
+                        // currentPower > 0 --> limit discharging by factor 2
                         $power = -1 * min($currentPower, $dischargingPower*1000/2 - ($dischargingPower*1000 + $batP['StoragePower']));
                     } elseif ($currentPower < 0) {
-                        // currentPower < 0 --> limit charging
+                        // currentPower < 0 --> limit charging by factor 2
                         $power = max($currentPower, $chargingPower*1000/2 - ($chargingPower*1000 - $batP['StoragePower']));
                     }
                 }
