@@ -159,7 +159,8 @@ class SmartFoxConnector
                 $chargingPower = 0;
                 $dischargingPower = 0;
                 $storCapacity = 0;
-                $batP = null;
+                $chargeLimit = null;
+                $dischargeLimit = null;
                 if (array_key_exists('storage', $this->connectors['smartfox'])) {
                     foreach ($this->connectors['smartfox']['storage'] as $stor) {
                         $chargingPower = $chargingPower + $stor['charging'];
@@ -217,22 +218,13 @@ class SmartFoxConnector
                         }
                     }
                     if ($smartFoxLatest['StorageSoc'] <= 50 || $smartFoxLatest['PvPower'] < $chargingPower*1000/5) {
-                        if ($batP === null) {
-                            $batP = $this->getStorageDetails();
-                        }
-                        if ($batP['StoragePower'] < 0) {
-                            // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/10h of charging power)
-                            $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($chargingPower*1000/10) / 3600;
-                            $availableCapacity = $storCapacity*1000*$smartFoxLatest['StorageSoc']/100; // available capacity in Wh
-                            if ($hoursUntilRecharging > 0) {
-                                $maxP = $availableCapacity / $hoursUntilRecharging;
-                                $maxPFactor = 2 * ($smartFoxLatest['StorageSoc'] / 50); // @SOC 50: factor=2; @SOC 25: factor=1; @SOC 20: factor=0.8; @SOC 10: factor=0.4; @SOC 5: factor=0.2
-                                if ($currentPower >= 0) {
-                                    $power = min($currentPower, $maxP * $maxPFactor + $batP['StoragePower']);
-                                } else {
-                                    $power = max($currentPower, $chargingPower*1000 - ($chargingPower*1000 - $batP['StoragePower']));
-                                }
-                            }
+                        // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/10h of charging power)
+                        $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($chargingPower*1000/10) / 3600;
+                        $availableCapacity = $storCapacity*1000*$smartFoxLatest['StorageSoc']/100; // available capacity in Wh
+                        if ($hoursUntilRecharging > 0) {
+                            $maxP = $availableCapacity / $hoursUntilRecharging;
+                            $maxPFactor = 2 * ($smartFoxLatest['StorageSoc'] / 50); // @SOC 50: factor=2; @SOC 25: factor=1; @SOC 20: factor=0.8; @SOC 10: factor=0.4; @SOC 5: factor=0.2
+                            $dischargeLimit = $maxP * $maxPFactor;
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
@@ -277,28 +269,15 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
                     // battery really warm, limit power to 1/4 of max available power in both directions
-                    if ($batP === null) {
-                        $batP = $this->getStorageDetails();
-                    }
-                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 34) {
-                        // currentPower > 0 --> limit discharging by factor 4
-                        $power = -1 * min($currentPower, $dischargingPower*1000*3/4 - ($dischargingPower*1000 + $batP['StoragePower']));
-                    } elseif ($currentPower < 0) {
-                        // currentPower < 0 --> limit charging by factor 4
-                        $power = max($currentPower, $chargingPower*1000*3/4 - ($chargingPower*1000 - $batP['StoragePower']));
-                    }
+                    $chargeLimit = $chargingPower*1000 / 4;
+                    $dischargeLimit = $dischargingPower*1000 / 4;
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
-                    if ($batP === null) {
-                        $batP = $this->getStorageDetails();
-                    }
-                    if ($currentPower >= 0 && $smartFoxLatest['StorageTemp'] > 32) {
-                        // currentPower > 0 --> limit discharging by factor 2
-                        $power = -1 * min($currentPower, $dischargingPower*1000/2 - ($dischargingPower*1000 + $batP['StoragePower']));
-                    } elseif ($currentPower < 0) {
-                        // currentPower < 0 --> limit charging by factor 2
-                        $power = max($currentPower, $chargingPower*1000/2 - ($chargingPower*1000 - $batP['StoragePower']));
-                    }
+                    $chargeLimit = $chargingPower*1000 / 2;
+                    $dischargeLimit = $dischargingPower*1000 / 2;
+                }
+                if ($chargeLimit !== null || $dischargeLimit !== null) {
+                    $power = $this->limitBatteryPower($currentPower, $chargeLimit, $dischargeLimit);
                 }
 
                 $config = $this->getConfig();
@@ -360,6 +339,30 @@ class SmartFoxConnector
         }
 
         return $value;
+    }
+
+    private function limitBatteryPower($currentPower, $chargeLimit = null, $dischargeLimit = null)
+    {
+        $currentBatteryPower = $this->getStorageDetails()['StoragePower'];
+        $power = $currentPower;
+        if ($dischargeLimit !== null && $currentPower - $currentBatteryPower > $dischargeLimit) {
+            // limit discharging
+            $power = min($dischargeLimit, $dischargeLimit + $currentBatteryPower);
+        } elseif ($chargeLimit !== null && $currentPower - $currentBatteryPower < -1 * $chargeLimit) {
+            // limit charging
+            $power = -1 * min($chargeLimit, ($chargeLimit - $currentBatteryPower));
+        }
+
+        if ($dischargeLimit !== null) {
+            // prevent annoucement of any values larger than the discharge limit if set
+            $power = max(-1 * $dischargeLimit, $power);
+        }
+        if ($chargeLimit !== null) {
+            // prevent annoucement of any values larger than the charge limit if set
+            $power = min($chargeLimit, $power);
+        }
+
+        return $power;
     }
 
     private function getFromREG9TE($full = true)
