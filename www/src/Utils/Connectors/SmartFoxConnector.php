@@ -159,8 +159,8 @@ class SmartFoxConnector
                 $chargingPower = 0;
                 $dischargingPower = 0;
                 $storCapacity = 0;
-                $chargeLimit = null;
-                $dischargeLimit = null;
+                $chargeLimit = [];
+                $dischargeLimit = [];
                 if (array_key_exists('storage', $this->connectors['smartfox'])) {
                     foreach ($this->connectors['smartfox']['storage'] as $stor) {
                         $chargingPower = $chargingPower + $stor['charging'];
@@ -224,7 +224,7 @@ class SmartFoxConnector
                         if ($hoursUntilRecharging > 0) {
                             $maxP = $availableCapacity / $hoursUntilRecharging;
                             $maxPFactor = 2 * ($smartFoxLatest['StorageSoc'] / 50); // @SOC 50: factor=2; @SOC 25: factor=1; @SOC 20: factor=0.8; @SOC 10: factor=0.4; @SOC 5: factor=0.2
-                            $dischargeLimit = $maxP * $maxPFactor;
+                            $dischargeLimit[] = $maxP * $maxPFactor;
                         }
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
@@ -269,14 +269,24 @@ class SmartFoxConnector
                     $msg = 'Excess cell temperature, do not use battery until normalized';
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
                     // battery really warm, limit power to 1/4 of max available power in both directions
-                    $chargeLimit = $chargingPower*1000 / 4;
-                    $dischargeLimit = $dischargingPower*1000 / 4;
+                    $chargeLimit[] = $chargingPower*1000 / 4;
+                    $dischargeLimit[] = $dischargingPower*1000 / 4;
                 } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
                     // battery warm, limit power to 1/2 of max available power in both directions
-                    $chargeLimit = $chargingPower*1000 / 2;
-                    $dischargeLimit = $dischargingPower*1000 / 2;
+                    $chargeLimit[] = $chargingPower*1000 / 2;
+                    $dischargeLimit[] = $dischargingPower*1000 / 2;
                 }
-                if ($chargeLimit !== null || $dischargeLimit !== null) {
+                if (count($chargeLimit) || count($dischargeLimit)) {
+                    if (count($chargeLimit)) {
+                        $chargeLimit = min($chargeLimit);
+                    } else {
+                        $chargeLimit = null;
+                    }
+                    if (count($dischargeLimit)) {
+                        $dischargeLimit = min($dischargeLimit);
+                    } else {
+                        $dischargeLimit = null;
+                    }
                     $power = $this->limitBatteryPower($currentPower, $chargeLimit, $dischargeLimit);
                 }
 
