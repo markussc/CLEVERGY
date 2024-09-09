@@ -134,6 +134,19 @@ class SolarRadiationToolbox
         return $energyBalance;
     }
 
+    /*
+    * Approximates the optimal charging power to reach an energyNeed given the remaining solarPotential of the day
+    */
+    public function getOptimalChargingPower($maxConsumptionPower, $maxDeliveryPower, $baseLoad, $energyNeed)
+    {
+        $optPower = $maxConsumptionPower;
+        while ($this->checkEnergyRequest($maxConsumptionPower, $maxDeliveryPower, $baseLoad) > $energyNeed) {
+            $maxConsumptionPower *= 0.9;
+        }
+
+        return $optPower;
+    }
+
     public function trainSolarPotentialModel()
     {
         $trainingSet = [];

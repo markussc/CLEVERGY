@@ -210,11 +210,8 @@ class SmartFoxConnector
                             // - PV production
                             // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 90 - 100% shall be managed by the BMS itself)
                             // - prognosis says chances are good to still reach full battery before end of the day
-                            $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
-                            if ($power < 0) {
-                                $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
-                                $idleType = 'charge';
-                            }
+                            // limit the charging power to the value which will lead to full battery by end of todays PV production
+                            $chargeLimit[] = 1000 * $this->solRad->getOptimalChargingPower($chargingPower, 0, $storCapacity/12, (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity);
                         }
                     }
                     if ($smartFoxLatest['StorageSoc'] <= 50 || $smartFoxLatest['PvPower'] < $chargingPower*1000/5) {
