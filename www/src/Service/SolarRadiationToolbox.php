@@ -118,11 +118,11 @@ class SolarRadiationToolbox
         }
         $now = new \DateTime();
         $now = $now->getTimestamp();
-        $tomorrow = new \DateTime('tomorrow');
-        $tomorrow = $tomorrow->getTimestamp();
+        $suninfo = date_sun_info($now, $this->connectors['openweathermap']['lat'], $this->connectors['openweathermap']['lon']);
+        $sunset = $suninfo['sunset'];
         $energyBalance = 0;
         foreach ($this->solarPotentials as $timestamp => $potential) {
-            if ($timestamp < $now || $timestamp > $tomorrow) {
+            if ($timestamp < $now || $timestamp > $sunset) {
                 continue;
             }
             $tDiff = ($timestamp - $now)/3600; // time delta in hours
