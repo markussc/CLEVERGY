@@ -193,7 +193,7 @@ class SmartFoxConnector
                             $smartFoxLatest['StorageSoc'] < 90
                         ) {
                             $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
-                            if ($smartFoxLatest['StorageTemp'] > 29) {
+                            if ($smartFoxLatest['StorageTemp'] > 33) {
                                 // if current battery temperature is quite high, we calculate with limited charging power
                                 $chargingPowerLimited = 0.5 * $chargingPower;
                             } else {
@@ -264,11 +264,11 @@ class SmartFoxConnector
                 if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 40 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
                     // if battery gets really hot or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
                     $msg = 'Excess cell temperature, do not use battery until normalized';
-                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 36) {
                     // battery really warm, limit power to 1/4 of max available power in both directions
                     $chargeLimit[] = $chargingPower*1000 / 4;
                     $dischargeLimit[] = $dischargingPower*1000 / 4;
-                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 32) {
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
                     // battery warm, limit power to 1/2 of max available power in both directions
                     $chargeLimit[] = $chargingPower*1000 / 2;
                     $dischargeLimit[] = $dischargingPower*1000 / 2;
