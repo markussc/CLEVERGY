@@ -215,8 +215,8 @@ class SmartFoxConnector
                         }
                     }
                     if ($smartFoxLatest['StorageSoc'] <= 50 || $smartFoxLatest['PvPower'] < $chargingPower*1000/5) {
-                        // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/10h of charging power)
-                        $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($chargingPower*1000/10) / 3600;
+                        // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/12 of capacity)
+                        $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($storCapacity/12*1000) / 3600;
                         $availableCapacity = $storCapacity*1000*$smartFoxLatest['StorageSoc']/100; // available capacity in Wh
                         if ($hoursUntilRecharging > 0) {
                             $maxP = $availableCapacity / $hoursUntilRecharging;
