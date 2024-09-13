@@ -10,7 +10,8 @@ class NelinorClient:
             "status": 0,
             "power": 0,
             "temp": 20,
-            "soc": 0
+            "soc": 0,
+            "validity": False
         }
 
     def receive(self, ip):
@@ -46,9 +47,11 @@ class NelinorClient:
                     "status": status,
                     "power": charging,
                     "temp": temp,
-                    "soc": soc
+                    "soc": soc,
+                    "validity": True,
                 }
                 if self.data["soc"] > 100 or self.data["soc"] < 0 or (self.data["temp"] == 0 and self.data["power"] == 0):
+                    self.data["validity"] = False
                     return
             except:
                 return

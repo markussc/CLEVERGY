@@ -502,10 +502,14 @@ class SmartFoxConnector
             } else {
                 $latestStorageSocMean = 0;
             }
+            $storageValidity = false;
             foreach ($this->connectors['smartfox']['storage'] as $storage) {
                 if ($storage['type'] == 'nelinor') {
-                    $storageCounter++;
                     $storageData = $this->queryNelinor($storage['ip']);
+                    if ($storageData['validity']) {
+                        $storageValidity = true;
+                        $storageCounter++;
+                    }
                     $arr['StorageDetails'][$storage['name']] = $storageData;
                     if ($storageData['power'] >= 0) {
                         // charging battery
@@ -518,10 +522,16 @@ class SmartFoxConnector
                     $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                 }
             }
-            $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
-            $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
-            $arr['StorageTemp'] = $maxStorageTemp;
-            if ($update) {
+            if ($storageValidity) {
+                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
+                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+                $arr['StorageTemp'] = $maxStorageTemp;
+            } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
+                $arr['StoragePower'] = $latestEntry['StoragePower'];
+                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+            }
+            if ($update && $storageValidity) {
                 // calculate the energy produced at the given power level during one minute
                 $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
                 $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
