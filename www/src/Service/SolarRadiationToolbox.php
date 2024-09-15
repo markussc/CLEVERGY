@@ -144,7 +144,7 @@ class SolarRadiationToolbox
             $maxConsumptionPower *= 0.9;
         }
 
-        return $optPower;
+        return min($optPower, $maxConsumptionPower/0.9);
     }
 
     public function trainSolarPotentialModel()
