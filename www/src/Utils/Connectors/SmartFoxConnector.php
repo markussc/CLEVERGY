@@ -24,6 +24,7 @@ class SmartFoxConnector
     protected $version;
     private $connectors;
     private $pythonHost;
+    private $currentBatteryPower;
 
     public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors, string $python_host)
     {
@@ -34,6 +35,7 @@ class SmartFoxConnector
         $this->version = null;
         $this->connectors = $connectors;
         $this->pythonHost = $python_host;
+        $this->currentBatteryPower = null;
         if (array_key_exists('smartfox', $connectors)) {
             $this->ip = $connectors['smartfox']['ip'];
             if (array_key_exists('version', $connectors['smartfox'])) {
@@ -350,9 +352,17 @@ class SmartFoxConnector
         return $value;
     }
 
+    private function getCurrentBatteryPower()
+    {
+        if ($this->currentBatteryPower === null) {
+            $this->currentBatteryPower = $this->getStorageDetails()['StoragePower'];
+        }
+
+        return $this->currentBatteryPower;
+    }
     private function limitBatteryPower($currentPower, $chargeLimit = null, $dischargeLimit = null)
     {
-        $currentBatteryPower = $this->getStorageDetails()['StoragePower'];
+        $currentBatteryPower = $this->getCurrentBatteryPower();
         $power = $currentPower;
         if ($dischargeLimit !== null && $currentPower - $currentBatteryPower > $dischargeLimit) {
             // limit discharging
