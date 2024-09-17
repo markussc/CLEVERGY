@@ -225,7 +225,7 @@ class SmartFoxConnector
                             $dischargeLimit[] = $maxP * $maxPFactor;
                         }
                     }
-                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15 && $this->getCurrentBatteryPower() < 0) {
                         // battery SOC low over last 48 hours, don't discharge lower than 15%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
@@ -233,7 +233,7 @@ class SmartFoxConnector
                             $idleType = 'discharge';
                         }
                     }
-                    if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10 && $this->getCurrentBatteryPower() < 0) {
                         // low mean soc, cloudy sky expected in near future, therefore do not discharge below 10%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
@@ -241,14 +241,14 @@ class SmartFoxConnector
                             $idleType = 'discharge';
                         }
                     }
-                    if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
+                    if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10 && $this->getCurrentBatteryPower() < 0) {
                         // do not discharge below 10% after 4pm
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 10% after 4pm';
                             $idleType = 'discharge';
                         }
-                    } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
+                    } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5 && $this->getCurrentBatteryPower() < 0) {
                         // do not discharge below 5% before 5am
                         $power = min(10, $currentPower);
                         if ($power > 0) {
