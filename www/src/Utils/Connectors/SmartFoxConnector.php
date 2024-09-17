@@ -256,7 +256,7 @@ class SmartFoxConnector
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
                         // extremely low battery SOC, charge battery to 10% by accepting net consumption
-                        $power = -1000 * $chargingPower;
+                        $power = $this->limitBatteryPower(-1000*$chargingPower, $chargeLimit, 0);
                         $chargeLimit = [];
                         $msg = null;
                         $idleType = null;
