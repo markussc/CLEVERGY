@@ -258,6 +258,8 @@ class SmartFoxConnector
                         // extremely low battery SOC, charge battery to 10% by accepting net consumption
                         $power = -1000 * $chargingPower;
                         $chargeLimit = [];
+                        $msg = null;
+                        $idleType = null;
                     }
                 }
 
