@@ -149,24 +149,28 @@ class SolarRadiationToolbox
 
     public function trainSolarPotentialModel()
     {
-        $trainingSet = [];
-        $smartFoxEntries = $this->em->getRepository(SmartFoxDataStore::class)->getSolarPredictionTrainingData();
-        foreach ($smartFoxEntries as $entry) {
-            $e = json_decode($entry['json_value'], true);
-            if (array_key_exists('pvEnergyPrognosis', $e)) {
-                $prog = reset($e['pvEnergyPrognosis']); // this is the first (current) weather data
-                $trainingSet[] = [
-                    'sunElevation' => $prog['sunPosition'][0],
-                    'sunAzimuth' => $prog['sunPosition'][1],
-                    'cloudiness' => $prog['cloudiness'],
-                    'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
-                    'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
-                    'power' => array_sum($e['PvPower'])/1000, // effective value in kW
-                ];
+        if ($this->predictActive) {
+            $trainingSet = [];
+            $smartFoxEntries = $this->em->getRepository(SmartFoxDataStore::class)->getSolarPredictionTrainingData();
+            foreach ($smartFoxEntries as $entry) {
+                $e = json_decode($entry['json_value'], true);
+                if (array_key_exists('pvEnergyPrognosis', $e)) {
+                    $prog = reset($e['pvEnergyPrognosis']); // this is the first (current) weather data
+                    $trainingSet[] = [
+                        'sunElevation' => $prog['sunPosition'][0],
+                        'sunAzimuth' => $prog['sunPosition'][1],
+                        'cloudiness' => $prog['cloudiness'],
+                        'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
+                        'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
+                        'power' => array_sum($e['PvPower'])/1000, // effective value in kW
+                    ];
+                }
             }
-        }
 
-        $this->trainPrediction($trainingSet);
+            $this->trainPrediction($trainingSet);
+        } else {
+            // prediction not active, do nothing
+        }
     }
 
     private function calculateSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
