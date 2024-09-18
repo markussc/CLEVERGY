@@ -40,6 +40,10 @@ services:
         public: false
         arguments:
             $connectors: "%connectors%"
+    App\Command\DataUpdateCommand:
+        public: false
+        arguments:
+            $delay: '%env(UPDATE_DELAY)%'
     App\Utils\:
         resource: '../src/Utils'
         public: false
