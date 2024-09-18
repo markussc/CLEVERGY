@@ -40,6 +40,10 @@ services:
         public: false
         arguments:
             $connectors: "%connectors%"
+    App\Command\DataUpdateCommand:
+        public: false
+        arguments:
+            $delay: '%env(UPDATE_DELAY)%'
     App\Utils\:
         resource: '../src/Utils'
         public: false
@@ -93,3 +97,8 @@ services:
             $connectors: "%connectors%"
             $python_host: "%env(PYTHON_API_HOST)%"
             $predict_active: "%env(SOLRAD_PREDICT_ACTIVE)%"
+    App\Utils\Connectors\SmartFoxConnector:
+        public: false
+        arguments:
+            $connectors: "%connectors%"
+            $python_host: "%env(PYTHON_API_HOST)%"

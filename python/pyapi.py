@@ -5,15 +5,17 @@ Web service module for interaction with CLEVERGY python modules
 
 #%%Import Statements
 # import web service functionality
-import flask, json
+import flask, json, time
 from flask import jsonify, request
 
 # import our own modules
 from modules.SolRad import SolRad
+from modules.NelinorClient import NelinorClient
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
 solrad = None
+nelinor = None
 
 """
 Service providing human readable information
@@ -63,7 +65,20 @@ def pprediction():
 
     return response
 
+"""
+Get status data from Nelinor battery storage
+"""
+@app.route('/nelinor', methods=['GET'])
+def nelinor():
+    global nelinor
+    ip = request.args.get('ip')
+    if nelinor.data == None or nelinor.data["ip"] != ip or time.time() - nelinor.data["timestamp"] > 60:
+        nelinor.receive(ip)
+
+    return jsonify(nelinor.data)
+
 # run the web service
 if __name__ == "__main__":
     solrad = SolRad()
+    nelinor = NelinorClient()
     app.run(debug = False, host="0.0.0.0", port=8192)

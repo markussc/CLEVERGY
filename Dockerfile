@@ -63,7 +63,7 @@ RUN sed -i -e 's/^ServerTokens\s* .*/ServerTokens Prod/' \
 # add cron jobs
 RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/cron.d/oshans
 RUN echo "5 0 * * * root cd /www && symfony console oshans:devices:configure" >> /etc/cron.d/oshans
-RUN echo "0 */2 * * * root cd /www && symfony console oshans:solrad:training" >> /etc/cron.d/oshans
+RUN echo "0 */24 * * * root cd /www && symfony console oshans:solrad:training" >> /etc/cron.d/oshans
 # delete will run once a year: on january first at 2am
 RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 # backup of database will run daily at the specified hour
@@ -93,5 +93,5 @@ RUN setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 RUN setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 
 # apply database migrations and run apache2 web server
-CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; symfony console oshans:solrad:training ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
+CMD wait-for-it clevergy_db:3306 -- env >> /etc/environment ; symfony console cache:clear ; chmod -R 777 var/ ; symfony console doctrine:migrations:migrate --no-interaction ; service cron start ; /usr/sbin/apache2ctl -D FOREGROUND
 EXPOSE 443

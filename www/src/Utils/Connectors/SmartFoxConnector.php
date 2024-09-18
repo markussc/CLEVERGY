@@ -23,8 +23,10 @@ class SmartFoxConnector
     protected $ip;
     protected $version;
     private $connectors;
+    private $pythonHost;
+    private $currentBatteryPower;
 
-    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors)
+    public function __construct(EntityManagerInterface $em, SolarRadiationToolbox $solRad, HttpClientInterface $client, Array $connectors, string $python_host)
     {
         $this->em = $em;
         $this->solRad = $solRad;
@@ -32,6 +34,8 @@ class SmartFoxConnector
         $this->ip = null;
         $this->version = null;
         $this->connectors = $connectors;
+        $this->pythonHost = $python_host;
+        $this->currentBatteryPower = null;
         if (array_key_exists('smartfox', $connectors)) {
             $this->ip = $connectors['smartfox']['ip'];
             if (array_key_exists('version', $connectors['smartfox'])) {
@@ -66,6 +70,14 @@ class SmartFoxConnector
         return $responseArr;
     }
 
+    public function getStorageDetails()
+    {
+        $arr = [];
+        $storage = $this->addStorage($arr, false);
+
+        return $storage;
+    }
+
     private function getConfig(): array
     {
         $config = null;
@@ -77,7 +89,6 @@ class SmartFoxConnector
             $ts = new \DateTime('-30 minutes');
             $config = [
                 'timestamp' =>['date' => $ts->format('c')],
-                'powerLimitFactor' => 0,
                 'idleType' => null,
             ];
         }
@@ -147,6 +158,18 @@ class SmartFoxConnector
                 $msg = null;
                 $idleType = null;
                 $now = new \DateTime();
+                $chargingPower = 0;
+                $dischargingPower = 0;
+                $storCapacity = 0;
+                $chargeLimit = [];
+                $dischargeLimit = [];
+                if (array_key_exists('storage', $this->connectors['smartfox'])) {
+                    foreach ($this->connectors['smartfox']['storage'] as $stor) {
+                        $chargingPower = $chargingPower + $stor['charging'];
+                        $dischargingPower = $dischargingPower + $stor['discharging'];
+                        $storCapacity = $storCapacity + $stor['capacity'];
+                    }
+                }
                 if (array_key_exists('StorageSocMean', $smartFoxLatest)) {
                     if (
                             $smartFoxLatest['StorageSocMean'] > 50 &&
@@ -167,21 +190,20 @@ class SmartFoxConnector
                     }
                     if (
                             $smartFoxLatest['PvPower'][0] > 0 &&
-                            ($smartFoxLatest['StorageSocMin24h'] > 10 || $smartFoxLatest['StorageSoc'] > 50) &&
                             $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2 &&
-                            $smartFoxLatest['StorageSoc'] < 90
+                            $smartFoxLatest['StorageSoc'] < 95
                         ) {
                             $this->solRad->setSolarPotentials($smartFoxLatest['pvEnergyPrognosis']);
-                            $chargingPower = 0;
-                            $dischargingPower = 0;
-                            $storCapacity = 0;
-                            foreach ($this->connectors['smartfox']['storage'] as $stor) {
-                                $chargingPower = $chargingPower + $stor['charging'];
-                                $dischargingPower = $dischargingPower + $stor['discharging'];
-                                $storCapacity = $storCapacity + $stor['capacity'];
+                            if ($smartFoxLatest['StorageTemp'] > 33) {
+                                // if current battery temperature is quite high, we calculate with limited charging power
+                                $chargingPowerLimited = 0.5 * $chargingPower;
+                            } else {
+                                $chargingPowerLimited = $chargingPower;
                             }
                             // the base load will be assumed with 1/12 of the storage capacity (battery should be sufficient to supply base load for 12 hours)
-                            $storEnergyPotential = $this->solRad->checkEnergyRequest($chargingPower, $dischargingPower, $storCapacity/12);
+                            // as the relevantChargingPower we set the battery capabilities or current PV power, whatever is smaller (idea is to compensate a too optimistic prognosis)
+                            $relevantChargingPower = min($chargingPowerLimited, array_sum($smartFoxLatest['PvPower']));
+                            $storEnergyPotential = $this->solRad->checkEnergyRequest($relevantChargingPower, $dischargingPower, $storCapacity/12);
                             if (
                                 $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
                             ) {
@@ -189,14 +211,21 @@ class SmartFoxConnector
                             // - PV production
                             // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 90 - 100% shall be managed by the BMS itself)
                             // - prognosis says chances are good to still reach full battery before end of the day
-                            $power = max(-10, $currentPower); // announce no negative values in order not to charge battery
-                            if ($power < 0) {
-                                $msg = 'Mean SOC high, do not charge to more than required according to remaining charging time today';
-                                $idleType = 'charge';
-                            }
+                            // limit the charging power to the value which will lead to full battery by end of todays PV production
+                            $chargeLimit[] = 1000 * $this->solRad->getOptimalChargingPower($chargingPower, 0, $storCapacity/12, (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity);
                         }
                     }
-                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15) {
+                    if ($smartFoxLatest['StorageSoc'] <= 50 || $smartFoxLatest['PvPower'] < $chargingPower*1000/5) {
+                        // we need power from the battery; current SOC < 50 or PV power lower than 1/5th of the battery power level --> let's use the available energy evenly until we can expect further charging (min. 1/12 of capacity)
+                        $hoursUntilRecharging = $this->solRad->getWaitingTimeUntilPower($storCapacity/12*1000) / 3600;
+                        $availableCapacity = $storCapacity*1000*$smartFoxLatest['StorageSoc']/100; // available capacity in Wh
+                        if ($hoursUntilRecharging > 0) {
+                            $maxP = $availableCapacity / $hoursUntilRecharging;
+                            $maxPFactor = 2 * ($smartFoxLatest['StorageSoc'] / 50); // @SOC 50: factor=2; @SOC 25: factor=1; @SOC 20: factor=0.8; @SOC 10: factor=0.4; @SOC 5: factor=0.2
+                            $dischargeLimit[] = $maxP * $maxPFactor;
+                        }
+                    }
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $smartFoxLatest['StorageSoc'] <= 15 && $this->getCurrentBatteryPower() < 0) {
                         // battery SOC low over last 48 hours, don't discharge lower than 15%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
@@ -204,7 +233,7 @@ class SmartFoxConnector
                             $idleType = 'discharge';
                         }
                     }
-                    if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10) {
+                    if ($smartFoxLatest['StorageSocMean'] < 20 && $cloudiness > 75 && $smartFoxLatest['StorageSoc'] <= 10 && $this->getCurrentBatteryPower() < 0) {
                         // low mean soc, cloudy sky expected in near future, therefore do not discharge below 10%
                         $power = min(10, $currentPower); // announce no positive values in order not to discharge battery
                         if ($power > 0) {
@@ -212,14 +241,14 @@ class SmartFoxConnector
                             $idleType = 'discharge';
                         }
                     }
-                    if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10) {
+                    if ($now->format('H') >= 16 && $smartFoxLatest['StorageSoc'] <= 10 && $this->getCurrentBatteryPower() < 0) {
                         // do not discharge below 10% after 4pm
                         $power = min(10, $currentPower);
                         if ($power > 0) {
                             $msg = 'Do not discharge below 10% after 4pm';
                             $idleType = 'discharge';
                         }
-                    } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5) {
+                    } elseif ($now->format('H') < 5 && $smartFoxLatest['StorageSoc'] <= 5 && $this->getCurrentBatteryPower() < 0) {
                         // do not discharge below 5% before 5am
                         $power = min(10, $currentPower);
                         if ($power > 0) {
@@ -229,39 +258,54 @@ class SmartFoxConnector
                     }
                     if ($smartFoxLatest['StorageSocMean'] < 15 && $smartFoxLatest['StorageSoc'] <= 10) {
                         // extremely low battery SOC, charge battery to 10% by accepting net consumption
-                        $power = -100;
+                        $power = $this->limitBatteryPower(-1000*$chargingPower, $chargeLimit, 0);
+                        $chargeLimit = [];
+                        $msg = null;
+                        $idleType = null;
                     }
                 }
-                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 36 || $smartFoxLatest['StorageTemp'] < 5)) {
-                    // if battery gets really warm or is very cold, do not charge/discharge
+
+                if (array_key_exists('StorageTemp', $smartFoxLatest) && ($smartFoxLatest['StorageTemp'] > 40 || ($smartFoxLatest['StorageTemp'] < 5 && $smartFoxLatest['StorageTemp'] !== 0))) {
+                    // if battery gets really hot or is very cold, do not charge/discharge (ignore temp = 0, because this indicates a communication issue)
                     $msg = 'Excess cell temperature, do not use battery until normalized';
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 36) {
+                    // battery really warm, limit power to 1/4 of max available power in both directions
+                    $chargeLimit[] = $chargingPower*1000 / 4;
+                    $dischargeLimit[] = $dischargingPower*1000 / 4;
+                } elseif (array_key_exists('StorageTemp', $smartFoxLatest) && $smartFoxLatest['StorageTemp'] > 34) {
+                    // battery warm, limit power to 1/2 of max available power in both directions
+                    $chargeLimit[] = $chargingPower*1000 / 2;
+                    $dischargeLimit[] = $dischargingPower*1000 / 2;
                 }
+                if (count($chargeLimit) || count($dischargeLimit)) {
+                    if (count($chargeLimit)) {
+                        $chargeLimit = min($chargeLimit);
+                    } else {
+                        $chargeLimit = null;
+                    }
+                    if (count($dischargeLimit)) {
+                        $dischargeLimit = min($dischargeLimit);
+                    } else {
+                        $dischargeLimit = null;
+                    }
+                    $power = $this->limitBatteryPower($currentPower, $chargeLimit, $dischargeLimit);
+                }
+
                 $config = $this->getConfig();
-                if ($msg === null && ((($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null) && new \DateTime($config['timestamp']['date']) < new \DateTime('- 5 minutes')) || new \DateTime($config['timestamp']['date']) < new \DateTime('- 60 minutes'))) {
+
+                if ($msg === null && ($power > 50 && $config['idleType'] == 'charge' || $power < -50 && $config['idleType'] == 'discharge' || $config['idleType'] == null || new \DateTime($config['timestamp']['date']) < new \DateTime('- 15 minutes'))) {
                     $value = ['total_act_power' => $power];
-                    $config['powerLimitFactor'] = 0;
                     $config['idleType'] = null;
+                    $config['timestamp'] = new \DateTime('- 60 minutes');
                 } else {
                     if (!$msg) {
                         $msg = 'waiting for restart of charging and discharching';
                     }
-                    if ($config['powerLimitFactor'] == 0) {
-                        // no or outdated power limitation
-                        $power = $power;
-                        $config['powerLimitFactor'] = 1;
-                        $config['idleType'] = $idleType;
+                    $value = ['message' => $msg];
+                    if (array_key_exists('StoragePower', $smartFoxLatest) && ($smartFoxLatest['StoragePower'] < 35 && $smartFoxLatest['StoragePower'] > -35)) {
+                        // battery idling, set the timestamp and idleType now
                         $config['timestamp'] = new \DateTime();
-                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } elseif ($config['powerLimitFactor'] < min(4, abs($smartFoxLatest['StoragePower']/30) - 1)) {
-                        if ($smartFoxLatest['StoragePower'] > 0) {
-                            $power = min(1000, max(0, $smartFoxLatest['StoragePower'] - ($config['powerLimitFactor']-1) * 100));
-                        } else {
-                            $power = max(-1000, min(0, $smartFoxLatest['StoragePower'] + ($config['powerLimitFactor']-1) * 100));
-                        }
-                        $config['powerLimitFactor'] = $config['powerLimitFactor'] + 1;
-                        $value = ['message' => 'starting to limit power by factor ' . $config['powerLimitFactor'], 'total_act_power' => $power];
-                    } else {
-                        $value = ['message' => $msg];
+                        $config['idleType'] = $idleType;
                     }
                 }
                 $this->saveConfig($config);
@@ -306,6 +350,38 @@ class SmartFoxConnector
         }
 
         return $value;
+    }
+
+    private function getCurrentBatteryPower()
+    {
+        if ($this->currentBatteryPower === null) {
+            $this->currentBatteryPower = $this->getStorageDetails()['StoragePower'];
+        }
+
+        return $this->currentBatteryPower;
+    }
+    private function limitBatteryPower($currentPower, $chargeLimit = null, $dischargeLimit = null)
+    {
+        $currentBatteryPower = $this->getCurrentBatteryPower();
+        $power = $currentPower;
+        if ($dischargeLimit !== null && $currentPower - $currentBatteryPower > $dischargeLimit) {
+            // limit discharging
+            $power = min($dischargeLimit, $dischargeLimit + $currentBatteryPower);
+        } elseif ($chargeLimit !== null && $currentPower - $currentBatteryPower < -1 * $chargeLimit) {
+            // limit charging
+            $power = -1 * min($chargeLimit, ($chargeLimit - $currentBatteryPower));
+        }
+
+        if ($dischargeLimit !== null) {
+            // prevent annoucement of any values larger than the discharge limit if set
+            $power = max(-1 * $dischargeLimit, $power);
+        }
+        if ($chargeLimit !== null) {
+            // prevent annoucement of any values larger than the charge limit if set
+            $power = min($chargeLimit, $power);
+        }
+
+        return $power;
     }
 
     private function getFromREG9TE($full = true)
@@ -417,63 +493,70 @@ class SmartFoxConnector
     {
         if (array_key_exists('smartfox', $this->connectors) && array_key_exists('storage', $this->connectors['smartfox'])) {
             $latestEntry = $this->getAllLatest();
-            if ($update) {
-                $storageCounter = 0;
-                $totalStoragePowerIn = 0;
-                $totalStoragePowerOut = 0;
-                $totalStorageSoc = 0;
-                $maxStorageTemp = 0;
-                if (array_key_exists('StorageEnergyIn', $latestEntry)) {
-                    $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
-                } else {
-                    $latestStorageEnergyIn = 0;
-                }
-                if (array_key_exists('StorageEnergyOut', $latestEntry)) {
-                    $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
-                } else {
-                    $latestStorageEnergyOut = 0;
-                }
-                if (array_key_exists('StorageSocMean', $latestEntry)) {
-                    $latestStorageSocMean = $latestEntry['StorageSocMean'];
-                } else {
-                    $latestStorageSocMean = 0;
-                }
-                foreach ($this->connectors['smartfox']['storage'] as $storage) {
-                    if ($storage['type'] == 'nelinor') {
+            
+            $storageCounter = 0;
+            $totalStoragePowerIn = 0;
+            $totalStoragePowerOut = 0;
+            $totalStorageSoc = 0;
+            $maxStorageTemp = 0;
+            if (array_key_exists('StorageEnergyIn', $latestEntry)) {
+                $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
+            } else {
+                $latestStorageEnergyIn = 0;
+            }
+            if (array_key_exists('StorageEnergyOut', $latestEntry)) {
+                $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
+            } else {
+                $latestStorageEnergyOut = 0;
+            }
+            if (array_key_exists('StorageSocMean', $latestEntry)) {
+                $latestStorageSocMean = $latestEntry['StorageSocMean'];
+            } else {
+                $latestStorageSocMean = 0;
+            }
+            $storageValidity = false;
+            foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                if ($storage['type'] == 'nelinor') {
+                    $storageData = $this->queryNelinor($storage['ip']);
+                    if ($storageData['validity']) {
+                        $storageValidity = true;
                         $storageCounter++;
-                        $storageData = $this->queryNelinor($storage['ip']);
-                        $arr['StorageDetails'][$storage['name']] = $storageData;
-                        if ($storageData['power'] >= 0) {
-                            // charging battery
-                            $totalStoragePowerIn += $storageData['power'];
-                        } else {
-                            // uncharging battery
-                            $totalStoragePowerOut += $storageData['power'];
-                        }
-                        $totalStorageSoc += $storageData['soc'];
-                        $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                     }
+                    $arr['StorageDetails'][$storage['name']] = $storageData;
+                    if ($storageData['power'] >= 0) {
+                        // charging battery
+                        $totalStoragePowerIn += $storageData['power'];
+                    } else {
+                        // uncharging battery
+                        $totalStoragePowerOut += $storageData['power'];
+                    }
+                    $totalStorageSoc += $storageData['soc'];
+                    $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                 }
+            }
+            if ($storageValidity) {
+                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
+                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+                $arr['StorageTemp'] = $maxStorageTemp;
+            } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
+                $arr['StoragePower'] = $latestEntry['StoragePower'];
+                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+            }
+            if ($update && $storageValidity) {
                 // calculate the energy produced at the given power level during one minute
                 $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
                 $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
-                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
-                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
-                $arr['StorageTemp'] = $maxStorageTemp;
                 $arr['StorageSocMin24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc');
                 $arr['StorageSocMin48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc');
                 $arr['StorageSocMax24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 24*60, 'StorageSoc');
                 $arr['StorageSocMax48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc');
             } else {
                 // add existing data
-                $arr['StorageDetails'] = $latestEntry['StorageDetails'];
                 $arr['StorageEnergyIn'] = $latestEntry['StorageEnergyIn'];
                 $arr['StorageEnergyOut'] = $latestEntry['StorageEnergyOut'];
-                $arr['StoragePower'] = $latestEntry['StoragePower'];
-                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
                 $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
-                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
                 $arr['StorageSocMin24h'] = $latestEntry['StorageSocMin24h'];
                 $arr['StorageSocMin48h'] = $latestEntry['StorageSocMin48h'];
                 $arr['StorageSocMax24h'] = $latestEntry['StorageSocMax24h'];
@@ -520,13 +603,30 @@ class SmartFoxConnector
 
     private function queryNelinor($ip, $counter = 0)
     {
+        $retArr = $this->queryNelinorPythonApi($ip);
+
+        // retry if received values might be corrupted
+        if ($retArr['status'] == 0 && $counter < 1) {
+            // maybe offline, try again once
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
+            sleep($counter + 1);
+            // very unlikely temperature, try again twice
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
+            // rather unlikely to uncharge will full power while soc is zero, try again twice
+            sleep($counter + 1);
+            $retArr = $this->queryNelinor($ip, $counter+1);
+        }
+        return $retArr;
+    }
+
+    // note: this method is deprecated and shall not be used anymore!
+    private function queryNelinorSocket($ip)
+    {
         $port = 9865; // fixed port of nelinor
-        $retArr = [
-            'status' => 0,
-            'power' => 0,
-            'temp' => 0,
-            'soc' => 0
-        ];
+        $retArr = null;
         $socket = null;
         try {
             $buf = '';
@@ -560,19 +660,28 @@ class SmartFoxConnector
             }
         }
 
-        // retry if received values might be corrupted
-        if ($retArr['status'] == 0 && $counter < 1) {
-            // maybe offline, try again once
-            sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter+1);
-        } elseif (($retArr['temp'] == -100 || $retArr['temp'] == 100) && $counter < 2) {
-            sleep($counter + 1);
-            // very unlikely temperature, try again twice
-            $retArr = $this->queryNelinor($ip, $counter+1);
-        } elseif ($retArr['soc'] == 0 && $retArr['power'] == -2300 && $counter < 2) {
-            // rather unlikely to uncharge will full power while soc is zero, try again twice
-            sleep($counter + 1);
-            $retArr = $this->queryNelinor($ip, $counter+1);
+        return $retArr;
+    }
+
+    private function queryNelinorPythonApi($ip)
+    {
+        $retArr = null;
+        try {
+            $url = $this->pythonHost . '/nelinor?ip=' . $ip;
+            $response = $this->client->request('GET', $url,['timeout' => 1]);
+            $content = $response->getContent();
+            $retArr = json_decode($content, true);
+        } catch (\Exception $e) {
+            // do nothing
+        }
+
+        if (!is_array($retArr)) {
+            $retArr = [
+                'status' => 0,
+                'power' => 0,
+                'temp' => 0,
+                'soc' => 0
+            ];
         }
         return $retArr;
     }

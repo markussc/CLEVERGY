@@ -17,10 +17,12 @@ use App\Utils\LogicProcessor;
 class DataUpdateCommand extends Command
 {
     private $logic;
+    private $delay;
 
-    public function __construct(LogicProcessor $logic)
+    public function __construct(LogicProcessor $logic, $delay)
     {
         $this->logic = $logic;
+        $this->delay = $delay;
 
         parent::__construct();
     }
@@ -41,6 +43,7 @@ class DataUpdateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        sleep($this->delay);
         $this->logic->execute();
 
         return 0;

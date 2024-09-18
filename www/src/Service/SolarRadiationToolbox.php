@@ -71,6 +71,9 @@ class SolarRadiationToolbox
         $tomorrow = new \DateTime('tomorrow');
         $maxPower = 0;
         foreach ($this->solarPotentials as $potential) {
+            if (is_array($potential['datetime']) && array_key_exists('date', $potential['datetime'])) {
+                $potential['datetime'] = new \DateTime($potential['datetime']['date'], new \DateTimeZone($potential['datetime']['timezone']));
+            }
             if ($potential['datetime']->getTimestamp() < $tomorrow->getTimestamp()) {
                 $maxPower = max($maxPower, $potential['pPotTot']);
             }
@@ -91,6 +94,9 @@ class SolarRadiationToolbox
         $waitingTime = null;
         foreach ($this->solarPotentials as $potential) {
             if ($potential['pPotTot']*1000 >= $power) {
+                if (is_array($potential['datetime']) && array_key_exists('date', $potential['datetime'])) {
+                    $potential['datetime'] = new \DateTime($potential['datetime']['date'], new \DateTimeZone($potential['datetime']['timezone']));
+                }
                 $waitingTime = max(0, $potential['datetime']->getTimestamp() - $now->getTimestamp());
                 break;
             }
@@ -112,11 +118,11 @@ class SolarRadiationToolbox
         }
         $now = new \DateTime();
         $now = $now->getTimestamp();
-        $tomorrow = new \DateTime('tomorrow');
-        $tomorrow = $tomorrow->getTimestamp();
+        $suninfo = date_sun_info($now, $this->connectors['openweathermap']['lat'], $this->connectors['openweathermap']['lon']);
+        $sunset = $suninfo['sunset'];
         $energyBalance = 0;
         foreach ($this->solarPotentials as $timestamp => $potential) {
-            if ($timestamp < $now || $timestamp > $tomorrow) {
+            if ($timestamp < $now || $timestamp > $sunset) {
                 continue;
             }
             $tDiff = ($timestamp - $now)/3600; // time delta in hours
@@ -128,26 +134,43 @@ class SolarRadiationToolbox
         return $energyBalance;
     }
 
-    public function trainSolarPotentialModel()
+    /*
+    * Approximates the optimal charging power to reach an energyNeed given the remaining solarPotential of the day
+    */
+    public function getOptimalChargingPower($maxConsumptionPower, $maxDeliveryPower, $baseLoad, $energyNeed)
     {
-        $trainingSet = [];
-        $smartFoxEntries = $this->em->getRepository(SmartFoxDataStore::class)->getSolarPredictionTrainingData();
-        foreach ($smartFoxEntries as $entry) {
-            $e = json_decode($entry['json_value'], true);
-            if (array_key_exists('pvEnergyPrognosis', $e)) {
-                $prog = reset($e['pvEnergyPrognosis']); // this is the first (current) weather data
-                $trainingSet[] = [
-                    'sunElevation' => $prog['sunPosition'][0],
-                    'sunAzimuth' => $prog['sunPosition'][1],
-                    'cloudiness' => $prog['cloudiness'],
-                    'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
-                    'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
-                    'power' => array_sum($e['PvPower'])/1000, // effective value in kW
-                ];
-            }
+        $optPower = $maxConsumptionPower;
+        while ($this->checkEnergyRequest($maxConsumptionPower, $maxDeliveryPower, $baseLoad) > $energyNeed) {
+            $maxConsumptionPower *= 0.9;
         }
 
-        $this->trainPrediction($trainingSet);
+        return min($optPower, $maxConsumptionPower/0.9);
+    }
+
+    public function trainSolarPotentialModel()
+    {
+        if ($this->predictActive) {
+            $trainingSet = [];
+            $smartFoxEntries = $this->em->getRepository(SmartFoxDataStore::class)->getSolarPredictionTrainingData();
+            foreach ($smartFoxEntries as $entry) {
+                $e = json_decode($entry['json_value'], true);
+                if (array_key_exists('pvEnergyPrognosis', $e)) {
+                    $prog = reset($e['pvEnergyPrognosis']); // this is the first (current) weather data
+                    $trainingSet[] = [
+                        'sunElevation' => $prog['sunPosition'][0],
+                        'sunAzimuth' => $prog['sunPosition'][1],
+                        'cloudiness' => $prog['cloudiness'],
+                        'rain' => array_key_exists('rain', $prog) ? $prog['rain'] : 0,
+                        'snow' => array_key_exists('snow', $prog) ? $prog['snow'] : 0,
+                        'power' => array_sum($e['PvPower'])/1000, // effective value in kW
+                    ];
+                }
+            }
+
+            $this->trainPrediction($trainingSet);
+        } else {
+            // prediction not active, do nothing
+        }
     }
 
     private function calculateSolarPotentials(\DateTime $from = new \DateTime('-15 minutes'), \DateTime $until = new \DateTime('+ 2 days'))
@@ -185,8 +208,8 @@ class SolarRadiationToolbox
                 $pPotTot = 0;
                 foreach ($this->connectors['smartfox']['pv']['panels'] as $pv) {
                     $pPot = $pv['pmax'] * sin(deg2rad($sunPosition[0])) * $corrFact * (2+abs(sin(deg2rad($sunPosition[0] - $pv['angle'])) * cos(deg2rad($sunPosition[1] - $pv['orientation']))))/3 * (110-$sunClimate['cloudiness'])/110 * (100-min(100, 5*($sunClimate['rain'] + $sunClimate['snow'])))/100;
-                    if ($sunClimate['temperature'] > 25) {
-                        $pPot = $pPot - 1/3*($sunClimate['temperature'] - 25) * $pPot/100; // decrease by 1% per 3° above 25°C
+                    if ($sunClimate['temperature'] > 20) {
+                        $pPot = $pPot - 5/2*($sunClimate['temperature'] - 20) * $pPot/100; // decrease by 5% per 2° above 20°C (approximation as we do not know the panel's temperature)
                     }
                     $potentials[] = [
                         'panel' => $pv,
