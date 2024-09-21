@@ -227,7 +227,7 @@ class DefaultController extends AbstractController
     }
 
     #[Route(path: '/prognosis', name: 'prognosis')]
-    public function prognosis(SolarRadiationToolbox $srt): \Symfony\Component\HttpFoundation\Response
+    public function prognosis(SolarRadiationToolbox $srt): Response
     {
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
             $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());

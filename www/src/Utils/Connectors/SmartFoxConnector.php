@@ -518,7 +518,7 @@ class SmartFoxConnector
             foreach ($this->connectors['smartfox']['storage'] as $storage) {
                 if ($storage['type'] == 'nelinor') {
                     $storageData = $this->queryNelinor($storage['ip']);
-                    if ($storageData['validity']) {
+                    if (array_key_exists('validity', $storageData) && $storageData['validity']) {
                         $storageValidity = true;
                         $storageCounter++;
                     }
