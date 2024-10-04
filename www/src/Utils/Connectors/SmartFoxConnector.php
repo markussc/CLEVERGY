@@ -372,11 +372,11 @@ class SmartFoxConnector
             $power = -1 * min($chargeLimit, ($chargeLimit - $currentBatteryPower));
         }
 
-        if ($dischargeLimit !== null) {
+        if ($dischargeLimit !== null && $currentBatteryPower < 0) {
             // prevent annoucement of any values larger than the discharge limit if set
             $power = min($dischargeLimit, $power);
         }
-        if ($chargeLimit !== null) {
+        if ($chargeLimit !== null && $currentBatteryPower > 0) {
             // prevent annoucement of any values larger than the charge limit if set
             $power = max(-1*$chargeLimit, $power);
         }
