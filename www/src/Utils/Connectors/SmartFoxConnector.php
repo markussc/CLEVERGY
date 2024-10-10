@@ -189,6 +189,7 @@ class SmartFoxConnector
                         $power = $currentPower;
                     }
                     if (
+                            $smartFoxLatest['StorageSocMean'] > 50 &&
                             $smartFoxLatest['PvPower'][0] > 0 &&
                             $smartFoxLatest['StorageSoc'] > ($smartFoxLatest['StorageSocMax48h'] - $smartFoxLatest['StorageSocMin48h'])/2 &&
                             $smartFoxLatest['StorageSoc'] < 95
@@ -208,6 +209,7 @@ class SmartFoxConnector
                                 $storEnergyPotential > 1.2 * (100-$smartFoxLatest['StorageSoc'])/100 * $storCapacity
                             ) {
                             // if we have
+                            // - relatively high mean SOC over last 48 hours
                             // - PV production
                             // - current SOC higher than half of mean of last 48h's max/min values but below 95% (values between 90 - 100% shall be managed by the BMS itself)
                             // - prognosis says chances are good to still reach full battery before end of the day
