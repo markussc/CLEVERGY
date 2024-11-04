@@ -1,9 +1,9 @@
 import pandas
-from sklearn import linear_model
+from sklearn.ensemble import RandomForestRegressor
 from io import StringIO
 
 class SolRad:
-    regr = None
+    model = None
 
     """
     Train the predictor model using existing data
@@ -14,8 +14,12 @@ class SolRad:
         X = df[['sunElevation', 'sunAzimuth', 'cloudiness', 'rain', 'snow']]
         y = df['power']
 
-        self.regr = linear_model.LinearRegression()
-        self.regr.fit(X.values, y)
+        # Modell erstellen
+        self.model = RandomForestRegressor(n_estimators=100, random_state=42)  # Hier kannst du Hyperparameter anpassen
+
+        # Modell trainieren
+        self.model.fit(X, y)
+
         return
 
     """
@@ -23,8 +27,8 @@ class SolRad:
     """
     def predict(self, input):
         #predict the PV power based on the passed variables:
-        if self.regr is not None:
-            predictedPower = self.regr.predict(input)
+        if self.model is not None:
+            predictedPower = self.model.predict(input)
         else:
             predictedPower = None
         return predictedPower
