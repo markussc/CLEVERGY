@@ -308,4 +308,29 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
 
         return $entities;
     }
+
+    public function getPvProductionLastYear($ip)
+    {
+        $start = new \DateTime('now');
+        $start->modify('-1 year');
+        $end = new \DateTime('now');
+        $qbStart = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp >= :start')
+            ->andWhere('e.timestamp < :end')
+            ->setParameter('ip', $ip)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('e.timestamp', 'asc');
+        $data = $qbStart->getQuery()->getResult();
+        $result = [];
+        foreach ($data as $d) {
+            $dArr = $d->getData();
+            if (is_array($dArr) && array_key_exists('PvPower', $dArr)) {
+                $result[$d->getTimestamp()->getTimestamp()] = $dArr['PvPower'][0];
+            }
+        }
+
+        return $result;
+    }
 }

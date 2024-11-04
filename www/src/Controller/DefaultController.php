@@ -831,4 +831,29 @@ class DefaultController extends AbstractController
         $solPot = $solrad->getSolarPotentials();
         return new Response(json_encode($solPot));
     }
+
+    /**
+     * extract pv production data for the last year
+     */
+    #[Route(path: '/pv_data', name: 'pv_data')]
+    public function getPvData()
+    {
+        $data = $this->em->getRepository(SmartFoxDataStore::class)->getPvProductionLastYear($this->smartfox->getIp());
+        $fp = fopen('php://temp', 'w');
+        fputcsv($fp, ['timestamp', 'datetime', 'pvPower[kW]']);
+        foreach ($data as $timestamp => $power) {
+            $datetime = new \DateTime();
+            $datetime->setTimestamp($timestamp);
+            fputcsv($fp, [$timestamp, $datetime->format("d.Y.M H:i"), $power]);
+        }
+
+        rewind($fp);
+        $response = new Response(stream_get_contents($fp));
+        fclose($fp);
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="pv_production.csv"');
+
+        return $response;
+    }
 }
