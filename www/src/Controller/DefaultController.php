@@ -831,4 +831,38 @@ class DefaultController extends AbstractController
         $solPot = $solrad->getSolarPotentials();
         return new Response(json_encode($solPot));
     }
+
+    /**
+     * extract pv production data for the last year
+     */
+    #[Route(path: '/pv_data', name: 'pv_data')]
+    public function getPvData(Request $request)
+    {
+        $fromParam = $from = $request->query->get("from");
+        $toParam = $request->query->get("to");
+        if ($fromParam && $toParam) {
+            $from = new \DateTime($fromParam);
+            $to = new \DateTime($toParam);
+        } else {
+            $from = new \DateTime('-1 days');
+            $to = new \DateTime('now');
+        }
+        $data = $this->em->getRepository(SmartFoxDataStore::class)->getPvProduction($this->smartfox->getIp(), $from, $to);
+        $fp = fopen('php://temp', 'w');
+        fputcsv($fp, ['timestamp', 'datetime', 'pvPower[W]']);
+        foreach ($data as $timestamp => $power) {
+            $datetime = new \DateTime();
+            $datetime->setTimestamp($timestamp);
+            fputcsv($fp, [$timestamp, $datetime->format("d.Y.M H:i"), $power]);
+        }
+
+        rewind($fp);
+        $response = new Response(stream_get_contents($fp));
+        fclose($fp);
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="pv_production_'.$from->format("d.m.Y H:i").'-'.$to->format("d.m.Y H:i").'.csv"');
+
+        return $response;
+    }
 }

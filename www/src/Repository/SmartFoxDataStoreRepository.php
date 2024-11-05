@@ -308,4 +308,26 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
 
         return $entities;
     }
+
+    public function getPvProduction($ip, $from, $to)
+    {
+        $qbStart = $this->createQueryBuilder('e')
+            ->where('e.connectorId = :ip')
+            ->andWhere('e.timestamp >= :from')
+            ->andWhere('e.timestamp < :to')
+            ->setParameter('ip', $ip)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->orderBy('e.timestamp', 'asc');
+        $data = $qbStart->getQuery()->getResult();
+        $result = [];
+        foreach ($data as $d) {
+            $dArr = $d->getData();
+            if (is_array($dArr) && array_key_exists('PvPower', $dArr) && is_array($dArr['PvPower']) && array_key_exists(0, $dArr['PvPower'])) {
+                $result[$d->getTimestamp()->getTimestamp()] = $dArr['PvPower'][0];
+            }
+        }
+
+        return $result;
+    }
 }
