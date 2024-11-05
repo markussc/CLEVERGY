@@ -326,7 +326,7 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
             if (is_array($dArr) && array_key_exists('PvPower', $dArr) && is_array($dArr['PvPower']) && array_key_exists(0, $dArr['PvPower'])) {
                 $result[$d->getTimestamp()->getTimestamp()] = $dArr['PvPower'][0];
             }
-            $this->detach($d[0]);
+            $this->getEntityManager()->detach($d);
         }
 
         return $result;
