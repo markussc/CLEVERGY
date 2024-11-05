@@ -836,11 +836,20 @@ class DefaultController extends AbstractController
      * extract pv production data for the last year
      */
     #[Route(path: '/pv_data', name: 'pv_data')]
-    public function getPvData()
+    public function getPvData(Request $request)
     {
-        $data = $this->em->getRepository(SmartFoxDataStore::class)->getPvProductionLastYear($this->smartfox->getIp());
+        $fromParam = $from = $request->query->get("from");
+        $toParam = $request->query->get("to");
+        if ($fromParam && $toParam) {
+            $from = new \DateTime($fromParam);
+            $to = new \DateTime($toParam);
+        } else {
+            $from = new \DateTime('-1 days');
+            $to = new \DateTime('now');
+        }
+        $data = $this->em->getRepository(SmartFoxDataStore::class)->getPvProduction($this->smartfox->getIp(), $from, $to);
         $fp = fopen('php://temp', 'w');
-        fputcsv($fp, ['timestamp', 'datetime', 'pvPower[kW]']);
+        fputcsv($fp, ['timestamp', 'datetime', 'pvPower[W]']);
         foreach ($data as $timestamp => $power) {
             $datetime = new \DateTime();
             $datetime->setTimestamp($timestamp);
@@ -852,7 +861,7 @@ class DefaultController extends AbstractController
         fclose($fp);
 
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="pv_production.csv"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="pv_production_'.$from->format("d.m.Y H:i").'-'.$to->format("d.m.Y H:i").'.csv"');
 
         return $response;
     }
