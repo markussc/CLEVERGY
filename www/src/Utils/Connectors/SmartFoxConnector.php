@@ -265,7 +265,7 @@ class SmartFoxConnector
                         } else {
                             $chargeLimit = null;
                         }
-                        $power = $this->limitBatteryPower(-1000*$chargingPower, min($chargeLimit), null);
+                        $power = $this->limitBatteryPower(-1000*$chargingPower, $chargeLimit, null);
                         $chargeLimit = [];
                         $msg = null;
                         $idleType = null;
