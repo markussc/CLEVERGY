@@ -35,14 +35,18 @@ class WemConnector extends ModbusTcpConnector
     public const MODBUSTCP_HC2 = 41208;
     public const MODBUSTCP_MODE = 30006;
 
+    private $connectors;
+
     public function __construct(EntityManagerInterface $em, Array $connectors)
     {
         $this->em = $em;
-        if (array_key_exists('wem', $connectors)) {
-            $this->ip = $connectors['wem']['ip'];
-            $this->port = $connectors['wem']['port'];
+        $this->connectors = $connectors;
+        if (array_key_exists('wem', $this->connectors)) {
+            $this->ip = $this->connectors['wem']['ip'];
+            $this->port = $$this->connectors['wem']['port'];
             parent::__construct();
         }
+        $this->connectors = $connectors;
     }
 
     public function getAllLatest()
@@ -135,6 +139,13 @@ class WemConnector extends ModbusTcpConnector
      */
     private function setHeatCircle1($value = 75): void
     {
+        // round up to next integer dividable by 5
+        $value = intval($value);
+        $value = ceil($value / 5) * 5;
+        // set min/max
+        $value = min(0, $value);
+        $value = max(150, $value);
+
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
 
@@ -143,6 +154,13 @@ class WemConnector extends ModbusTcpConnector
      */
     private function setHeatCircle2($value = 75): void
     {
+        // round up to next integer dividable by 5
+        $value = intval($value);
+        $value = ceil($value / 5) * 5;
+        // set min/max
+        $value = min(0, $value);
+        $value = max(150, $value);
+
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
     }
 
