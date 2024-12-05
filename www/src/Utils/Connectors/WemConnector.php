@@ -143,8 +143,8 @@ class WemConnector extends ModbusTcpConnector
         $value = intval($value);
         $value = ceil($value / 5) * 5;
         // set min/max
-        $value = min(0, $value);
-        $value = max(150, $value);
+        $value = max(0, $value);
+        $value = min(150, $value);
 
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
@@ -158,8 +158,8 @@ class WemConnector extends ModbusTcpConnector
         $value = intval($value);
         $value = ceil($value / 5) * 5;
         // set min/max
-        $value = min(0, $value);
-        $value = max(150, $value);
+        $value = max(0, $value);
+        $value = min(150, $value);
 
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
     }

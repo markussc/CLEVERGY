@@ -197,8 +197,8 @@ class PcoWebConnector extends ModbusTcpConnector
     {
         // set min/max
         $value = intval($value);
-        $value = min(0, $value);
-        $value = max(38, $value);
+        $value = max(0, $value);
+        $value = min(38, $value);
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC1, $value);
     }
 
@@ -206,8 +206,8 @@ class PcoWebConnector extends ModbusTcpConnector
     {
         // set min/max
         $value = intval($value);
-        $value = min(0, $value);
-        $value = max(38, $value);
+        $value = max(0, $value);
+        $value = min(38, $value);
 
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_SELECT_HC2, 2);
         $this->writeBytesFc3ModbusTcp(self::MODBUSTCP_HC2, $value);
