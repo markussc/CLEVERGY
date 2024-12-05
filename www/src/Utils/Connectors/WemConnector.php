@@ -43,7 +43,7 @@ class WemConnector extends ModbusTcpConnector
         $this->connectors = $connectors;
         if (array_key_exists('wem', $this->connectors)) {
             $this->ip = $this->connectors['wem']['ip'];
-            $this->port = $$this->connectors['wem']['port'];
+            $this->port = $this->connectors['wem']['port'];
             parent::__construct();
         }
         $this->connectors = $connectors;
