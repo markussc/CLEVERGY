@@ -68,7 +68,7 @@ class LogicProcessor
     private $avg1Power;
     private $heatcurveCorrection;
 
-    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, SolarRadiationToolbox $solRad, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, SolarRadiationToolbox $solRad, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, $heatcurveCorrection, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;
@@ -90,6 +90,7 @@ class LogicProcessor
         $this->energyLowRate = $energyLowRate;
         $this->minInsideTemp = $minInsideTemp;
         $this->nightTemp = $nightTemp;
+        $this->heatcurveCorrection = $heatcurveCorrection;
         $this->connectors = $connectors;
         $this->translator = $translator;
 
@@ -99,11 +100,6 @@ class LogicProcessor
         $this->avgPvPower = null;
         $this->shellyLatest = null;
         $this->mystromLatest = null;
-        if (array_key_exists('heatcurveCorrection', $this->connectors)) {
-            $this->heatcurveCorrection = $this->connectors['heatcurveCorrection'];
-        } else {
-            $this->heatcurveCorrection = 0;
-        }
     }
 
     public function execute()

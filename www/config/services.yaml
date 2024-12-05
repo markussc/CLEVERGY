@@ -59,6 +59,7 @@ services:
             $energyLowRate: "%energy_low_rate%"
             $minInsideTemp: "%min_inside_temp%"
             $nightTemp: "%night_temp%"
+            $heatcurveCorrection: "%heatcurve_correction%"
             $connectors: "%connectors%"
     App\Utils\Connectors\:
         resource: '../src/Utils/Connectors'
