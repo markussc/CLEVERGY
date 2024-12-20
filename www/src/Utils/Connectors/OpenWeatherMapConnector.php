@@ -213,11 +213,11 @@ class OpenWeatherMapConnector
         }
         $maxTemp = null;
         if (isset($forecastData['list'])) {
+            $now = new \DateTime();
             foreach ($forecastData['list'] as $elem) {
-                $now = new \DateTime();
-                $dateTime->setTimestamp($elem['dt']);
+                $now->setTimestamp($elem['dt']);
                 $hours24 = new \DateTime('+ 24 hours');
-                if ($dateTime < $hours24) {
+                if ($now < $hours24) {
                     if ($maxTemp === null) {
                         $maxTemp = $elem['main']['temp']-273.15;
                     } else {

@@ -268,3 +268,4 @@ parameters:
             - 7
     min_inside_temp: 20 # minimum inside temperature to be adjusted for 
     night_temp: 20 # inside temp during night time
+    heatcurve_correction: 0 # for pcoweb: set integer value, reasonable values are between -10 and 10; for wem: set integer value dividable by 5, reasonable values are between -20 and 20

@@ -66,8 +66,9 @@ class LogicProcessor
     private $minInsideTemp;
     private $nightTemp;
     private $avg1Power;
+    private $heatcurveCorrection;
 
-    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, SolarRadiationToolbox $solRad, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, Array $connectors)
+    public function __construct(EntityManagerInterface $em, MobileAlertsConnector $mobilealerts, OpenWeatherMapConnector $openweathermap, SolarRadiationToolbox $solRad, MyStromConnector $mystrom, ShellyConnector $shelly, SmartFoxConnector $smartfox, PcoWebConnector $pcoweb, WemConnector $wem, ConexioConnector $conexio, LogoControlConnector $logo, TaCmiConnector $tacmi, NetatmoConnector $netatmo, GardenaConnector $gardena, EcarConnector $ecar, ThreemaConnector $threema, ConditionChecker $conditionchecker, TranslatorInterface $translator, $energyLowRate, $minInsideTemp, $nightTemp, $heatcurveCorrection, Array $connectors)
     {
         $this->em = $em;
         $this->mobilealerts = $mobilealerts;
@@ -89,6 +90,7 @@ class LogicProcessor
         $this->energyLowRate = $energyLowRate;
         $this->minInsideTemp = $minInsideTemp;
         $this->nightTemp = $nightTemp;
+        $this->heatcurveCorrection = $heatcurveCorrection;
         $this->connectors = $connectors;
         $this->translator = $translator;
 
@@ -682,17 +684,20 @@ class LogicProcessor
                     }
                 } elseif ($insideTemp < $minInsideTemp + 0.5) {
                     $insideEmergency = true;
+                    $hc2Offset = 0;
+                    // correct heatcurve according to configuration
+                    $hc2Offset += $this->heatcurveCorrection;
                     if ($insideTemp < $minInsideTemp - 2) {
                         // really cold
-                        $this->pcoweb->executeCommand('hc2', 30);
+                        $this->pcoweb->executeCommand('hc2', 30+$hc2Offset);
                         $log[] = "set hc2=30 as emergency action";
                     } elseif ($insideTemp < $minInsideTemp){
                         // little cold
-                        $this->pcoweb->executeCommand('hc2', 28);
+                        $this->pcoweb->executeCommand('hc2', 28+$hc2Offset);
                         $log[] = "set hc2=28 as emergency action";
                     } else {
                         // keep temperature
-                        $this->pcoweb->executeCommand('hc2', 26);
+                        $this->pcoweb->executeCommand('hc2', 26+$hc2Offset);
                         $log[] = "set hc2=26 as emergency action";
                     }
                     $this->pcoweb->executeCommand('cpAutoMode', 1);
@@ -792,6 +797,9 @@ class LogicProcessor
                     // while pp is not running and it's not chilly inside, we set hc2 lower to save storage energy
                     $hc2Offset = -4;
                 }
+                // correct heatcurve according to configuration
+                $hc2Offset += $this->heatcurveCorrection;
+
                 // it's not too warm, set 2nd heating circle with a reasonable target temperature
                 if (!$emergency && $ppMode == PcoWebConnector::MODE_SUMMER && $insideTemp < ($minInsideTemp + 1)) {
                     // if we are in summer mode and insideTemp drops towards minInsideTemp
@@ -1005,7 +1013,6 @@ class LogicProcessor
         } elseif (!$energyLowRate) {
             // readout temperature forecast for the coming night
             $minTempNight = $this->openweathermap->getMinTempNextNightPeriod();
-            $maxTemp24h = $this->openweathermap->getMaxTempNext24h;
             if ($minTempNight < $outsideTemp - 5 && ($waitingTimeForSufficientPower < 0.5 || $waitingTimeForSufficientPower > 4*3600)) {
                 // night will be cold compared to current temp
                 $hc1 = min($hc1Limit, 70);
@@ -1026,6 +1033,7 @@ class LogicProcessor
                 $log[] = "reduce ppPower by 10 due to hc2TempDiff < 0.5";
             }
         } else {
+            $maxTemp24h = $this->openweathermap->getMaxTempNext24h();
             if (($waitingTimeForSufficientPower && $waitingTimeForSufficientPower < 4) || ($insideTemp > $minInsideTemp && ($maxTemp24h > $outsideTemp + 8 || $avgClouds < 30 || $this->solRad->getTodayMaxPower() > $power))) {
                 // day will be extremely warm compared to current temp or it will be sunny
                 $hc1 = min($hc1Limit, 30);
@@ -1109,6 +1117,8 @@ class LogicProcessor
             $hc2 = 50;
             $log[] =  'perfect temperature inside set hc2 = 50';
         }
+        // adjust hc2 according to configuration offset
+        $hc2 += $this->heatcurveCorrection;
 
         // adjust hc1 for cold temperatures
         if ($insideTemp < $minInsideTemp -1 && $hc2TempDiff > 3) {
