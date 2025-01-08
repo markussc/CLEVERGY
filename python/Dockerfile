@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL maintainer="markus.schafroth@3084.ch"
 LABEL description="Clevergy.fi Python API"
 ARG DEBIAN_FRONTEND=noninteractive
@@ -7,10 +7,14 @@ ARG INSTANCENAME
 RUN apt-get -y update && apt-get upgrade -y && apt-get install -y \
         python3 \
         python3-pip \
+        virtualenv \
     && true
 
 # install Clevergy.fi python API dependencies
-RUN pip3 install flask pandas scikit-learn --user
+RUN virtualenv env
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
+RUN pip3 install flask pandas scikit-learn
 
 # start flask web server
 CMD python3 python/pyapi.py

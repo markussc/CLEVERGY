@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL maintainer="markus.schafroth@3084.ch"
 LABEL description="OSHANS"
 ARG DEBIAN_FRONTEND=noninteractive
@@ -26,6 +26,7 @@ RUN apt-get -y update && apt-get install -y \
         cron \
         python3 \
         python3-pip \
+        virtualenv \
         composer \
         mysql-client \
         htop \
@@ -37,6 +38,9 @@ RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | b
 RUN apt install symfony-cli
 
 # install weconnect-cli
+RUN virtualenv env
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
 RUN pip3 install weconnect-cli
 
 # config changes in PHP config
