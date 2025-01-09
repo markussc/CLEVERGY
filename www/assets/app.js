@@ -17,9 +17,6 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/app.css';
 import './styles/owfont-regular.min.css';
 
-// base.html.twig
-$(document).foundation();
-
 function showSpinner()
 {
     $("body").addClass("loading");
