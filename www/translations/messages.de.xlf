@@ -557,6 +557,10 @@
         <source>label.pv.prognosis_4h</source>
         <target>4h-Prognose</target>
       </trans-unit>
+      <trans-unit id="lsderlcjlertjl" resname="label.pv.prognosis_2h">
+        <source>label.pv.prognosis_2h</source>
+        <target>2h-Prognose</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
