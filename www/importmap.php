@@ -20,20 +20,20 @@ return [
         'version' => '3.7.1',
     ],
     '@kurkle/color' => [
-        'version' => '0.3.2',
+        'version' => '0.3.4',
     ],
     '@fortawesome/fontawesome-free/css/fontawesome.min.css' => [
-        'version' => '5.15.4',
+        'version' => '6.7.2',
         'type' => 'css',
     ],
     'foundation-sites' => [
-        'version' => '6.8.1',
+        'version' => '6.9.0',
     ],
     '@fortawesome/fontawesome-free' => [
-        'version' => '5.15.4',
+        'version' => '6.7.2',
     ],
     'chart.js' => [
-        'version' => '3.9.1',
+        'version' => '4.4.7',
     ],
     'moment' => [
         'version' => '2.30.1',
@@ -42,11 +42,11 @@ return [
         'version' => '1.0.1',
     ],
     'foundation-sites/dist/css/foundation-float.min.css' => [
-        'version' => '6.8.1',
+        'version' => '6.9.0',
         'type' => 'css',
     ],
     '@fortawesome/fontawesome-free/css/all.min.css' => [
-        'version' => '5.15.4',
+        'version' => '6.7.2',
         'type' => 'css',
     ],
 ];
