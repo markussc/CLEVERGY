@@ -84,10 +84,9 @@ RUN a2enmod headers
 # prepare symfony app
 WORKDIR "/www"
 COPY ./www/ /www
-RUN /usr/bin/composer install --no-interaction --no-scripts
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN /usr/bin/composer install --no-interaction
 RUN rm -rf public/assets/*
-RUN rm -rf var/cache/*
-RUN symfony console importmap:install
 RUN symfony console asset-map:compile
 RUN symfony console importmap:install
 
