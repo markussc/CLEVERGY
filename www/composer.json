@@ -14,23 +14,23 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.7",
         "symfony/apache-pack": "^1.0",
-        "symfony/asset": "7.0.*",
-        "symfony/asset-mapper": "7.0.*",
-        "symfony/config": "7.0.*",
-        "symfony/console": "7.0.*",
-        "symfony/css-selector": "7.0.*",
-        "symfony/dom-crawler": "7.0.*",
-        "symfony/dotenv": "7.0.*",
+        "symfony/asset": "7.2.*",
+        "symfony/asset-mapper": "7.2.*",
+        "symfony/config": "7.2.*",
+        "symfony/console": "7.2.*",
+        "symfony/css-selector": "7.2.*",
+        "symfony/dom-crawler": "7.2.*",
+        "symfony/dotenv": "7.2.*",
         "symfony/flex": "^1.18",
-        "symfony/form": "7.0.*",
-        "symfony/framework-bundle": "7.0.*",
-        "symfony/http-client": "7.1.*",
-        "symfony/mailer": "7.0.*",
-        "symfony/runtime": "^7.0",
-        "symfony/security-bundle": "7.0.*",
-        "symfony/translation": "7.0.*",
-        "symfony/validator": "7.1.*",
-        "symfony/yaml": "7.0.*",
+        "symfony/form": "7.2.*",
+        "symfony/framework-bundle": "7.2.*",
+        "symfony/http-client": "7.2.*",
+        "symfony/mailer": "7.2.*",
+        "symfony/runtime": "^7.2",
+        "symfony/security-bundle": "7.2.*",
+        "symfony/translation": "7.2.*",
+        "symfony/validator": "7.2.*",
+        "symfony/yaml": "7.2.*",
         "symfonycasts/reset-password-bundle": "^1.11",
         "symfonycasts/verify-email-bundle": "^1.7",
         "twig/extra-bundle": "^3.3",
@@ -39,12 +39,12 @@
     },
     "require-dev": {
         "rector/rector": "^1.0",
-        "symfony/error-handler": "7.0.*",
+        "symfony/error-handler": "7.2.*",
         "symfony/maker-bundle": "^1.36",
-        "symfony/phpunit-bridge": "^7.0",
-        "symfony/stopwatch": "^7.0",
-        "symfony/twig-bundle": "^7.0",
-        "symfony/web-profiler-bundle": "^7.0"
+        "symfony/phpunit-bridge": "^7.2",
+        "symfony/stopwatch": "^7.2",
+        "symfony/twig-bundle": "^7.2",
+        "symfony/web-profiler-bundle": "^7.2"
     },
     "config": {
         "preferred-install": {
@@ -94,7 +94,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.0.*"
+            "require": "7.2.*"
         }
     }
 }
