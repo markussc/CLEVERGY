@@ -33,7 +33,7 @@ return [
         'version' => '6.7.2',
     ],
     'chart.js' => [
-        'version' => '4.4.7',
+        'version' => '4.4.8',
     ],
     'moment' => [
         'version' => '2.30.1',
