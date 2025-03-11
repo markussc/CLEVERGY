@@ -98,3 +98,11 @@ body.loading {
 body.loading .modal {
     display: block;
 }
+
+/* workaround regarding responsive option issue with Chart.js
+   see: https://github.com/chartjs/Chart.js/issues/11005
+   */
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
