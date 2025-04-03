@@ -15,6 +15,7 @@ RUN apt-get -y update && apt-get install -y \
         php8.3-intl \
         php8.3-gmp \
         php8.3-curl \
+        php8.3-mbstring \
         apache2 \
         acl \
         wget \
