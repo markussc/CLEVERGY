@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Connector to retrieve data from the conexio200 web modul (used by Soltop for solar-thermical systems)
  * For information refer to www.soltop.ch
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ConexioConnector
 {

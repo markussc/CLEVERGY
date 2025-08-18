@@ -13,7 +13,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Connector to retrieve data from MyStrom devices
  * For information refer to www.mystrom.ch or api.mystrom.ch
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class MyStromConnector
 {

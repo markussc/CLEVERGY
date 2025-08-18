@@ -1,5 +1,5 @@
 FROM ubuntu:24.04
-LABEL maintainer="markus.schafroth@3084.ch"
+LABEL maintainer="mara.schafroth@netti.ch"
 LABEL description="OSHANS"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BACKUP_HOUR

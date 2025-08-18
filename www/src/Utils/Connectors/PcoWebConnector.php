@@ -11,7 +11,7 @@ use ModbusTcpClient\Utils\Types;
  * Connector to retrieve data from the PCO Web device
  * For information refer to www.careluk.com
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class PcoWebConnector extends ModbusTcpConnector
 {

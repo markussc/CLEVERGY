@@ -13,7 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Connector to retrieve data from electric cars
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class EcarConnector
 {

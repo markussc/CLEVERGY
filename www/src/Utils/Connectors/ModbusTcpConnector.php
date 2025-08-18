@@ -14,7 +14,7 @@ use ModbusTcpClient\Utils\Types;
 /**
  * Connector base class to retrieve data via ModbusTcp
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ModbusTcpConnector
 {

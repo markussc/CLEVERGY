@@ -9,7 +9,7 @@ use App\lib\CastV2inPHP\Chromecast;
 /**
  * Connector to interact with Google Chromecast devices
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ChromecastConnector
 {

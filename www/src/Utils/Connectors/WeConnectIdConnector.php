@@ -6,7 +6,7 @@ namespace App\Utils\Connectors;
  * Connector to retrieve data from the WeConnectID API (Volkswagen)
  * Note: requires the following prerequisites installed on the system: https://pypi.org/project/weconnect-cli/
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class WeConnectIdConnector
 {

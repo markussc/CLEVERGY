@@ -11,7 +11,7 @@ use ModbusTcpClient\Utils\Types;
  * Connector to retrieve data from the WEM Portal (Weishaupt Energy Manager)
  * Note: requires the following prerequisites installed on the system. Ubuntu: <code>composer require nesk/puphpeteer; npm install @nesk/puphpeteer</code>
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class WemConnector extends ModbusTcpConnector
 {

@@ -34,7 +34,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class LogicProcessor
 {

@@ -10,7 +10,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class NetatmoConnector
 {

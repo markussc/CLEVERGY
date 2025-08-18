@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Connector to retrieve data from the TA Technische Alternative CMI API (see https://www.ta.co.at/download/datei/17511763-cmi-json-api/ )
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class TaCmiConnector
 {

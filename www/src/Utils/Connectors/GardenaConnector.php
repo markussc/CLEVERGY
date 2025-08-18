@@ -11,7 +11,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Connector to retrieve data from Gardena (Husqvarna) API
  * For information refer to https://developer.husqvarnagroup.cloud/apis/GARDENA+smart+system+API
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class GardenaConnector
 {

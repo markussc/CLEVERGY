@@ -20,7 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ConditionChecker
 {

@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Connector to retrieve data from the Siemens Logo7 and Logo8 modules, using LogoControl as intermediate webservice (see www.frickelzeugs.de/logocontrol/ )
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class LogoControlConnector
 {

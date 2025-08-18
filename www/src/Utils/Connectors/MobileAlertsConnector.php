@@ -11,7 +11,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Connector to retrieve data from the MobileAlerts cloud
  * For information refer to www.mobile-alerts.eu
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class MobileAlertsConnector
 {

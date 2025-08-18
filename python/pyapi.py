@@ -1,6 +1,6 @@
 '''
 Web service module for interaction with CLEVERGY python modules
-@author: Markus Schafroth (markus.schafroth@3084.ch)
+@author: Mara Schafroth (mara.schafroth@netti.ch)
 '''
 
 #%%Import Statements

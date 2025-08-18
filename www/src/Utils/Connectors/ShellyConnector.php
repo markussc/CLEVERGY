@@ -15,7 +15,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Connector to communicate with Shelly devices
  * For information refer to shelly.cloud
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ShellyConnector
 {

@@ -12,7 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Connector to retrieve data from the SmartFox device
  * For information regarding SmartFox refer to www.smartfox.at
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class SmartFoxConnector
 {

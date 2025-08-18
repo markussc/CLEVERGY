@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Helper to interact with device configuration
  *
- * @author Markus Schafroth
+ * @author Mara Schafroth
  */
 class ConfigManager {
     protected $em;
