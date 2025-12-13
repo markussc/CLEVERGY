@@ -515,7 +515,7 @@ class LogicProcessor
             $targetWaterTemp = 52;
             $minWaterTemp = 38;
             // increase minWaterTemp during hours where water consumption is high and if storage is low
-            if ((($nowDateTime->format('H') >= 5 && $nowDateTime->format('H') <= 9) ||
+            if ((($nowDateTime->format('H') >= 4 && $nowDateTime->format('H') <= 9) ||
                 ($nowDateTime->format('H') >= 18 && $nowDateTime->format('H') <= 21)) &&
                 $heatStorageMidTemp < $minWaterTemp) {
                 $minWaterTemp = min($minWaterTemp + (($minWaterTemp - $heatStorageMidTemp) / 2), $targetWaterTemp - 5);
