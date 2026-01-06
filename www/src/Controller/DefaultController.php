@@ -566,6 +566,7 @@ class DefaultController extends AbstractController
         $insidetemp = "";
         $firstfloortemp = "";
         $secondfloortemp = "";
+        $secondfloorhumidity = "";
         $insidehumidity = "";
         $basementtemp = "";
         $basementhumidity = "";
@@ -579,6 +580,9 @@ class DefaultController extends AbstractController
         }
         if (isset($climateValues['secondfloortemp'])) {
             $secondfloortemp = $climateValues['secondfloortemp']. "°C";
+        }
+        if (isset($climateValues['secondfloorhumidity'])) {
+            $secondfloorhumidity = $climateValues['secondfloorhumidity']. "°C";
         }
         if (isset($climateValues['insidehumidity'])) {
             $insidehumidity = $climateValues['insidehumidity'] . " %";
@@ -647,6 +651,7 @@ class DefaultController extends AbstractController
             "insidetemp",
             "firstfloortemp",
             "secondfloortemp",
+            "secondfloorhumidity",
             "insidehumidity",
             "basementtemp",
             "basementhumidity",
@@ -673,6 +678,7 @@ class DefaultController extends AbstractController
             $insidetemp,
             $firstfloortemp,
             $secondfloortemp,
+            $secondfloorhumidity,
             $insidehumidity,
             $basementtemp,
             $basementhumidity,
