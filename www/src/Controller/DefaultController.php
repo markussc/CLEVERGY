@@ -638,7 +638,7 @@ class DefaultController extends AbstractController
         $labels = [
             "pvpower1",
             "pvpower2",
-            "pvpower",
+            "pvpower<",
             "netpower",
             "intpower",
             "batSoc",
@@ -665,7 +665,7 @@ class DefaultController extends AbstractController
         $values = [
             $pvpower1,
             $pvpower2,
-            $pvpower,
+            $pvpower.'<',
             $netpower,
             $intpower,
             $batSoc,
