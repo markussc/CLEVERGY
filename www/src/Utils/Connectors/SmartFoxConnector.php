@@ -57,6 +57,8 @@ class SmartFoxConnector
         try {
             if ($this->version === "pro") {
                 $responseArr = $this->getFromPRO();
+            } elseif ($this->version === "fronius") {
+                $responseArr = $this->getFromFronius();
             } else {
                 $responseArr = $this->getFromREG9TE();
             }
@@ -465,6 +467,43 @@ class SmartFoxConnector
         }
 
         return $values;
+    }
+
+    private function getFromFronius($full = true)
+    {
+        $jsonDataInverter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System')->getContent();
+        $jsonDataMeter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetMeterRealtimeData.cgi?Scope=System')->getContent();
+        
+        $arrInverter = json_decode($jsonDataInverter, true);
+        $data = [];
+        if (is_array($arr) && array_key_exists('Head', $arr)) {
+            $data['datetime'] = $arr['Head']['Timestamp'];
+        }
+        if (is_array($arrInverter) && array_key_exists('Body', $arrInverter)) {
+            $data['PvPower'] = $arrInverter['Body']['Data']['PAC']['Values']['1'];
+            $data['PvEnergy'] = $arrInverter['Body']['Data']['TOTAL_ENERGY']['Values']['1'];
+        }
+        if (is_array($arrMeter) && array_key_exists('Body', $arrMeter)) {
+            $data['energy_in'] = $arrPowerflow['Body']['Details']['EnergyReal_WAC_Sum_Consumed'];
+            $data['energy_out'] = $arrPowerflow['Body']['Details']['EnergyReal_WAC_Sum_Produced'];
+            $data['power_io'] = $arrPowerflow['Body']['Details']['PowerReal_P_Sum'];
+        }
+        if ($full) {
+            $data['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
+            $data['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
+            $data['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
+            $data['pvEnergyLast24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now'));
+            $data["pvEnergyPrognosis"] = $this->solRad->getSolarPotentials();
+            if ($this->hasAltPv()) {
+                $data['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
+            }
+            if ($this->hasStorage()) {
+                $data['storageEnergyToday_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyIn');
+                $data['storageEnergyToday_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyOut');
+            }
+        }
+
+        return $data;
     }
 
     private function addAlternativePv($arr)
