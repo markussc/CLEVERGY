@@ -475,6 +475,7 @@ class SmartFoxConnector
         $jsonDataMeter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetMeterRealtimeData.cgi?Scope=System')->getContent();
         
         $arrInverter = json_decode($jsonDataInverter, true);
+        $arrMeter = json_decode($jsonDataMeter, true);
         $data = [];
         if (is_array($arr) && array_key_exists('Head', $arr)) {
             $data['datetime'] = $arr['Head']['Timestamp'];
