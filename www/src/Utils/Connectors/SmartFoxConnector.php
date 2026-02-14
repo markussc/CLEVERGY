@@ -485,9 +485,9 @@ class SmartFoxConnector
             $data['PvEnergy'] = [$arrInverter['Body']['Data']['TOTAL_ENERGY']['Values']['1']];
         }
         if (is_array($arrMeter) && array_key_exists('Body', $arrMeter)) {
-            $data['energy_in'] = intval($arrPowerflow['Body']['Data'][0]['EnergyReal_WAC_Sum_Consumed']);
-            $data['energy_out'] = intval($arrPowerflow['Body']['Data'][0]['EnergyReal_WAC_Sum_Produced']);
-            $data['power_io'] = intval($arrPowerflow['Body']['Data'][0]['PowerReal_P_Sum']);
+            $data['energy_in'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Consumed']);
+            $data['energy_out'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Produced']);
+            $data['power_io'] = intval($arrMeter['Body']['Data'][0]['PowerReal_P_Sum']);
         }
         if ($full) {
             $data['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
