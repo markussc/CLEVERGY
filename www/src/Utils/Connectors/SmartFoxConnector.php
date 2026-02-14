@@ -471,23 +471,29 @@ class SmartFoxConnector
 
     private function getFromFronius($full = true)
     {
-        $jsonDataInverter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System')->getContent();
         $jsonDataMeter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetMeterRealtimeData.cgi?Scope=System')->getContent();
+        $jsonPowerFlow = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetPowerFlowRealtimeData.fcgi')->getContent();
 
-        $arrInverter = json_decode($jsonDataInverter, true);
         $arrMeter = json_decode($jsonDataMeter, true);
+        $arrPowerFlow = json_decode($jsonPowerFlow, true);
         $data = [];
-        if (is_array($arr) && array_key_exists('Head', $arr)) {
+        if (is_array($arrPowerFlow) && array_key_exists('Head', $arr)) {
             $data['datetime'] = $arr['Head']['Timestamp'];
         }
-        if (is_array($arrInverter) && array_key_exists('Body', $arrInverter)) {
-            $data['PvPower'] = [intval($arrInverter['Body']['Data']['PAC']['Values']['1'])];
-            $data['PvEnergy'] = [$arrInverter['Body']['Data']['TOTAL_ENERGY']['Values']['1']];
+        if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
+            $data['PvPower'] = [intval($arrPowerFlow['Body']['Data']['Site']['P_PV'])];
+            $data['PvEnergy'] = [$arrPowerFlow['Body']['Data']['Site']['E_Total']];
+            $data['power_io'] = intval($arrPowerFlow['Body']['Data']['Site']['P_Grid']);
+            try {
+                $data['StorageSoc'] = $arrPowerFlow['Body']['Data']['Inverters'][1]['SOC'];
+                $data['StoragePower'] = $arrPowerFlow['Body']['Data']['Site']['P_Akku'];
+            } catch (\Exception $e) {
+                // do not store storage data
+            }
         }
         if (is_array($arrMeter) && array_key_exists('Body', $arrMeter)) {
             $data['energy_in'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Consumed']);
             $data['energy_out'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Produced']);
-            $data['power_io'] = intval($arrMeter['Body']['Data'][0]['PowerReal_P_Sum']);
         }
         if ($full) {
             $data['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
