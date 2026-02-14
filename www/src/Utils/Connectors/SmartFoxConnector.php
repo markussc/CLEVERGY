@@ -480,8 +480,8 @@ class SmartFoxConnector
             $data['datetime'] = $arr['Head']['Timestamp'];
         }
         if (is_array($arrInverter) && array_key_exists('Body', $arrInverter)) {
-            $data['PvPower'] = $arrInverter['Body']['Data']['PAC']['Values']['1'];
-            $data['PvEnergy'] = $arrInverter['Body']['Data']['TOTAL_ENERGY']['Values']['1'];
+            $data['PvPower'] = [$arrInverter['Body']['Data']['PAC']['Values']['1']];
+            $data['PvEnergy'] = [$arrInverter['Body']['Data']['TOTAL_ENERGY']['Values']['1']];
         }
         if (is_array($arrMeter) && array_key_exists('Body', $arrMeter)) {
             $data['energy_in'] = $arrPowerflow['Body']['Data']["0"]['EnergyReal_WAC_Sum_Consumed'];
