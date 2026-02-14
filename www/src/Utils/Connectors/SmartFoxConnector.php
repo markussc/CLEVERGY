@@ -486,7 +486,7 @@ class SmartFoxConnector
             $data['power_io'] = intval($arrPowerFlow['Body']['Data']['Site']['P_Grid']);
             try {
                 $data['StorageSoc'] = $arrPowerFlow['Body']['Data']['Inverters'][1]['SOC'];
-                $data['StoragePower'] = intval($arrPowerFlow['Body']['Data']['Site']['P_Akku']);
+                $data['StoragePower'] = -1*intval($arrPowerFlow['Body']['Data']['Site']['P_Akku']);
             } catch (\Exception $e) {
                 // do not store storage data
             }
