@@ -477,8 +477,8 @@ class SmartFoxConnector
         $arrMeter = json_decode($jsonDataMeter, true);
         $arrPowerFlow = json_decode($jsonPowerFlow, true);
         $data = [];
-        if (is_array($arrPowerFlow) && array_key_exists('Head', $arr)) {
-            $data['datetime'] = $arr['Head']['Timestamp'];
+        if (is_array($arrPowerFlow) && array_key_exists('Head', $arrPowerFlow)) {
+            $data['datetime'] = $arrPowerFlow['Head']['Timestamp'];
         }
         if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
             $data['PvPower'] = [intval($arrPowerFlow['Body']['Data']['Site']['P_PV'])];
