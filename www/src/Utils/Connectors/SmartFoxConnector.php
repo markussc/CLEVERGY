@@ -481,8 +481,22 @@ class SmartFoxConnector
             $data['datetime'] = $arrPowerFlow['Head']['Timestamp'];
         }
         if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
-            $data['PvPower'] = [intval($arrPowerFlow['Body']['Data']['Site']['P_PV'])];
-            $data['PvEnergy'] = [$arrPowerFlow['Body']['Data']['Site']['E_Total']];
+            $pvPower = $arrPowerFlow['Body']['Data']['Site']['P_PV'];
+            foreach ($arrPowerFlow['Body']['Data']['SecondaryMeters'] as $secMeter) {
+                if (intval($secMeter['MLoc']) == 3) {
+                    // this is a production meter
+                    $pvPower += $secMeter['P'];
+                }
+            }
+            $data['PvPower'] = [intval($pvPower)];
+            $pvEnergy = $arrPowerFlow['Body']['Data']['Site']['E_Total'];
+            foreach ($arrMeter['Body']['Data'] as $secInv) {
+                if (intval($secInv['Meter_Location_Current']) == 3) {
+                    // this is a production inverter (not the main inverter)
+                    $pvEnergy += $secInv['EnergyReal_WAC_Sum_Produced'];
+                }
+            }
+            $data['PvEnergy'] = [intval($pvEnergy)];
             $data['power_io'] = intval($arrPowerFlow['Body']['Data']['Site']['P_Grid']);
             try {
                 $data['StorageSoc'] = $arrPowerFlow['Body']['Data']['Inverters'][1]['SOC'];
