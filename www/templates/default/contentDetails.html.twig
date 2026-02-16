@@ -189,11 +189,13 @@
         <canvas id="twentyFourPowerCanvas" ></canvas>
     </div>
 </div>
+{% if currentStat['pcoWeb']|default(false) or currentStat['mobileAlerts']|default(false) or currentStat['netatmo']|default(false) or currentStat['conexio']|default(false) or currentStat['logoControl']|default(false) or currentStat['taCmi']|default(false) or history['ecar']|default(false) %}
 <div class="row">
     <div class="small-12 columns refresh">
         <canvas id="twentyFourTemperaturesCanvas" ></canvas>
     </div>
 </div>
+{% endif %}
 {% endif %}
 <script type="module">
     import { Chart, LineController, LineElement, PointElement, BarElement, BarController, LinearScale, TimeScale, Title, CategoryScale, Tooltip, Legend } from 'chart.js';
