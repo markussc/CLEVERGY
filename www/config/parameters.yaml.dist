@@ -25,7 +25,7 @@ parameters:
             storage:
                 -
                     name: Nelinor 7kWh
-                    type: nelinor
+                    type: nelinor   # valid types: nelinor, fronius
                     ip: 192.168.1.143
                     capacity: 7 # capacity in kWh
                     charging: 2.1 # max charging power in kW
