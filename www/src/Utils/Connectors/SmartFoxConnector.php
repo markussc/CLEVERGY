@@ -608,11 +608,9 @@ class SmartFoxConnector
             } else {
                 $arr['StorageDetails'][$storage['name']] = [];
                 if (array_key_exists('StoragePower', $latestEntry)) {
-                    $arr['StoragePower'] = $latestEntry['StoragePower'];
                     $arr['StorageDetails'][$storage['name']]['power'] = $arr['StoragePower'];
                 }
                 if (array_key_exists('StorageSoc', $latestEntry)) {
-                    $arr['StorageSoc'] = $latestEntry['StorageSoc'];
                     $arr['StorageDetails'][$storage['name']]['soc'] = $arr['StorageSoc'];
                 }
                 if (array_key_exists('StorageTemp', $latestEntry)) {
