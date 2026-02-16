@@ -481,7 +481,7 @@ class SmartFoxConnector
             $data['datetime'] = $arrPowerFlow['Head']['Timestamp'];
         }
         if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
-            $pvPower = 0, $arrPowerFlow['Body']['Data']['Site']['P_PV'];
+            $pvPower = $arrPowerFlow['Body']['Data']['Site']['P_PV'];
             foreach ($arrPowerFlow['Body']['Data']['SecondaryMeters'] as $secMeter) {
                 if (intval($secMeter['MLoc']) == 3) {
                     // this is a production meter
