@@ -600,6 +600,10 @@ class SmartFoxConnector
                     $totalStorageSoc += $storageData['soc'];
                     $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
                 } elseif ($storage['type'] == 'fronius') {
+                    if (!array_key_exists('StoragePower', $arr)) {
+                        // if the method has been called outside the getAll() method, we need to query fronius here as we don't have the required data already
+                        $arr = $this->getFromFronius();
+                    }
                     $storageValidity = true;
                     $storageCounter++;
                     $arr['StorageDetails'][$storage['name']] = [
