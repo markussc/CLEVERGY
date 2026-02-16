@@ -609,7 +609,7 @@ class SmartFoxConnector
                         // uncharging battery
                         $totalStoragePowerOut += $arr['StoragePower'];
                     }
-                    $totalStorageSoc += $storageData['soc'];
+                    $totalStorageSoc += $arr['StorageSoc'];
                 }
             }
             if ($storageValidity) {
