@@ -605,10 +605,19 @@ class SmartFoxConnector
                 $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageTemp'] = $maxStorageTemp;
-            } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
-                $arr['StoragePower'] = $latestEntry['StoragePower'];
-                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
-                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+            } else {
+                $arr['StorageDetails'][$storage['name']] = [];
+                if (array_key_exists('StoragePower', $latestEntry)) {
+                    $arr['StoragePower'] = $latestEntry['StoragePower'];
+                    $arr['StorageDetails'][$storage['name']]['power'] = $arr['StoragePower'];
+                }
+                if (array_key_exists('StorageSoc', $latestEntry)) {
+                    $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                    $arr['StorageDetails'][$storage['name']]['soc'] = $arr['StorageSoc'];
+                }
+                if (array_key_exists('StorageTemp', $latestEntry)) {
+                    $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+                }
             }
             if ($update && $storageValidity) {
                 // calculate the energy produced at the given power level during one minute
