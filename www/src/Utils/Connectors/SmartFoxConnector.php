@@ -481,14 +481,14 @@ class SmartFoxConnector
             $data['datetime'] = $arrPowerFlow['Head']['Timestamp'];
         }
         if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
-            $pvPower = $arrPowerFlow['Body']['Data']['Site']['P_PV'];
+            $pvPower = 0, $arrPowerFlow['Body']['Data']['Site']['P_PV'];
             foreach ($arrPowerFlow['Body']['Data']['SecondaryMeters'] as $secMeter) {
                 if (intval($secMeter['MLoc']) == 3) {
                     // this is a production meter
                     $pvPower += $secMeter['P'];
                 }
             }
-            $data['PvPower'] = [intval($pvPower)];
+            $data['PvPower'] = [max(0, intval($pvPower))];
             $pvEnergy = $arrPowerFlow['Body']['Data']['Site']['E_Total'];
             foreach ($arrMeter['Body']['Data'] as $secInv) {
                 if (intval($secInv['Meter_Location_Current']) == 3) {
