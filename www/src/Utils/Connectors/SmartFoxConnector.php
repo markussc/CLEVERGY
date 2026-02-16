@@ -583,13 +583,13 @@ class SmartFoxConnector
             }
             $storageValidity = false;
             foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                $arr['StorageDetails'][$storage['name']] = $storageData;
                 if ($storage['type'] == 'nelinor') {
                     $storageData = $this->queryNelinor($storage['ip']);
                     if (array_key_exists('validity', $storageData) && $storageData['validity']) {
                         $storageValidity = true;
                         $storageCounter++;
                     }
-                    $arr['StorageDetails'][$storage['name']] = $storageData;
                     if ($storageData['power'] >= 0) {
                         // charging battery
                         $totalStoragePowerIn += $storageData['power'];
@@ -599,23 +599,27 @@ class SmartFoxConnector
                     }
                     $totalStorageSoc += $storageData['soc'];
                     $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
+                } elseif ($storage['type'] == 'fronius') {
+                    $storageValidity = true;
+                    $storageCounter++;
+                    if ($arr['StoragePower'] >= 0) {
+                        // charging battery
+                        $totalStoragePowerIn += $arr['StoragePower'];
+                    } else {
+                        // uncharging battery
+                        $totalStoragePowerOut += $arr['StoragePower'];
+                    }
+                    $totalStorageSoc += $storageData['soc'];
                 }
             }
             if ($storageValidity) {
                 $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
                 $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
                 $arr['StorageTemp'] = $maxStorageTemp;
-            } else {
-                $arr['StorageDetails'][$storage['name']] = [];
-                if (array_key_exists('StoragePower', $latestEntry)) {
-                    $arr['StorageDetails'][$storage['name']]['power'] = $arr['StoragePower'];
-                }
-                if (array_key_exists('StorageSoc', $latestEntry)) {
-                    $arr['StorageDetails'][$storage['name']]['soc'] = $arr['StorageSoc'];
-                }
-                if (array_key_exists('StorageTemp', $latestEntry)) {
-                    $arr['StorageTemp'] = $latestEntry['StorageTemp'];
-                }
+            } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
+                $arr['StoragePower'] = $latestEntry['StoragePower'];
+                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
             }
             if ($update && $storageValidity) {
                 // calculate the energy produced at the given power level during one minute
