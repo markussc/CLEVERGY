@@ -583,13 +583,13 @@ class SmartFoxConnector
             }
             $storageValidity = false;
             foreach ($this->connectors['smartfox']['storage'] as $storage) {
-                $arr['StorageDetails'][$storage['name']] = $storageData;
                 if ($storage['type'] == 'nelinor') {
                     $storageData = $this->queryNelinor($storage['ip']);
                     if (array_key_exists('validity', $storageData) && $storageData['validity']) {
                         $storageValidity = true;
                         $storageCounter++;
                     }
+                    $arr['StorageDetails'][$storage['name']] = $storageData;
                     if ($storageData['power'] >= 0) {
                         // charging battery
                         $totalStoragePowerIn += $storageData['power'];
@@ -602,6 +602,10 @@ class SmartFoxConnector
                 } elseif ($storage['type'] == 'fronius') {
                     $storageValidity = true;
                     $storageCounter++;
+                    $arr['StorageDetails'][$storage['name']] = [
+                        'power' => $arr['StoragePower'],
+                        'soc' => $arr['StorageSoc'],
+                    ];
                     if ($arr['StoragePower'] >= 0) {
                         // charging battery
                         $totalStoragePowerIn += $arr['StoragePower'];
