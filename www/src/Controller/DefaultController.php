@@ -230,14 +230,16 @@ class DefaultController extends AbstractController
     public function prognosis(SolarRadiationToolbox $srt): Response
     {
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
+            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-24 hours'), new \DateTime());
         }
 
         // render the template
-        return $this->render('default/prognosis.html.twig', [
+        $response = $this->render('default/prognosis.html.twig', [
             'energyTotals' => $srt->setSolarPotentials(end($data)->getData()['pvEnergyPrognosis'])->getEnergyTotals(),
-            'data' => $data,
+            'data' => &$data,
         ]);
+        unset($data);
+        return $response;
     }
 
     /**
