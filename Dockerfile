@@ -45,7 +45,7 @@ ENV PATH /env/bin:$PATH
 RUN pip3 install weconnect-cli
 
 # config changes in PHP config
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 512M/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
@@ -53,7 +53,7 @@ RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
     /etc/php/8.3/apache2/php.ini
 
 # config changes in PHP config (CLI)
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 4G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 512M/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
