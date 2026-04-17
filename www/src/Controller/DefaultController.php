@@ -526,7 +526,11 @@ class DefaultController extends AbstractController
         if (isset($currentStat['smartFox'])) {
             $pvpower = array_sum($currentStat['smartFox']['PvPower']) . " W";
             $pvpower1 = $currentStat['smartFox']['PvPower'][0] . " W";
-            $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
+            if (array_key_exists(1, $currentStat['smartFox']['PvPower'])) {
+                $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
+            } else {
+                $pvpower2 = "0 W";
+            }
             $netpower = $currentStat['smartFox']['power_io']." W";
             $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
             if (array_key_exists('StoragePower', $currentStat['smartFox'])) {

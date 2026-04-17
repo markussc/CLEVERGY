@@ -36,7 +36,11 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         $avgIndex = 0;
         foreach ($results as $res) {
             if ($idx === 'PvPower') {
-                $newValue = array_sum($res->getData()[$idx]);
+                if (is_array($res->getData()[$idx])) {
+                    $newValue = array_sum($res->getData()[$idx]);
+                } else {
+                    $newValue = $res->getData()[$idx];
+                }
             } elseif ($idx === 'power_io' && array_key_exists('StoragePower', $res->getData())) {
                 if ($res->getData()['StoragePower'] >= 0) {
                     // positive StoragePower means: battery charging
@@ -80,7 +84,11 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         $minVal = null;
         foreach ($results as $res) {
             if ($idx === 'PvPower') {
-                $newValue = array_sum($res->getData()[$idx]);
+                if (is_array($res->getData()[$idx])) {
+                    $newValue = array_sum($res->getData()[$idx]);
+                } else {
+                    $newValue = $res->getData()[$idx];
+                }
             } elseif ($idx === 'power_io' && array_key_exists('StoragePower', $res->getData())) {
                 if ($res->getData()['StoragePower'] >= 0) {
                     // positive StoragePower means: battery charging
@@ -124,7 +132,11 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         $maxVal = null;
         foreach ($results as $res) {
             if ($idx === 'PvPower') {
-                $newValue = array_sum($res->getData()[$idx]);
+                if (is_array($res->getData()[$idx])) {
+                    $newValue = array_sum($res->getData()[$idx]);
+                } else {
+                    $newValue = $res->getData()[$idx];
+                }
             } elseif ($idx === 'power_io' && array_key_exists('StoragePower', $res->getData())) {
                 if ($res->getData()['StoragePower'] >= 0) {
                     // positive StoragePower means: battery charging
@@ -191,7 +203,17 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
         }
 
         if ($parameter === 'PvEnergy') {
-            return array_sum($endEnergy[0]->getData()[$parameter]) - array_sum($startEnergy[0]->getData()[$parameter]);
+            if (is_array($endEnergy[0]->getData()[$parameter])) {
+                $end = array_sum($endEnergy[0]->getData()[$parameter]);
+            } else {
+                $end = $endEnergy[0]->getData()[$parameter];
+            }
+            if (is_array($startEnergy[0]->getData()[$parameter])) {
+                $start = array_sum($startEnergy[0]->getData()[$parameter]);
+            } else {
+                $start = $startEnergy[0]->getData()[$parameter];
+            }
+            return $end - $start;
         } elseif ($parameter === 'PvEnergyAlt') {
             if (array_key_exists(1, $endEnergy[0]->getData()['PvEnergy'])) {
                 if (!array_key_exists(1, $startEnergy[0]->getData()['PvEnergy'])) {
@@ -323,8 +345,12 @@ class SmartFoxDataStoreRepository extends DataStoreBaseRepository
 
         foreach ($qbStart->getQuery()->toIterable() as $d) {
             $dArr = $d->getData();
-            if (is_array($dArr) && array_key_exists('PvPower', $dArr) && is_array($dArr['PvPower']) && array_key_exists(0, $dArr['PvPower'])) {
-                $result[$d->getTimestamp()->getTimestamp()] = $dArr['PvPower'][0];
+            if (is_array($dArr) && array_key_exists('PvPower', $dArr)) {
+                if (is_array($dArr['PvPower'])) {
+                    $result[$d->getTimestamp()->getTimestamp()] = array_sum($dArr['PvPower']);
+                } else {
+                    $result[$d->getTimestamp()->getTimestamp()] = array_sum($dArr['PvPower']);
+                }
             }
             $this->getEntityManager()->detach($d);
         }
