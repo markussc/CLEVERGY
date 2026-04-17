@@ -69,8 +69,8 @@ RUN sed -i -e 's/^ServerTokens\s* .*/ServerTokens Prod/' \
 RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/cron.d/oshans
 RUN echo "5 0 * * * root cd /www && symfony console oshans:devices:configure" >> /etc/cron.d/oshans
 RUN echo "0 */24 * * * root cd /www && symfony console oshans:solrad:training" >> /etc/cron.d/oshans
-# delete will run once a year: on january first at 2am
-RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
+# delete will run once a day
+RUN echo "0 2 * * * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 # backup of database will run daily at the specified hour
 #RUN echo "15 $BACKUP_HOUR * * * root mysqldump -h db -uclevergy -pclevergy --no-tablespaces --quick clevergy | gzip > /backup/dump_clevergy_$INSTANCENAME.sql.gz" >> /etc/cron.d/oshans # worth trying (using root / docker user): --flush-logs --single-transaction
 

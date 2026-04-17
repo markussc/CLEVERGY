@@ -25,12 +25,13 @@ class DataDeleteCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Delete data which is older than the year before')
+            ->setDescription('Delete data which is older than the year before; delete logs older than a week')
             ->setHelp('This command deletes all data from the storage which is older than the year before.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // delete data
         $start = new \DateTime('first day of January 2000');
         $end = new \DateTime('first day of January last year');
         $qb = $this->em->createQueryBuilder()
@@ -40,6 +41,22 @@ class DataDeleteCommand extends Command
             ->setParameter('start', $start)
             ->setParameter('end', $end);
 
-        return $qb->getQuery()->getResult();
+        $resData = $qb->getQuery()->getResult();
+
+        // delete logs
+        $dtStart = new DateTime();
+        $dtStart->modify('-2 weeks');
+        $dtEnd = new DateTime();
+        $dtEnd->modify('-1 week');
+        $qb = $this->em->createQueryBuilder()
+            ->delete('App:CommandLog', 'cl')
+            ->where('cl.timestamp >= :start')
+            ->andWhere('cl.timestamp < :end')
+            ->setParameter('start', $dtStart)
+            ->setParameter('end', $dtEnd);
+
+        $resLog = $qb->getQuery()->getResult();
+
+        return [$resData, $resLog];
     }
 }
