@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: 'data_store')]
 #[ORM\Index(name: 'connector_timestamp_idx', columns: ['connector_id', 'timestamp'])]
+#[ORM\Index(name: 'timestamp_idx', columns: ['timestamp'])]
 #[ORM\Index(name: 'discr_type_connector_idx_timestamp', columns: ['discr_type', 'connector_id', 'timestamp'])]
 abstract class DataStoreBase
 {
