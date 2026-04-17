@@ -32,27 +32,20 @@ class DataDeleteCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // delete data
-        $start = new \DateTime('first day of January 2000');
         $end = new \DateTime('first day of January last year');
         $qb = $this->em->createQueryBuilder()
             ->delete('App:DataStoreBase', 'ds')
-            ->where('ds.timestamp >= :start')
             ->andWhere('ds.timestamp < :end')
-            ->setParameter('start', $start)
             ->setParameter('end', $end);
 
         $resData = $qb->getQuery()->getResult();
 
         // delete logs
-        $dtStart = new \DateTime();
-        $dtStart->modify('-2 weeks');
         $dtEnd = new \DateTime();
         $dtEnd->modify('-1 week');
         $qb = $this->em->createQueryBuilder()
             ->delete('App:CommandLog', 'cl')
-            ->where('cl.timestamp >= :start')
             ->andWhere('cl.timestamp < :end')
-            ->setParameter('start', $dtStart)
             ->setParameter('end', $dtEnd);
 
         $resLog = $qb->getQuery()->getResult();
