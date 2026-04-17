@@ -57,6 +57,6 @@ class DataDeleteCommand extends Command
 
         $resLog = $qb->getQuery()->getResult();
 
-        return [$resData, $resLog];
+        return 0;
     }
 }
