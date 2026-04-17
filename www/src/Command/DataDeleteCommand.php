@@ -44,9 +44,9 @@ class DataDeleteCommand extends Command
         $resData = $qb->getQuery()->getResult();
 
         // delete logs
-        $dtStart = new DateTime();
+        $dtStart = new \DateTime();
         $dtStart->modify('-2 weeks');
-        $dtEnd = new DateTime();
+        $dtEnd = new \DateTime();
         $dtEnd->modify('-1 week');
         $qb = $this->em->createQueryBuilder()
             ->delete('App:CommandLog', 'cl')
