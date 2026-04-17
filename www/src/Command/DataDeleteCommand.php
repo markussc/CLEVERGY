@@ -13,7 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DataDeleteCommand extends Command
 {
     private $em;
-    
 
     public function __construct(EntityManagerInterface $em)
     {
