@@ -30,7 +30,7 @@
         "symfony/security-bundle": "7.2.*",
         "symfony/translation": "7.2.*",
         "symfony/validator": "7.2.*",
-        "symfony/yaml": "7.2.*",
+        "symfony/yaml": "7.4.*",
         "symfonycasts/reset-password-bundle": "^1.11",
         "symfonycasts/verify-email-bundle": "^1.7",
         "twig/extra-bundle": "^3.3",
