@@ -39,7 +39,7 @@ class WeConnectIdConnector
             $data['plugConnectionState'] = $dataArr['garage'][$this->carId]['charging']['state']['val']; // on / off
             $data['chargePower_kW'] = $dataArr['garage'][$this->carId]['charging']['power']['val'];
             $data['isOnline'] = $dataArr['connectors']['vw_eu_data_act']['connection_state']['val'] == 'connected' ? true : false; // connected // disconnected
-            $data['isActive'] = null; // currently not available in the data set
+            $data['isActive'] = !$dataArr['garage'][$this->carId]['parking_brake']['val'];
         } catch (\Exception $e) {
             // do nothing
         }
