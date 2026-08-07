@@ -15,6 +15,7 @@
 /www/.env.local.dist
 /www/config/parameters.yaml
 /www/config/parameters_*.yaml
+/www/config/carconnectivity.json
 ###< OSHANS configuration ###
 /nbproject/
 

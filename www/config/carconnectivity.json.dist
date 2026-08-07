@@ -1,0 +1,17 @@
+{
+  "carConnectivity": {
+    "connectors": [
+      {
+        "type": "vw_eu_data_act",
+        "config": {
+          "username": "you@example.com",
+          "password": "your-portal-password",
+          "interval": 900,
+          "country": "si",
+          "language": "sl",
+          "brand": "VOLKSWAGEN_PASSENGER_CARS"
+        }
+      }
+    ]
+  }
+}

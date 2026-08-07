@@ -18,9 +18,7 @@ class WeConnectIdConnector
     public function __construct(Array $config = [], $energyLowRate = false)
     {
         $this->energyLowRate = $energyLowRate;
-        if (is_array($config) && array_key_exists('username', $config) && array_key_exists('password', $config) && array_key_exists('carId', $config)) {
-            $this->username = $config['username'];
-            $this->password = $config['password'];
+        if (is_array($config) && array_key_exists('carId', $config)) {
             $this->carId = $config['carId'];
         }
     }
@@ -32,27 +30,16 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $chargingJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/charging --format json');
-            $readinessStatusJson = shell_exec('weconnect-cli --interval 600 --username ' . $this->username . ' --password ' . $this->password . ' get /vehicles/' . $this->carId . '/domains/readiness/readinessStatus --format json');
+            $dataJson = shell_exec('carconnectivity-cli get / --format json');
 
-            $charging = json_decode($chargingJson, true);
-            $readinessStatus = json_decode($readinessStatusJson, true);
-            $data['soc'] = $charging['batteryStatus']['currentSOC_pct'];
-            $data['range'] = $charging['batteryStatus']['cruisingRangeElectric_km'];
-            $data['plugConnectionState'] = $charging['plugStatus']['plugConnectionState'];
-            $data['chargePower_kW'] = $charging['chargingStatus']['chargePower_kW'];
-            if (is_array($readinessStatus) && array_key_exists('connectionState', $readinessStatus)) {
-                if (array_key_exists('isOnline', $readinessStatus['connectionState'])) {
-                    $data['isOnline'] = $readinessStatus['connectionState']['isOnline'];
-                } else {
-                    $data['isOnline'] = false;
-                }
-                if (array_key_exists('isActive', $readinessStatus['connectionState'])) {
-                    $data['isActive'] = $readinessStatus['connectionState']['isActive'];
-                } else {
-                    $data['isActive'] = false;
-                }
-            }
+            $dataArr = json_decode($dataJson, true);
+            $data['soc'] = $dataArr['garage'][$this->carId]['drives']['primary']['level']['val'];
+            $data['capacity'] = $dataArr['garage'][$this->carId]['drives']['primary']['battery']['available_capacity']['val']; // currently the value from the config file is used
+            $data['range'] = null; // currently not available in the data set
+            $data['plugConnectionState'] = $dataArr['garage'][$this->carId]['charging']['state']['val']; // on / off
+            $data['chargePower_kW'] = $dataArr['garage'][$this->carId]['charging']['power']['val'];
+            $data['isOnline'] = $dataArr['connectors']['vw_eu_data_act']['connection_state']['val'] == 'connected' ? true : false; // connected // disconnected
+            $data['isActive'] = null; // currently not available in the data set
         } catch (\Exception $e) {
             // do nothing
         }
@@ -63,7 +50,8 @@ class WeConnectIdConnector
     public function startCharging(): void
     {
         try {
-            shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging start');
+            //shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging start');
+            // do nothing as controls are not currently available
         } catch (\Exception $e) {
             // do nothing
         }
@@ -72,7 +60,8 @@ class WeConnectIdConnector
     public function stopCharging(): void
     {
         try {
-            shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging stop');
+            //shell_exec('weconnect-cli --username ' . $this->username . ' --password ' . $this->password . ' set /vehicles/' . $this->carId . '/controls/charging stop');
+            // do nothing as controls are not currently available
         } catch (\Exception $e) {
             // do nothing
         }
