@@ -30,7 +30,7 @@ class WeConnectIdConnector
     {
         $data = [];
         try {
-            $dataJson = shell_exec('carconnectivity-cli get / --format json');
+            $dataJson = shell_exec('carconnectivity-cli config/carconnectivity.json get / --format json');
 
             $dataArr = json_decode($dataJson, true);
             $data['soc'] = $dataArr['garage'][$this->carId]['drives']['primary']['level']['val'];
