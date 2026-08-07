@@ -144,9 +144,8 @@ parameters:
             -
                 name: my fancy car
                 type: id3 # currently only VW ID3 supported
-                capacity: 58 # battery capacity in kWh
-                username: <<myVWusername>>
-                password: <<myVWpassword>>
+                capacity: 58 # battery capacity in this_is_the_api_key_retrieved_from_openweathermap
+                # note: create a file carconnectivity.json according to the example file carconnectivity.json.dist This file will include the credentials for the car
         mystrom:
             -
                 name: 'My Switch'

@@ -42,7 +42,8 @@ RUN apt install symfony-cli
 RUN virtualenv env
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
-RUN pip3 install weconnect-cli
+RUN pip3 install carconnectivity-cli
+RUN pip3 install carconnectivity-connector-vw-eu-data-act
 
 # config changes in PHP config
 RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \

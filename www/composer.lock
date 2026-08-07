@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "05190a115ef7847744ad8cbeba14de7a",
+    "content-hash": "1f5ff363a322192ec43f07b1938a1a8d",
     "packages": [
         {
             "name": "abbadon1334/sun-position-spa-php",
@@ -59,28 +59,29 @@
         },
         {
             "name": "aldas/modbus-tcp-client",
-            "version": "2.4.0",
+            "version": "3.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aldas/modbus-tcp-client.git",
-                "reference": "73eba8bdf0d4b37eda70871dc34b0c6f0659728f"
+                "reference": "57273edfdcdf7e868cd3d428fa6a8111240227d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aldas/modbus-tcp-client/zipball/73eba8bdf0d4b37eda70871dc34b0c6f0659728f",
-                "reference": "73eba8bdf0d4b37eda70871dc34b0c6f0659728f",
+                "url": "https://api.github.com/repos/aldas/modbus-tcp-client/zipball/57273edfdcdf7e868cd3d428fa6a8111240227d6",
+                "reference": "57273edfdcdf7e868cd3d428fa6a8111240227d6",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "^7.0 || ^8.0"
+                "php": "^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.0",
-                "psr/log": "^1.0",
-                "react/child-process": "^0.6",
-                "react/datagram": "^1.5",
-                "react/socket": "^1.6"
+                "phpstan/phpstan": "^2.1.37",
+                "phpunit/phpunit": "^12.5.8",
+                "psr/log": "^1.1.4",
+                "react/child-process": "^0.6.7",
+                "react/datagram": "^1.10.0",
+                "react/socket": "^1.17"
             },
             "suggest": {
                 "psr/log": "Required for using the Log middleware with BinaryStreamConnection"
@@ -101,9 +102,9 @@
             ],
             "support": {
                 "issues": "https://github.com/aldas/modbus-tcp-client/issues",
-                "source": "https://github.com/aldas/modbus-tcp-client/tree/2.4.0"
+                "source": "https://github.com/aldas/modbus-tcp-client/tree/3.6.0"
             },
-            "time": "2021-12-25T20:14:50+00:00"
+            "time": "2026-01-28T15:15:27+00:00"
         },
         {
             "name": "composer/semver",
