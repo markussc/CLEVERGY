@@ -13,7 +13,7 @@ parameters:
                 - 'my-alarm@somewhere.com'
         smartfox:
             ip: 192.168.1.140
-            version: pro # optional parameter. Only needs to be set for the SmartFox PRO. If not set, the REG 9TE is assumed.
+            version: pro # optional parameter (valid choices are: pro, fronius). Only needs to be set for the SmartFox PRO or Fronius. If not set, the REG 9TE is assumed.
             alternative: # one or several Wifi switches (mystrom or shelly), through which a balcony-PV system is connected
                 -
                     type: mystrom
@@ -25,7 +25,7 @@ parameters:
             storage:
                 -
                     name: Nelinor 7kWh
-                    type: nelinor
+                    type: nelinor   # valid types: nelinor, fronius
                     ip: 192.168.1.143
                     capacity: 7 # capacity in kWh
                     charging: 2.1 # max charging power in kW
@@ -112,7 +112,7 @@ parameters:
                         - °C
                         - red # color used in charts
                         - dashboard # if set to "dashboard", this value will be show in the "homepage" dashboard
-                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, basementtemp, basementhumidity, pooltemp, contact
+                        - <<sensor_meaning>> # valid choices are insidetemp, insidehumidity, firstfloortemp, secondfloortemp, secondfloorhumidity, basementtemp, basementhumidity, pooltemp, contact
                         - <<extended settings>> # optional; valid choice for contact sensors: inverted (inverts the open / close logic)
                     -
                         - 'Relative humidity inside'

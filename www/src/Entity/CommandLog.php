@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Repository\CommandLogRepository::class)]
 #[ORM\Table(name: 'commandlog')]
+#[ORM\Index(name: 'timestamp_idx', columns: ['timestamp'])]
 class CommandLog
 {
     /**

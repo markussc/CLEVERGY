@@ -46,7 +46,7 @@ RUN pip3 install carconnectivity-cli
 RUN pip3 install carconnectivity-connector-vw-eu-data-act
 
 # config changes in PHP config
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
@@ -54,7 +54,7 @@ RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 2G/' \
     /etc/php/8.3/apache2/php.ini
 
 # config changes in PHP config (CLI)
-RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 4G/' \
+RUN sed -i -e 's/^memory_limit\s*=.*/memory_limit = 1G/' \
            -e 's/^max_execution_time\s*=.*/max_execution_time = 180/' \
            -e 's/^;realpath_cache_size\s*=.*/realpath_cache_size = 4096k/' \
            -e 's/^;realpath_cache_ttl\s*=.*/realpath_cache_ttl = 7200/' \
@@ -70,8 +70,8 @@ RUN sed -i -e 's/^ServerTokens\s* .*/ServerTokens Prod/' \
 RUN echo "* * * * * root cd /www && symfony console oshans:data:update" >> /etc/cron.d/oshans
 RUN echo "5 0 * * * root cd /www && symfony console oshans:devices:configure" >> /etc/cron.d/oshans
 RUN echo "0 */24 * * * root cd /www && symfony console oshans:solrad:training" >> /etc/cron.d/oshans
-# delete will run once a year: on january first at 2am
-RUN echo "0 2 1 1 * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
+# delete will run once a day
+RUN echo "0 2 * * * root cd /www && symfony console oshans:data:delete" >> /etc/cron.d/oshans
 # backup of database will run daily at the specified hour
 #RUN echo "15 $BACKUP_HOUR * * * root mysqldump -h db -uclevergy -pclevergy --no-tablespaces --quick clevergy | gzip > /backup/dump_clevergy_$INSTANCENAME.sql.gz" >> /etc/cron.d/oshans # worth trying (using root / docker user): --flush-logs --single-transaction
 

@@ -57,6 +57,8 @@ class SmartFoxConnector
         try {
             if ($this->version === "pro") {
                 $responseArr = $this->getFromPRO();
+            } elseif ($this->version === "fronius") {
+                $responseArr = $this->getFromFronius();
             } else {
                 $responseArr = $this->getFromREG9TE();
             }
@@ -467,6 +469,64 @@ class SmartFoxConnector
         return $values;
     }
 
+    private function getFromFronius($full = true)
+    {
+        $jsonDataMeter = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetMeterRealtimeData.cgi?Scope=System')->getContent();
+        $jsonPowerFlow = $this->client->request('GET', $this->basePath . '/solar_api/v1/GetPowerFlowRealtimeData.fcgi')->getContent();
+
+        $arrMeter = json_decode($jsonDataMeter, true);
+        $arrPowerFlow = json_decode($jsonPowerFlow, true);
+        $data = [];
+        if (is_array($arrPowerFlow) && array_key_exists('Head', $arrPowerFlow)) {
+            $data['datetime'] = $arrPowerFlow['Head']['Timestamp'];
+        }
+        if (is_array($arrPowerFlow) && array_key_exists('Body', $arrPowerFlow)) {
+            $pvPower = $arrPowerFlow['Body']['Data']['Site']['P_PV'];
+            foreach ($arrPowerFlow['Body']['Data']['SecondaryMeters'] as $secMeter) {
+                if (intval($secMeter['MLoc']) == 3) {
+                    // this is a production meter
+                    $pvPower += $secMeter['P'];
+                }
+            }
+            $data['PvPower'] = [max(0, intval($pvPower))];
+            $pvEnergy = $arrPowerFlow['Body']['Data']['Site']['E_Total'];
+            foreach ($arrMeter['Body']['Data'] as $secInv) {
+                if (intval($secInv['Meter_Location_Current']) == 3) {
+                    // this is a production inverter (not the main inverter)
+                    $pvEnergy += $secInv['EnergyReal_WAC_Sum_Produced'];
+                }
+            }
+            $data['PvEnergy'] = [intval($pvEnergy)];
+            $data['power_io'] = intval($arrPowerFlow['Body']['Data']['Site']['P_Grid']);
+            try {
+                $data['StorageSoc'] = $arrPowerFlow['Body']['Data']['Inverters'][1]['SOC'];
+                $data['StoragePower'] = -1*intval($arrPowerFlow['Body']['Data']['Site']['P_Akku']);
+            } catch (\Exception $e) {
+                // do not store storage data
+            }
+        }
+        if (is_array($arrMeter) && array_key_exists('Body', $arrMeter)) {
+            $data['energy_in'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Consumed']);
+            $data['energy_out'] = intval($arrMeter['Body']['Data'][0]['EnergyReal_WAC_Sum_Produced']);
+        }
+        if ($full) {
+            $data['day_energy_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_in');
+            $data['day_energy_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'energy_out');
+            $data['energyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyToday($this->ip);
+            $data['pvEnergyLast24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergy', new \DateTime('-24 hours'), new \DateTime('now'));
+            $data["pvEnergyPrognosis"] = $this->solRad->getSolarPotentials();
+            if ($this->hasAltPv()) {
+                $data['altEnergyToday'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'PvEnergyAlt');
+            }
+            if ($this->hasStorage()) {
+                $data['storageEnergyToday_in'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyIn');
+                $data['storageEnergyToday_out'] = $this->em->getRepository(SmartFoxDataStore::class)->getEnergyInterval($this->ip, 'StorageEnergyOut');
+            }
+        }
+
+        return $data;
+    }
+
     private function addAlternativePv($arr)
     {
         if (array_key_exists('smartfox', $this->connectors)) {
@@ -539,6 +599,25 @@ class SmartFoxConnector
                     }
                     $totalStorageSoc += $storageData['soc'];
                     $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
+                } elseif ($storage['type'] == 'fronius') {
+                    if (!array_key_exists('StoragePower', $arr)) {
+                        // if the method has been called outside the getAll() method, we need to query fronius here as we don't have the required data already
+                        $arr = $this->getFromFronius();
+                    }
+                    $storageValidity = true;
+                    $storageCounter++;
+                    $arr['StorageDetails'][$storage['name']] = [
+                        'power' => $arr['StoragePower'],
+                        'soc' => $arr['StorageSoc'],
+                    ];
+                    if ($arr['StoragePower'] >= 0) {
+                        // charging battery
+                        $totalStoragePowerIn += $arr['StoragePower'];
+                    } else {
+                        // uncharging battery
+                        $totalStoragePowerOut += $arr['StoragePower'];
+                    }
+                    $totalStorageSoc += $arr['StorageSoc'];
                 }
             }
             if ($storageValidity) {

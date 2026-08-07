@@ -230,14 +230,16 @@ class DefaultController extends AbstractController
     public function prognosis(SolarRadiationToolbox $srt): Response
     {
         if (array_key_exists('smartfox', $this->getParameter('connectors'))) {
-            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-48 hours'), new \DateTime());
+            $data = $this->em->getRepository(SmartFoxDataStore::class)->getHistory($this->smartfox->getIp(), new \DateTime('-24 hours'), new \DateTime());
         }
 
         // render the template
-        return $this->render('default/prognosis.html.twig', [
+        $response = $this->render('default/prognosis.html.twig', [
             'energyTotals' => $srt->setSolarPotentials(end($data)->getData()['pvEnergyPrognosis'])->getEnergyTotals(),
-            'data' => $data,
+            'data' => &$data,
         ]);
+        unset($data);
+        return $response;
     }
 
     /**
@@ -524,7 +526,11 @@ class DefaultController extends AbstractController
         if (isset($currentStat['smartFox'])) {
             $pvpower = array_sum($currentStat['smartFox']['PvPower']) . " W";
             $pvpower1 = $currentStat['smartFox']['PvPower'][0] . " W";
-            $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
+            if (array_key_exists(1, $currentStat['smartFox']['PvPower'])) {
+                $pvpower2 = $currentStat['smartFox']['PvPower'][1] . " W";
+            } else {
+                $pvpower2 = "0 W";
+            }
             $netpower = $currentStat['smartFox']['power_io']." W";
             $intpowerVal = $currentStat['smartFox']['power_io'] + array_sum($currentStat['smartFox']['PvPower']);
             if (array_key_exists('StoragePower', $currentStat['smartFox'])) {
@@ -566,6 +572,7 @@ class DefaultController extends AbstractController
         $insidetemp = "";
         $firstfloortemp = "";
         $secondfloortemp = "";
+        $secondfloorhumidity = "";
         $insidehumidity = "";
         $basementtemp = "";
         $basementhumidity = "";
@@ -579,6 +586,9 @@ class DefaultController extends AbstractController
         }
         if (isset($climateValues['secondfloortemp'])) {
             $secondfloortemp = $climateValues['secondfloortemp']. "°C";
+        }
+        if (isset($climateValues['secondfloorhumidity'])) {
+            $secondfloorhumidity = $climateValues['secondfloorhumidity']. "°C";
         }
         if (isset($climateValues['insidehumidity'])) {
             $insidehumidity = $climateValues['insidehumidity'] . " %";
@@ -634,7 +644,7 @@ class DefaultController extends AbstractController
         $labels = [
             "pvpower1",
             "pvpower2",
-            "pvpower",
+            "pvpower<",
             "netpower",
             "intpower",
             "batSoc",
@@ -647,6 +657,7 @@ class DefaultController extends AbstractController
             "insidetemp",
             "firstfloortemp",
             "secondfloortemp",
+            "secondfloorhumidity",
             "insidehumidity",
             "basementtemp",
             "basementhumidity",
@@ -660,7 +671,7 @@ class DefaultController extends AbstractController
         $values = [
             $pvpower1,
             $pvpower2,
-            $pvpower,
+            $pvpower.'<',
             $netpower,
             $intpower,
             $batSoc,
@@ -673,6 +684,7 @@ class DefaultController extends AbstractController
             $insidetemp,
             $firstfloortemp,
             $secondfloortemp,
+            $secondfloorhumidity,
             $insidehumidity,
             $basementtemp,
             $basementhumidity,

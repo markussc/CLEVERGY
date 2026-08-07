@@ -13,7 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DataDeleteCommand extends Command
 {
     private $em;
-    
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -25,21 +24,31 @@ class DataDeleteCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Delete data which is older than the year before')
+            ->setDescription('Delete data which is older than the year before; delete logs older than a week')
             ->setHelp('This command deletes all data from the storage which is older than the year before.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $start = new \DateTime('first day of January 2000');
+        // delete data
         $end = new \DateTime('first day of January last year');
         $qb = $this->em->createQueryBuilder()
             ->delete('App:DataStoreBase', 'ds')
-            ->where('ds.timestamp >= :start')
             ->andWhere('ds.timestamp < :end')
-            ->setParameter('start', $start)
             ->setParameter('end', $end);
 
-        return $qb->getQuery()->getResult();
+        $resData = $qb->getQuery()->getResult();
+
+        // delete logs
+        $dtEnd = new \DateTime();
+        $dtEnd->modify('-1 week');
+        $qb = $this->em->createQueryBuilder()
+            ->delete('App:CommandLog', 'cl')
+            ->andWhere('cl.timestamp < :end')
+            ->setParameter('end', $dtEnd);
+
+        $resLog = $qb->getQuery()->getResult();
+
+        return 0;
     }
 }
