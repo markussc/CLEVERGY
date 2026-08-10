@@ -36,7 +36,7 @@ class WeConnectIdConnector
             $data['soc'] = $dataArr['garage'][$this->carId]['drives']['primary']['level']['val'];
             $data['capacity'] = $dataArr['garage'][$this->carId]['drives']['primary']['battery']['available_capacity']['val']; // currently the value from the config file is used
             $data['range'] = null; // currently not available in the data set
-            $data['plugConnectionState'] = $dataArr['garage'][$this->carId]['charging']['state']['val'] == 'charging'; // charging
+            $data['plugConnectionState'] = $dataArr['garage'][$this->carId]['charging']['state']['val']; // charging
             $data['chargePower_kW'] = $dataArr['garage'][$this->carId]['charging']['power']['val'];
             $data['isOnline'] = $dataArr['connectors']['vw_eu_data_act']['connection_state']['val'] == 'connected' ? true : false; // connected // disconnected
             $data['isActive'] = !$dataArr['garage'][$this->carId]['parking_brake']['val'];
