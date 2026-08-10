@@ -537,6 +537,9 @@ class DefaultController extends AbstractController
                 $intpowerVal = $intpowerVal - $currentStat['smartFox']['StoragePower'];
                 $batSoc = $currentStat['smartFox']['StorageSoc'] . " %";
             }
+            else {
+                $batSoc = "";
+            }
             $intpower = $intpowerVal ." W";
         } else {
             $pvpower = "";

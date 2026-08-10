@@ -560,93 +560,108 @@ class SmartFoxConnector
     {
         if (array_key_exists('smartfox', $this->connectors) && array_key_exists('storage', $this->connectors['smartfox'])) {
             $latestEntry = $this->getAllLatest();
-            
-            $storageCounter = 0;
-            $totalStoragePowerIn = 0;
-            $totalStoragePowerOut = 0;
-            $totalStorageSoc = 0;
-            $maxStorageTemp = 0;
-            if (array_key_exists('StorageEnergyIn', $latestEntry)) {
-                $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
-            } else {
-                $latestStorageEnergyIn = 0;
-            }
-            if (array_key_exists('StorageEnergyOut', $latestEntry)) {
-                $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
-            } else {
-                $latestStorageEnergyOut = 0;
-            }
-            if (array_key_exists('StorageSocMean', $latestEntry)) {
-                $latestStorageSocMean = $latestEntry['StorageSocMean'];
-            } else {
-                $latestStorageSocMean = 0;
-            }
-            $storageValidity = false;
-            foreach ($this->connectors['smartfox']['storage'] as $storage) {
-                if ($storage['type'] == 'nelinor') {
-                    $storageData = $this->queryNelinor($storage['ip']);
-                    if (array_key_exists('validity', $storageData) && $storageData['validity']) {
+            if ($latestEntry) {
+                $storageCounter = 0;
+                $totalStoragePowerIn = 0;
+                $totalStoragePowerOut = 0;
+                $totalStorageSoc = 0;
+                $maxStorageTemp = 0;
+                if (array_key_exists('StorageEnergyIn', $latestEntry)) {
+                    $latestStorageEnergyIn = $latestEntry['StorageEnergyIn'];
+                } else {
+                    $latestStorageEnergyIn = 0;
+                }
+                if (array_key_exists('StorageEnergyOut', $latestEntry)) {
+                    $latestStorageEnergyOut = $latestEntry['StorageEnergyOut'];
+                } else {
+                    $latestStorageEnergyOut = 0;
+                }
+                if (array_key_exists('StorageSocMean', $latestEntry)) {
+                    $latestStorageSocMean = $latestEntry['StorageSocMean'];
+                } else {
+                    $latestStorageSocMean = 0;
+                }
+                $storageValidity = false;
+                foreach ($this->connectors['smartfox']['storage'] as $storage) {
+                    if ($storage['type'] == 'nelinor') {
+                        $storageData = $this->queryNelinor($storage['ip']);
+                        if (array_key_exists('validity', $storageData) && $storageData['validity']) {
+                            $storageValidity = true;
+                            $storageCounter++;
+                        }
+                        $arr['StorageDetails'][$storage['name']] = $storageData;
+                        if ($storageData['power'] >= 0) {
+                            // charging battery
+                            $totalStoragePowerIn += $storageData['power'];
+                        } else {
+                            // uncharging battery
+                            $totalStoragePowerOut += $storageData['power'];
+                        }
+                        $totalStorageSoc += $storageData['soc'];
+                        $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
+                    } elseif ($storage['type'] == 'fronius') {
+                        if (!array_key_exists('StoragePower', $arr)) {
+                            // if the method has been called outside the getAll() method, we need to query fronius here as we don't have the required data already
+                            $arr = $this->getFromFronius();
+                        }
                         $storageValidity = true;
                         $storageCounter++;
+                        $arr['StorageDetails'][$storage['name']] = [
+                            'power' => $arr['StoragePower'],
+                            'soc' => $arr['StorageSoc'],
+                        ];
+                        if ($arr['StoragePower'] >= 0) {
+                            // charging battery
+                            $totalStoragePowerIn += $arr['StoragePower'];
+                        } else {
+                            // uncharging battery
+                            $totalStoragePowerOut += $arr['StoragePower'];
+                        }
+                        $totalStorageSoc += $arr['StorageSoc'];
                     }
-                    $arr['StorageDetails'][$storage['name']] = $storageData;
-                    if ($storageData['power'] >= 0) {
-                        // charging battery
-                        $totalStoragePowerIn += $storageData['power'];
-                    } else {
-                        // uncharging battery
-                        $totalStoragePowerOut += $storageData['power'];
-                    }
-                    $totalStorageSoc += $storageData['soc'];
-                    $maxStorageTemp = max($maxStorageTemp, $storageData['temp']);
-                } elseif ($storage['type'] == 'fronius') {
-                    if (!array_key_exists('StoragePower', $arr)) {
-                        // if the method has been called outside the getAll() method, we need to query fronius here as we don't have the required data already
-                        $arr = $this->getFromFronius();
-                    }
-                    $storageValidity = true;
-                    $storageCounter++;
-                    $arr['StorageDetails'][$storage['name']] = [
-                        'power' => $arr['StoragePower'],
-                        'soc' => $arr['StorageSoc'],
-                    ];
-                    if ($arr['StoragePower'] >= 0) {
-                        // charging battery
-                        $totalStoragePowerIn += $arr['StoragePower'];
-                    } else {
-                        // uncharging battery
-                        $totalStoragePowerOut += $arr['StoragePower'];
-                    }
-                    $totalStorageSoc += $arr['StorageSoc'];
                 }
-            }
-            if ($storageValidity) {
-                $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
-                $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
-                $arr['StorageTemp'] = $maxStorageTemp;
-            } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
-                $arr['StoragePower'] = $latestEntry['StoragePower'];
-                $arr['StorageSoc'] = $latestEntry['StorageSoc'];
-                $arr['StorageTemp'] = $latestEntry['StorageTemp'];
-            }
-            if ($update && $storageValidity) {
-                // calculate the energy produced at the given power level during one minute
-                $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
-                $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
-                $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
-                $arr['StorageSocMin24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc');
-                $arr['StorageSocMin48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc');
-                $arr['StorageSocMax24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 24*60, 'StorageSoc');
-                $arr['StorageSocMax48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc');
-            } else {
-                // add existing data
-                $arr['StorageEnergyIn'] = $latestEntry['StorageEnergyIn'];
-                $arr['StorageEnergyOut'] = $latestEntry['StorageEnergyOut'];
-                $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
-                $arr['StorageSocMin24h'] = $latestEntry['StorageSocMin24h'];
-                $arr['StorageSocMin48h'] = $latestEntry['StorageSocMin48h'];
-                $arr['StorageSocMax24h'] = $latestEntry['StorageSocMax24h'];
-                $arr['StorageSocMax48h'] = $latestEntry['StorageSocMax48h'];
+                if ($storageValidity) {
+                    $arr['StoragePower'] = $totalStoragePowerIn + $totalStoragePowerOut;
+                    $arr['StorageSoc'] = $totalStorageSoc/$storageCounter;
+                    $arr['StorageTemp'] = $maxStorageTemp;
+                } elseif (array_key_exists('StoragePower', $latestEntry) && array_key_exists('StorageSoc', $latestEntry) && array_key_exists('StorageTemp', $latestEntry)) {
+                    $arr['StoragePower'] = $latestEntry['StoragePower'];
+                    $arr['StorageSoc'] = $latestEntry['StorageSoc'];
+                    $arr['StorageTemp'] = $latestEntry['StorageTemp'];
+                }
+                if ($update && $storageValidity) {
+                    // calculate the energy produced at the given power level during one minute
+                    $arr['StorageEnergyIn'] = round($latestStorageEnergyIn + 60*$totalStoragePowerIn/3600);
+                    $arr['StorageEnergyOut'] = round($latestStorageEnergyOut + 60*$totalStoragePowerOut/3600);
+                    $arr['StorageSocMean'] = ($latestStorageSocMean * 2879 + $arr['StorageSoc'])/2880; // sliding window over last 48hours (assuming we have one entry per minute)
+                    $arr['StorageSocMin24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 24*60, 'StorageSoc');
+                    $arr['StorageSocMin48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMin($this->ip, 48*60, 'StorageSoc');
+                    $arr['StorageSocMax24h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 24*60, 'StorageSoc');
+                    $arr['StorageSocMax48h'] = $this->em->getRepository(SmartFoxDataStore::class)->getMax($this->ip, 48*60, 'StorageSoc');
+                } else {
+                    // add existing data
+                    if (array_key_exists('StorageEnergyIn', $latestEntry)) {
+                        $arr['StorageEnergyIn'] = $latestEntry['StorageEnergyIn'];
+                    }
+                    if (array_key_exists('StorageEnergyOut', $latestEntry)) {
+                        $arr['StorageEnergyOut'] = $latestEntry['StorageEnergyOut'];
+                    }
+                    if (array_key_exists('StorageSocMean', $latestEntry)) {
+                        $arr['StorageSocMean'] = $latestEntry['StorageSocMean'];
+                    }
+                    if (array_key_exists('StorageSocMin24h', $latestEntry)) {           
+                        $arr['StorageSocMin24h'] = $latestEntry['StorageSocMin24h'];
+                    }
+                    if (array_key_exists('StorageSocMin48h', $latestEntry)) {
+                        $arr['StorageSocMin48h'] = $latestEntry['StorageSocMin48h'];
+                    }
+                    if (array_key_exists('StorageSocMax24h', $latestEntry)) {
+                        $arr['StorageSocMax24h'] = $latestEntry['StorageSocMax24h'];
+                    }
+                    if (array_key_exists('StorageSocMax48h', $latestEntry)) {
+                        $arr['StorageSocMax48h'] = $latestEntry['StorageSocMax48h'];
+                    }
+                }
             }
         }
 

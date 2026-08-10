@@ -59,7 +59,7 @@
         <div class="small-12 columns refresh" id="smartfoxOuter">
             <div id="smartfox">
             <ul>
-                <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] + currentStat['smartFox']['PvPower'][1]|default(0) - currentStat['smartFox']['StoragePower'] }} W</li> {# TODO: sum up all PV powers #}
+                <li>{% trans %}label.smartfox.int_power{% endtrans %}: {{ currentStat['smartFox']['power_io'] + currentStat['smartFox']['PvPower'][0] + currentStat['smartFox']['PvPower'][1]|default(0) - currentStat['smartFox']['StoragePower']|default(0) }} W</li> {# TODO: sum up all PV powers #}
                 <li>{% trans %}label.smartfox.pv_power{% endtrans %}: {{ currentStat['smartFox']['PvPower']|join(' W, ') }} W</li>
                 {% if currentStat['smartFox']['StoragePower'] is defined %}
                     <li>{% trans %}label.smartfox.storage_power{% endtrans %} {% if currentStat['smartFox']['StoragePower'] >= 0 %}{% trans %}label.storage.power_in{% endtrans %}{% else %}{% trans %}label.storage.power_out{% endtrans %}{% endif %}: {{ currentStat['smartFox']['StoragePower'] }} W</li>
