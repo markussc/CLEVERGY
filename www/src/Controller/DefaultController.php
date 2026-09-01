@@ -591,7 +591,7 @@ class DefaultController extends AbstractController
             $secondfloortemp = $climateValues['secondfloortemp']. "°C";
         }
         if (isset($climateValues['secondfloorhumidity'])) {
-            $secondfloorhumidity = $climateValues['secondfloorhumidity']. "°C";
+            $secondfloorhumidity = $climateValues['secondfloorhumidity']. " %";
         }
         if (isset($climateValues['insidehumidity'])) {
             $insidehumidity = $climateValues['insidehumidity'] . " %";
